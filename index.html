@@ -1,0 +1,215 @@
+<!doctype html>
+<!--
+  MAGICION · Holy Doughnut Studio
+  -------------------------------
+  This file only holds the page STRUCTURE. You usually don't edit text here:
+    - game info, images, bosses, enemies  ->  js/content.js
+    - menu, headings, buttons, receipt    ->  js/translations.js
+    - colors, fonts, layout               ->  css/style.css
+  Elements with data-i18n="..." get their text from js/translations.js.
+  Empty elements with an id are filled in by js/main.js.
+  See README.md for step-by-step guides.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>MAGICION · Holy Doughnut Studio</title>
+  <meta name="description" content="">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Stencil+Display:wght@700;900&family=Bungee&family=Archivo:wght@400;500;700&family=Silkscreen&family=Permanent+Marker&family=Courier+Prime:wght@400;700&display=swap">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- ============ NAVIGATION ============ -->
+  <nav class="nav" data-i18n-aria="nav.label">
+    <div class="wrap">
+      <a class="brand" href="#top">
+        <img src="assets/logo.png" alt="" width="451" height="842">
+        Holy Doughnut
+      </a>
+      <div class="nav-right">
+        <ul>
+          <li><a class="nav-link nav-play" href="#play" data-i18n="nav.play"></a></li>
+          <li><a class="nav-link" href="#gameplay" data-i18n="nav.gameplay"></a></li>
+          <li><a class="nav-link" href="#loot" data-i18n="nav.loot"></a></li>
+          <li><a class="nav-link" href="#bestiary" data-i18n="nav.bestiary"></a></li>
+          <li><a class="nav-link" href="#bosses" data-i18n="nav.bosses"></a></li>
+          <li><a class="nav-link" href="#contact" data-i18n="nav.contact"></a></li>
+        </ul>
+        <button class="language-switch" id="language-switch" type="button" data-i18n="nav.switchTo" data-i18n-aria="nav.switchLabel"></button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ============ HERO: key art + summary ============ -->
+  <header class="hero" id="top">
+    <div class="wrap">
+      <p class="pixel hero-eyebrow" data-i18n="hero.eyebrow"></p>
+      <h1 class="visually-hidden"><span id="game-title"></span>: <span id="game-tagline"></span></h1>
+
+      <figure class="key-art">
+        <img id="key-art" alt="" width="1920" height="1080">
+        <figcaption class="hand key-art-note" data-i18n="hero.note"></figcaption>
+      </figure>
+
+      <div class="hero-info">
+        <div class="stack">
+          <span class="status-pill" id="game-status"></span>
+          <p class="pitch" id="game-pitch"></p>
+          <div class="cta-row">
+            <a class="btn" id="hero-cta" href="#contact"></a>
+            <a class="textlink" href="#gameplay" data-i18n="hero.ctaGameplay"></a>
+          </div>
+        </div>
+        <dl class="facts" id="facts" data-i18n-aria="facts.label"></dl>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <!-- ============ PLAY: the browser build, loaded by magicion/embed.js ============ -->
+    <section class="section play" id="play">
+      <div class="wrap">
+        <div class="section-head">
+          <span class="hand section-note" data-i18n="play.note"></span>
+          <h2 data-i18n="play.title"></h2>
+          <p data-i18n="play.intro"></p>
+        </div>
+        <div id="game-player" data-magicion></div>
+        <p class="play-status" id="play-status" aria-live="polite"></p>
+      </div>
+    </section>
+
+    <!-- ============ PILLARS: three playing cards ============ -->
+    <section class="section" id="pillars">
+      <div class="wrap">
+        <div class="section-head">
+          <h2 data-i18n="pillars.title"></h2>
+          <p data-i18n="pillars.intro"></p>
+        </div>
+        <div class="pillars" id="pillar-cards"></div>
+
+        <h3 class="reactions-title" data-i18n="pillars.reactionsTitle"></h3>
+        <ul class="reactions" id="reaction-list"></ul>
+        <p class="muted reaction-note" id="reaction-note"></p>
+      </div>
+    </section>
+
+    <!-- ============ GAMEPLAY: screenshot with numbered callouts ============ -->
+    <section class="section" id="gameplay">
+      <div class="wrap">
+        <div class="section-head">
+          <span class="hand section-note" data-i18n="gameplay.note"></span>
+          <h2 data-i18n="gameplay.title"></h2>
+          <p data-i18n="gameplay.intro"></p>
+        </div>
+        <div class="hud-layout">
+          <figure class="shot hud-shot">
+            <img id="gameplay-image" alt="" width="1920" height="1080" loading="lazy">
+            <div id="hud-markers"></div>
+          </figure>
+          <ol class="hud-legend" id="hud-legend"></ol>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ LOOT: Elite Spoils ============ -->
+    <section class="section" id="loot">
+      <div class="wrap loot">
+        <figure class="shot">
+          <img id="loot-image" alt="" width="1920" height="1080" loading="lazy">
+        </figure>
+        <div class="stack">
+          <h2 data-i18n="loot.title"></h2>
+          <p data-i18n="loot.intro"></p>
+          <p class="pixel muted" data-i18n="loot.rarityLabel"></p>
+          <ul class="rarities" id="rarities"></ul>
+          <p class="muted" data-i18n="loot.skip"></p>
+          <span class="hand loot-note" data-i18n="loot.note"></span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ BESTIARY ============ -->
+    <section class="section" id="bestiary">
+      <div class="wrap">
+        <div class="section-head">
+          <h2 data-i18n="bestiary.title"></h2>
+          <p data-i18n="bestiary.intro"></p>
+        </div>
+        <figure class="shot">
+          <img id="bestiary-image" alt="" width="1920" height="1080" loading="lazy">
+        </figure>
+        <details class="enemy-list">
+          <summary data-i18n="bestiary.listToggle"></summary>
+          <ul id="enemy-names"></ul>
+        </details>
+      </div>
+    </section>
+
+    <!-- ============ BOSSES & REALMS ============ -->
+    <section class="section" id="bosses">
+      <div class="wrap">
+        <div class="section-head">
+          <h2 data-i18n="bosses.title"></h2>
+          <p data-i18n="bosses.intro"></p>
+        </div>
+        <figure class="shot">
+          <img id="bosses-image" alt="" width="1920" height="1080" loading="lazy">
+        </figure>
+        <ol class="realms" id="realm-list"></ol>
+      </div>
+    </section>
+  </main>
+
+  <!-- ============ CONTACT (addresses come from SITE.contact in js/content.js) ============ -->
+  <section class="contact" id="contact">
+    <div class="wrap">
+      <div class="stack">
+        <h2 data-i18n="contact.title"></h2>
+        <p data-i18n="contact.text"></p>
+      </div>
+
+      <div class="receipt">
+        <h3>HOLY DOUGHNUT STUDIO</h3>
+        <div class="center" data-i18n="contact.receiptNo"></div>
+        <hr>
+        <div class="receipt-row"><span data-i18n="contact.itemNews"></span><span class="dots"></span><span data-i18n="contact.priceFree"></span></div>
+        <div class="receipt-row"><span data-i18n="contact.itemPress"></span><span class="dots"></span><span data-i18n="contact.priceNego"></span></div>
+        <div class="receipt-row"><span data-i18n="contact.itemPublish"></span><span class="dots"></span><span data-i18n="contact.priceNego"></span></div>
+        <div class="receipt-row"><span data-i18n="contact.itemDonut"></span><span class="dots"></span><span data-i18n="contact.priceDonut"></span></div>
+        <hr>
+        <div data-i18n="contact.sendTo"></div>
+        <div class="address">
+          <code id="contact-email"></code>
+          <button class="receipt-button" id="copy-email" type="button" data-i18n="contact.copy"></button>
+        </div>
+        <div class="address">
+          <code id="contact-discord"></code>
+          <a class="receipt-button" id="contact-discord-link" href="#" target="_blank" rel="noopener" data-i18n="contact.join"></a>
+        </div>
+        <hr>
+        <div class="center" data-i18n-html="contact.thanks"></div>
+        <span class="stamp" aria-hidden="true" data-i18n="contact.stamp"></span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ FOOTER ============ -->
+  <footer class="footer">
+    <div class="wrap">
+      <span>© <span id="year"></span> Holy Doughnut Studio</span>
+      <span class="hand" data-i18n="footer.note"></span>
+    </div>
+  </footer>
+
+  <!-- Order matters: data first, main.js last -->
+  <script src="js/content.js"></script>
+  <script src="js/translations.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
