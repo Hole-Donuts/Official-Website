@@ -1,0 +1,30 @@
+Copyright (c) 2026 Holy Doughnut Studio. All rights reserved.
+
+This repository contains the official website of MAGICION and the MAGICION
+game, including all code, game files, artwork, characters, logos, names,
+music, text and other content (together, "the Materials").
+
+The Materials are proprietary and are NOT open source. You may view the
+website and play the game through the official address:
+
+    https://hole-donuts.github.io/Official-Website/
+
+Without prior written permission from Holy Doughnut Studio, you may not:
+
+  1. copy, download for redistribution, mirror or re-host the Materials,
+     in whole or in part, on any other website, store or service;
+  2. modify, decompile, de-obfuscate, reverse engineer or create derivative
+     works from the Materials;
+  3. remove or alter any copyright notice, branding or domain protection;
+  4. use the MAGICION or Holy Doughnut Studio names, logos or characters,
+     or use the Materials for any commercial purpose.
+
+Forking this repository on GitHub, where the GitHub Terms of Service allow
+it, does not grant any of the rights above.
+
+Third-party fonts (Bungee, Chakra Petch, Archivo, Big Shoulders Stencil
+Display, Silkscreen, Permanent Marker, Courier Prime) are loaded from
+Google Fonts at runtime under the SIL Open Font License and are not part
+of the Materials.
+
+Permission requests: holydoughnut@siteprofree.email

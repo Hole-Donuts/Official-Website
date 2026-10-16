@@ -11,4 +11,4 @@ Official website of **MAGICION**, an action roguelite of cards, spells and eleme
 
 ---
 
-© 2026 Holy Doughnut Studio. All rights reserved.
+© 2026 Holy Doughnut Studio. All rights reserved. See [LICENSE](LICENSE).
