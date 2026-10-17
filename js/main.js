@@ -12,7 +12,7 @@
      6. Gameplay callouts
      7. Loot, bestiary, bosses
      8. Contact copy buttons
-     8b. Donut Town (second game)
+     8b. Donut Town (second game) + its game player
      8c. Game switcher (slides between MAGICION and Donut Town)
      9. Start
    ===================================================================== */
@@ -437,6 +437,64 @@
     }).join("");
   }
 
+  /* Donut Town game player. With DONUT_TOWN.playUrl set it shows the game
+     in an iframe (16:9, or 9:16 on phones) with a fullscreen button.
+     Empty playUrl: a "coming soon" screen instead (renderDonutTownSoon). */
+  function setupDonutTownPlayer() {
+    const box = $("#dt-player");
+    if (!DONUT_TOWN || !DONUT_TOWN.playUrl) {
+      box.classList.add("is-soon");
+      $("#dt-play-hint").hidden = true;
+      return;
+    }
+
+    const iframe = document.createElement("iframe");
+    iframe.src = DONUT_TOWN.playUrl;
+    iframe.title = DONUT_TOWN.title;
+    iframe.setAttribute("allow", "autoplay; fullscreen; gamepad");
+    iframe.setAttribute("loading", "lazy");
+    box.appendChild(iframe);
+
+    const fullscreen = document.createElement("button");
+    fullscreen.type = "button";
+    fullscreen.className = "dt-fullscreen";
+    fullscreen.textContent = "⛶";
+    fullscreen.dataset.i18nAria = "donutTown.fullscreen";
+    fullscreen.addEventListener("click", () => {
+      if (document.fullscreenElement) return document.exitFullscreen();
+      const request = box.requestFullscreen || box.webkitRequestFullscreen;
+      if (request) {
+        const result = request.call(box);
+        if (result && result.catch) result.catch(() => {});
+      } else {
+        window.open(DONUT_TOWN.playUrl, "_blank");
+      }
+      iframe.focus();
+    });
+    box.appendChild(fullscreen);
+  }
+
+  function renderDonutTownSoon() {
+    const box = $("#dt-player");
+    if (!box.classList.contains("is-soon")) return;
+    box.innerHTML = `
+      <img src="${escapeHtml(DONUT_TOWN.keyArt.src)}" alt="" width="1920" height="1080" loading="lazy">
+      <div class="dt-soon">
+        <span class="dt-soon-badge">${escapeHtml(DONUT_TOWN.title)}</span>
+        <h4>${t("donutTown.soonTitle")}</h4>
+        <p>${t("donutTown.soonText")}</p>
+        <a class="dt-soon-button" href="${escapeHtml(SITE.contact.discordUrl)}" target="_blank" rel="noopener">${t("donutTown.soonButton")}</a>
+      </div>`;
+  }
+
+  /* Ask the Donut Town game to pause (when its panel slides away).
+     The game can listen for: { target: "donut-town", cmd: "pause" } */
+  function pauseDonutTown() {
+    const iframe = document.querySelector("#dt-player iframe");
+    if (!iframe || !iframe.contentWindow) return;
+    iframe.contentWindow.postMessage({ target: "donut-town", cmd: "pause" }, new URL(iframe.src, location.href).origin);
+  }
+
   /* ---------------------------------------------------------------
      8c. Game switcher. Each game is a panel inside #games-track; the
          track slides sideways so one panel fills the screen. Opened
@@ -501,6 +559,7 @@
       item.hidden = item.dataset.game !== game;
     });
     updateGamesHeight();
+    if (game !== "donut-town") pauseDonutTown();
 
     // Bring the new game into view: the requested spot, or the top of the panel
     if (target) {
@@ -600,6 +659,7 @@
     renderBestiary();
     renderBosses();
     renderDonutTown();
+    renderDonutTownSoon();
     renderNextGameCards();
   }
 
@@ -625,6 +685,7 @@
 
   setupStats();
   setupPlay();
+  setupDonutTownPlayer();
   renderAll();
   setupSwitcher();
 })();

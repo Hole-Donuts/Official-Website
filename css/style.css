@@ -1080,6 +1080,128 @@ p {
   color: var(--dt-ink-soft);
 }
 
+/* Play: the game player (or "coming soon" screen) */
+.dt-play {
+  padding-block: 56px 64px;
+  border-top: 3px solid var(--dt-ink);
+}
+
+.dt-player {
+  position: relative;
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border: 3px solid var(--dt-ink);
+  border-radius: 16px;
+  background: var(--dt-sky-light);
+  box-shadow: 0 6px 0 var(--dt-ink);
+}
+
+.dt-player iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+.dt-fullscreen {
+  position: absolute;
+  left: 10px;
+  bottom: 10px;
+  z-index: 2;
+  width: 40px;
+  height: 40px;
+  border: 2px solid var(--dt-ink);
+  border-radius: 10px;
+  background: var(--dt-glaze);
+  color: #fff;
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: 0 3px 0 var(--dt-ink);
+}
+
+.dt-play-hint {
+  max-width: 1100px;
+  margin: 14px auto 0;
+  color: var(--dt-ink-soft);
+  font-size: 0.92rem;
+  text-align: center;
+}
+
+/* "coming soon": dimmed key art with a sign card on top */
+.dt-player.is-soon img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: blur(3px) saturate(0.8) brightness(0.8);
+  transform: scale(1.04);
+}
+
+.dt-soon {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 10px;
+  margin: auto;
+  width: min(440px, calc(100% - 40px));
+  height: max-content;
+  padding: 26px 24px 28px;
+  border: 3px solid var(--dt-ink);
+  border-radius: 16px;
+  background: var(--dt-cream);
+  box-shadow: 0 6px 0 var(--dt-ink);
+  text-align: center;
+}
+
+.dt-soon-badge {
+  padding: 2px 12px;
+  border: 2px solid var(--dt-ink);
+  border-radius: 999px;
+  background: var(--dt-glaze);
+  color: #fff;
+  font-family: var(--font-dt);
+  font-weight: 800;
+  font-size: 0.85rem;
+}
+
+.dt-soon h4 {
+  margin: 0;
+  font-family: var(--font-dt);
+  font-weight: 800;
+  font-size: 1.5rem;
+  line-height: 1.15;
+}
+
+.dt-soon p {
+  color: var(--dt-ink-soft);
+  font-size: 0.95rem;
+}
+
+.dt-soon-button {
+  margin-top: 6px;
+  padding: 10px 18px;
+  border: 2px solid var(--dt-ink);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--dt-ink);
+  font-weight: 700;
+  text-decoration: none;
+  box-shadow: 0 3px 0 var(--dt-ink);
+  transition: transform 0.15s;
+}
+
+.dt-soon-button:hover {
+  transform: translateY(-2px);
+}
+
 /* Gallery */
 .dt-gallery {
   padding-block: 56px 72px;
@@ -1520,6 +1642,12 @@ p {
 @media (max-width: 600px) {
   .dt-phones {
     gap: 16px;
+  }
+
+  /* Donut Town player: portrait on phones, like the game's phone layout */
+  .dt-player {
+    max-width: 420px;
+    aspect-ratio: 9 / 16;
   }
 
   /* contact receipt: a little smaller so every line fits */

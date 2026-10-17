@@ -51,6 +51,7 @@
           <li data-game="magicion"><a class="nav-link" href="#loot" data-i18n="nav.loot"></a></li>
           <li data-game="magicion"><a class="nav-link" href="#bestiary" data-i18n="nav.bestiary"></a></li>
           <li data-game="magicion"><a class="nav-link" href="#bosses" data-i18n="nav.bosses"></a></li>
+          <li data-game="donut-town"><a class="nav-link nav-donut" href="#dt-play" data-i18n="nav.dtPlay"></a></li>
           <li data-game="donut-town"><a class="nav-link" href="#dt-gallery" data-i18n="nav.dtGallery"></a></li>
           <li data-game="donut-town"><a class="nav-link" href="#dt-roadmap" data-i18n="nav.dtRoadmap"></a></li>
           <li><a class="nav-link" href="#contact" data-i18n="nav.contact"></a></li>
@@ -206,6 +207,18 @@
               <ul class="dt-tags" id="dt-tags"></ul>
             </div>
           </div>
+        </div>
+      </div>
+
+      <!-- Play: game player, or a "coming soon" screen while DONUT_TOWN.playUrl is empty -->
+      <div class="dt-play" id="dt-play">
+        <div class="wrap">
+          <div class="dt-head">
+            <h3 data-i18n="donutTown.playTitle"></h3>
+            <p data-i18n="donutTown.playIntro"></p>
+          </div>
+          <div class="dt-player" id="dt-player"></div>
+          <p class="dt-play-hint" id="dt-play-hint" data-i18n="donutTown.playHint"></p>
         </div>
       </div>
 

@@ -200,6 +200,13 @@ window.HD_CONTENT = {
     // Small labels under the description
     tags: ["Life sim", "Web · Android · iOS", "In development"],
 
+    /* Playable build (section "Play Donut Town").
+       1. Put the game in the folder donut-town/ (so the file is donut-town/index.html).
+       2. Set playUrl to "donut-town/index.html".
+       While it is empty "", the section shows a "coming soon" screen instead.
+       Run the build through tools/protect-game.js first, like MAGICION. */
+    playUrl: "",
+
     keyArt: {
       src: "assets/donut-town/key-art.webp",
       en: { alt: "Donut Town title screen: the Donut Town sign hanging over a sunny street with a doughnut shop wearing a giant doughnut, striped shop awnings and people walking by" },
