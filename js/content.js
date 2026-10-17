@@ -28,7 +28,7 @@ window.HD_CONTENT = {
     studioName: "Holy Doughnut Studio",
     // GoatCounter site code for visitor stats, e.g. "holydoughnut" for
     // https://holydoughnut.goatcounter.com. Leave empty "" to turn stats off.
-    goatcounter: "",
+    goatcounter: "holydoughnut",
     contact: {
       email: "holydoughnut@siteprofree.email",
       discordUrl: "https://discord.gg/nP9xS3Ca9",
