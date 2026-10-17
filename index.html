@@ -26,7 +26,7 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Stencil+Display:wght@700;900&family=Bungee&family=Archivo:wght@400;500;700&family=Silkscreen&family=Permanent+Marker&family=Courier+Prime:wght@400;700&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Stencil+Display:wght@700;900&family=Bungee&family=Archivo:wght@400;500;700&family=Silkscreen&family=Permanent+Marker&family=Courier+Prime:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,800&family=Atkinson+Hyperlegible:wght@400;700&display=swap">
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -45,6 +45,7 @@
           <li><a class="nav-link" href="#loot" data-i18n="nav.loot"></a></li>
           <li><a class="nav-link" href="#bestiary" data-i18n="nav.bestiary"></a></li>
           <li><a class="nav-link" href="#bosses" data-i18n="nav.bosses"></a></li>
+          <li><a class="nav-link nav-donut" href="#donut-town" data-i18n="nav.donutTown"></a></li>
           <li><a class="nav-link" href="#contact" data-i18n="nav.contact"></a></li>
         </ul>
         <button class="language-switch" id="language-switch" type="button" data-i18n="nav.switchTo" data-i18n-aria="nav.switchLabel"></button>
@@ -169,6 +170,46 @@
           <img id="bosses-image" alt="" width="1920" height="1080" loading="lazy">
         </figure>
         <ol class="realms" id="realm-list"></ol>
+      </div>
+    </section>
+
+    <!-- ============ DONUT TOWN: second game (data: DONUT_TOWN in js/content.js) ============ -->
+    <section class="dt" id="donut-town">
+      <div class="dt-hero">
+        <div class="wrap">
+          <p class="dt-eyebrow" data-i18n="donutTown.eyebrow"></p>
+          <figure class="dt-key-art">
+            <img id="dt-key-art" alt="" width="1920" height="1080" loading="lazy">
+          </figure>
+          <div class="dt-about">
+            <h2 class="dt-title" id="dt-title"></h2>
+            <div>
+              <div class="dt-text" id="dt-text"></div>
+              <ul class="dt-tags" id="dt-tags"></ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="dt-gallery">
+        <div class="wrap">
+          <div class="dt-head">
+            <h3 data-i18n="donutTown.galleryTitle"></h3>
+            <p data-i18n="donutTown.galleryNote"></p>
+          </div>
+          <ul class="dt-grid" id="dt-shots"></ul>
+          <div class="dt-phones" id="dt-phones"></div>
+        </div>
+      </div>
+
+      <div class="dt-roadmap">
+        <div class="wrap">
+          <div class="dt-head">
+            <h3 data-i18n="donutTown.roadmapTitle"></h3>
+            <p data-i18n="donutTown.roadmapIntro"></p>
+          </div>
+          <ol class="dt-milestones" id="dt-milestones"></ol>
+        </div>
       </div>
     </section>
   </main>

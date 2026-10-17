@@ -12,6 +12,7 @@
      7. Gameplay callouts
      8. Loot
      9. Bestiary & bosses
+     9b. Donut Town (second game, light "sunny town" look)
     10. Contact receipt
     11. Footer
     12. Responsive (tablet ≤ 900px, phone ≤ 600px)
@@ -57,6 +58,16 @@
   --storm: #ffe66d;
   --arcane: #d08bff;
 
+  /* Donut Town colors, taken from the Donut Town UI */
+  --dt-cream: #fff6e8;
+  --dt-cream-2: #f3e6cf;
+  --dt-ink: #2b2d42;
+  --dt-ink-soft: #5b5670;
+  --dt-glaze: #e0457b;
+  --dt-sky: #7fb8e6;
+  --dt-sky-light: #cfe8f7;
+  --dt-asphalt: #3a3d4f;
+
   /* Fonts (loaded from Google Fonts in index.html) */
   --font-game: "Bungee", "Impact", sans-serif;
   --font-studio: "Big Shoulders Stencil Display", "Impact", "Arial Narrow", sans-serif;
@@ -64,6 +75,8 @@
   --font-pixel: "Silkscreen", "Courier New", monospace;
   --font-hand: "Permanent Marker", "Comic Sans MS", "Bradley Hand", cursive;
   --font-receipt: "Courier Prime", "Courier New", monospace;
+  --font-dt: "Bricolage Grotesque", "Trebuchet MS", system-ui, sans-serif;
+  --font-dt-body: "Atkinson Hyperlegible", system-ui, -apple-system, "Segoe UI", sans-serif;
 
   /* Layout */
   --rule: 6px;
@@ -287,6 +300,10 @@ p {
 
 .nav-play {
   color: var(--gold);
+}
+
+.nav-donut {
+  color: #ff8fb4;
 }
 
 .language-switch {
@@ -796,6 +813,340 @@ p {
 }
 
 
+/* 9b. Donut Town ------------------------------------------------------ */
+/* A different world from MAGICION's night sky: sunny, cream, thick ink
+   outlines and the pink glaze from the Donut Town sign. */
+.dt {
+  border-top: var(--rule) solid var(--white);
+  background: var(--dt-cream);
+  color: var(--dt-ink);
+  font-family: var(--font-dt-body);
+  color-scheme: light;
+}
+
+.dt :focus-visible {
+  outline-color: var(--dt-glaze);
+}
+
+.dt-hero {
+  background:
+    radial-gradient(ellipse 140px 40px at 14% 10%, rgba(255, 255, 255, 0.9), transparent 70%),
+    radial-gradient(ellipse 180px 46px at 82% 6%, rgba(255, 255, 255, 0.85), transparent 70%),
+    linear-gradient(var(--dt-sky), var(--dt-sky-light) 60%, var(--dt-cream));
+}
+
+.dt-hero .wrap {
+  display: grid;
+  gap: 28px;
+  padding-block: 48px 56px;
+}
+
+.dt-eyebrow {
+  margin: 0;
+  font-family: var(--font-pixel);
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.dt-key-art {
+  margin: 0;
+}
+
+/* Shared "game UI card" look: ink outline + solid ink drop */
+.dt-key-art img,
+.dt-grid img,
+.dt-phones img,
+.dt-milestone {
+  border: 3px solid var(--dt-ink);
+  box-shadow: 0 5px 0 var(--dt-ink);
+}
+
+.dt-key-art img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 9;
+  border-radius: 16px;
+  box-shadow: 0 8px 0 var(--dt-ink);
+}
+
+.dt-about {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr);
+  align-items: start;
+  gap: 32px;
+}
+
+.dt-title {
+  color: var(--dt-ink);
+  font-family: var(--font-dt);
+  font-weight: 800;
+  font-size: clamp(2.6rem, 7vw, 4.4rem);
+  line-height: 0.92;
+  letter-spacing: -0.03em;
+}
+
+.dt-title span {
+  color: var(--dt-glaze);
+}
+
+.dt-text p {
+  max-width: 60ch;
+  font-size: 1.12rem;
+}
+
+.dt-text p + p {
+  margin-top: 12px;
+}
+
+.dt-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 18px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.dt-tags li {
+  padding: 3px 12px;
+  border: 2px solid var(--dt-ink);
+  border-radius: 999px;
+  background: #fff;
+  box-shadow: 0 2px 0 var(--dt-ink);
+  font-size: 0.88rem;
+  font-weight: 700;
+}
+
+/* Section headings inside Donut Town */
+.dt-head {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 28px;
+}
+
+.dt-head h3 {
+  color: var(--dt-ink);
+  font-family: var(--font-dt);
+  font-weight: 800;
+  font-size: clamp(1.9rem, 4.6vw, 2.8rem);
+  letter-spacing: -0.02em;
+  text-transform: none;
+}
+
+.dt-head p {
+  max-width: 60ch;
+  color: var(--dt-ink-soft);
+}
+
+/* Gallery */
+.dt-gallery {
+  padding-block: 56px 72px;
+  border-top: 3px solid var(--dt-ink);
+}
+
+.dt-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 28px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.dt-grid figure,
+.dt-phones figure {
+  margin: 0;
+}
+
+.dt-grid a {
+  display: block;
+  border-radius: 14px;
+}
+
+.dt-grid img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 9;
+  border-radius: 14px;
+  background: var(--dt-sky-light);
+  transition: transform 0.15s;
+}
+
+.dt-grid a:hover img {
+  transform: translateY(-3px);
+}
+
+.dt figcaption {
+  margin-top: 12px;
+  color: var(--dt-ink-soft);
+  font-size: 0.95rem;
+}
+
+.dt figcaption b {
+  color: var(--dt-ink);
+  font-family: var(--font-dt);
+  font-weight: 800;
+}
+
+.dt-phones {
+  display: flex;
+  justify-content: center;
+  gap: 32px;
+  margin-top: 44px;
+}
+
+.dt-phones figure {
+  width: min(260px, 44%);
+  text-align: center;
+}
+
+.dt-phones img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 780 / 1688;
+  padding: 9px;
+  border-radius: 34px;
+  background: #0c0e13;
+}
+
+/* Roadmap: milestones as stops along a town road */
+.dt-roadmap {
+  padding-block: 56px 80px;
+  border-top: 3px solid var(--dt-ink);
+  background: var(--dt-cream-2);
+}
+
+.dt-milestones {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 20px;
+  margin: 0;
+  padding: 46px 0 0;
+  list-style: none;
+}
+
+/* the road, with white lane markings */
+.dt-milestones::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 26px;
+  border-block: 3px solid var(--dt-ink);
+  background:
+    repeating-linear-gradient(90deg, #fff 0 28px, transparent 28px 52px) center / 100% 4px no-repeat,
+    var(--dt-asphalt);
+}
+
+.dt-milestone {
+  position: relative;
+  display: grid;
+  align-content: start;
+  gap: 10px;
+  padding: 18px 18px 20px;
+  border-radius: 14px;
+  background: #fff;
+}
+
+/* the stop sign post connecting each card to the road */
+.dt-milestone::before {
+  content: "";
+  position: absolute;
+  top: -23px;
+  left: 26px;
+  width: 6px;
+  height: 20px;
+  background: var(--dt-ink);
+}
+
+.dt-milestone-top {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 6px;
+}
+
+.dt-step {
+  font-family: var(--font-pixel);
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--dt-ink-soft);
+}
+
+.dt-status {
+  padding: 2px 10px;
+  border: 2px solid var(--dt-ink);
+  border-radius: 999px;
+  background: var(--dt-cream);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.status-next .dt-status {
+  background: var(--dt-glaze);
+  color: #fff;
+}
+
+.status-done .dt-status {
+  background: #5bbf6a;
+  color: #fff;
+}
+
+.status-later {
+  background: var(--dt-cream);
+}
+
+.dt-milestone h4 {
+  margin: 0;
+  font-family: var(--font-dt);
+  font-weight: 800;
+  font-size: 1.35rem;
+  line-height: 1.1;
+}
+
+.dt-milestone p {
+  color: var(--dt-ink-soft);
+  font-size: 0.95rem;
+}
+
+.dt-milestone ul {
+  display: grid;
+  gap: 6px;
+  margin: 4px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.dt-milestone ul li {
+  position: relative;
+  padding-left: 22px;
+  font-weight: 700;
+  font-size: 0.95rem;
+  line-height: 1.35;
+}
+
+/* a tiny doughnut as the bullet */
+.dt-milestone ul li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.2em;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--dt-cream) 0 22%, var(--dt-glaze) 24% 100%);
+  box-shadow: inset 0 0 0 2px var(--dt-ink);
+}
+
+
 /* 10. Contact receipt ------------------------------------------------- */
 .contact {
   border-top: var(--rule) solid var(--white);
@@ -966,8 +1317,47 @@ p {
   }
 }
 
+/* Donut Town: tablet */
+@media (max-width: 900px) {
+  .dt-about,
+  .dt-grid {
+    grid-template-columns: 1fr;
+  }
+
+  /* road turns vertical, cards stack along it */
+  .dt-milestones {
+    grid-template-columns: 1fr;
+    padding: 0 0 0 46px;
+  }
+
+  .dt-milestones::before {
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: auto;
+    width: 26px;
+    height: auto;
+    border-block: 0;
+    border-inline: 3px solid var(--dt-ink);
+    background:
+      repeating-linear-gradient(180deg, #fff 0 28px, transparent 28px 52px) center / 4px 100% no-repeat,
+      var(--dt-asphalt);
+  }
+
+  .dt-milestone::before {
+    top: 26px;
+    left: -23px;
+    width: 20px;
+    height: 6px;
+  }
+}
+
 /* Phone */
 @media (max-width: 600px) {
+  .dt-phones {
+    gap: 16px;
+  }
+
   .nav ul {
     display: none;
   }

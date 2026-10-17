@@ -12,6 +12,7 @@
      6. Gameplay callouts
      7. Loot, bestiary, bosses
      8. Contact copy buttons
+     8b. Donut Town (second game)
      9. Start
    ===================================================================== */
 
@@ -21,7 +22,7 @@
   /* ---------------------------------------------------------------
      1. Setup & language
      --------------------------------------------------------------- */
-  const { SITE, GAME } = window.HD_CONTENT;
+  const { SITE, GAME, DONUT_TOWN } = window.HD_CONTENT;
   const TRANSLATIONS = window.HD_TRANSLATIONS;
 
   // Enabled languages from SITE.languages (only those that have translations)
@@ -379,6 +380,62 @@
   }
 
   /* ---------------------------------------------------------------
+     8b. Donut Town: key art, description, gallery, roadmap
+     --------------------------------------------------------------- */
+  function renderDonutTown() {
+    const game = DONUT_TOWN;
+    if (!game) {
+      $("#donut-town").hidden = true;
+      return;
+    }
+
+    // Title: last word in the accent color ("Donut <span>Town</span>")
+    const words = game.title.split(" ");
+    const last = words.pop();
+    $("#dt-title").innerHTML = `${escapeHtml(words.join(" "))} <span>${escapeHtml(last)}</span>`;
+
+    setImage("#dt-key-art", game.keyArt.src, local(game.keyArt).alt);
+    $("#dt-text").innerHTML = local(game).paragraphs.map((p) => `<p>${escapeHtml(p)}</p>`).join("");
+    $("#dt-tags").innerHTML = game.tags.map((tag) => `<li>${escapeHtml(tag)}</li>`).join("");
+
+    $("#dt-shots").innerHTML = game.screenshots.map((shot) => {
+      const text = local(shot);
+      return `
+        <li>
+          <figure>
+            <a href="${escapeHtml(shot.src)}" target="_blank" rel="noopener">
+              <img src="${escapeHtml(shot.src)}" alt="${escapeHtml(text.alt)}" width="1920" height="1080" loading="lazy">
+            </a>
+            <figcaption><b>${escapeHtml(text.title)}</b> ${escapeHtml(text.caption)}</figcaption>
+          </figure>
+        </li>`;
+    }).join("");
+
+    $("#dt-phones").innerHTML = game.phoneShots.map((shot) => {
+      const text = local(shot);
+      return `
+        <figure>
+          <img src="${escapeHtml(shot.src)}" alt="${escapeHtml(text.alt)}" width="780" height="1688" loading="lazy">
+          <figcaption>${escapeHtml(text.caption)}</figcaption>
+        </figure>`;
+    }).join("");
+
+    $("#dt-milestones").innerHTML = game.milestones.map((milestone, index) => {
+      const text = local(milestone);
+      return `
+        <li class="dt-milestone status-${escapeHtml(milestone.status)}">
+          <div class="dt-milestone-top">
+            <span class="dt-step">${t("donutTown.milestone", { value: index + 1 })}</span>
+            <span class="dt-status">${t("donutTown.status." + milestone.status)}</span>
+          </div>
+          <h4>${escapeHtml(text.title)}</h4>
+          <p>${escapeHtml(text.why)}</p>
+          <ul>${text.features.map((f) => `<li>${escapeHtml(f)}</li>`).join("")}</ul>
+        </li>`;
+    }).join("");
+  }
+
+  /* ---------------------------------------------------------------
      9. Start
      --------------------------------------------------------------- */
   function renderAll() {
@@ -390,6 +447,7 @@
     renderLoot();
     renderBestiary();
     renderBosses();
+    renderDonutTown();
   }
 
   // One click listener for the whole page

@@ -187,4 +187,109 @@ window.HD_CONTENT = {
       "Lizardfolk", "Ghoul", "Frost Wolf", "Hellhound", "Warlock",
     ],
   },
+
+  /* ---------------------------------------------------------------
+     DONUT_TOWN: the studio's second game (section "Donut Town")
+
+     Images live in assets/donut-town/. Text is English only for now
+     (the site runs in English); add an "id" block next to "en" if
+     Indonesian is switched back on.
+     --------------------------------------------------------------- */
+  DONUT_TOWN: {
+    title: "Donut Town",
+    // Small labels under the description
+    tags: ["Life sim", "Web · Android · iOS", "In development"],
+
+    keyArt: {
+      src: "assets/donut-town/key-art.webp",
+      en: { alt: "Donut Town title screen: the Donut Town sign hanging over a sunny street with a doughnut shop wearing a giant doughnut, striped shop awnings and people walking by" },
+    },
+
+    en: {
+      paragraphs: [
+        "A life sim about one small town and one whole life. Get born in a kampung, grow up, find work, fall in love, buy a house, and one day hand it all to your kid.",
+        "The clock never stops. Neighbours keep their own schedules, chat with each other, and remember what you told them. Your phone buzzes with job offers, favours and invites.",
+      ],
+    },
+
+    /* Screenshot gallery (16:9). title is shown in bold before the caption. */
+    screenshots: [
+      {
+        src: "assets/donut-town/gameplay.webp",
+        en: { title: "Pusat Meses.", caption: "An afternoon downtown, on the way to a shift at Kopi Senja.", alt: "Afternoon in Pusat Meses: the player outside Restoran Padang while two neighbours chat" },
+      },
+      {
+        src: "assets/donut-town/district-gula-aren.webp",
+        en: { title: "Kampung Gula Aren.", caption: "Where every life starts.", alt: "Morning in Kampung Gula Aren with the family house, Taman Donat and a passing car" },
+      },
+      {
+        src: "assets/donut-town/talk.webp",
+        en: { title: "Say hi to anyone.", caption: "Find something you both like and they might give you their number.", alt: "Chatting with a stranger on the street, with an impression bar and topic choices" },
+      },
+      {
+        src: "assets/donut-town/phone.webp",
+        en: { title: "The phone.", caption: "Jobs, contacts, money and messages. Time pauses while it's open.", alt: "The in-game phone home screen with message notifications and apps" },
+      },
+      {
+        src: "assets/donut-town/chat.webp",
+        en: { title: "Plans for tonight.", caption: "Say yes, then actually show up.", alt: "The Messages app with an invite for coffee at Kopi Senja" },
+      },
+      {
+        src: "assets/donut-town/family.webp",
+        en: { title: "Family trees.", caption: "Everyone in town has one, you included.", alt: "A family tree spanning grandparents, parents and the player" },
+      },
+      {
+        src: "assets/donut-town/district-kelapa.webp",
+        en: { title: "Pantai Kelapa.", caption: "Grilled fish and a sunset after work.", alt: "Sunset at Pantai Kelapa with colourful beach umbrellas and the seafood stall" },
+      },
+      {
+        src: "assets/donut-town/district-cokelat.webp",
+        en: { title: "Distrik Cokelat.", caption: "The office lights stay on until midnight.", alt: "Night in Distrik Cokelat with lit office windows and street lamps" },
+      },
+    ],
+
+    /* Portrait phone screenshots (780 x 1688) */
+    phoneShots: [
+      { src: "assets/donut-town/mobile-game.webp", en: { caption: "Plays on phones too.", alt: "Donut Town on a phone held upright" } },
+      { src: "assets/donut-town/mobile-phone.webp", en: { caption: "A phone, on your phone.", alt: "The in-game phone open on a phone held upright" } },
+    ],
+
+    /* Roadmap, in the order they will be built.
+       status: "next" | "planned" | "later" | "done"
+       Move a feature between milestones by moving its line. */
+    milestones: [
+      {
+        status: "next",
+        en: {
+          title: "Make it yours",
+          why: "You already live a whole life in Donut Town. Next, it should look like your life.",
+          features: ["Customize your character: hair, clothes and more", "Customize your house"],
+        },
+      },
+      {
+        status: "planned",
+        en: {
+          title: "Property",
+          why: "Houses stop being just a place to sleep. Rent before you can buy, rent out what you own, or sell homes for a living.",
+          features: ["Rent property", "Real estate agency"],
+        },
+      },
+      {
+        status: "planned",
+        en: {
+          title: "Your own business",
+          why: "Stop working for someone else. Open a shop, hire your neighbours, and put your savings to work.",
+          features: ["Open up a business", "Stock market"],
+        },
+      },
+      {
+        status: "later",
+        en: {
+          title: "Beyond the town",
+          why: "Run for office and change how Donut Town works, or pack a bag and see what the next town over is like.",
+          features: ["Become a politician and change town policy", "Travel to another town"],
+        },
+      },
+    ],
+  },
 };
