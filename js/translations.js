@@ -16,8 +16,8 @@
 window.HD_TRANSLATIONS = {
   id: {
     meta: {
-      title: "MAGICION · Holy Doughnut Studio",
-      description: "MAGICION, game aksi mantra kartu dari Holy Doughnut Studio. Segera hadir di Android.",
+      title: "Holy Doughnut Studio",
+      description: "Holy Doughnut Studio, studio game indie dari Indonesia. Pembuat MAGICION dan Donut Town.",
       logoAlt: "Logo Holy Doughnut Studio",
     },
     nav: {
@@ -140,8 +140,8 @@ window.HD_TRANSLATIONS = {
 
   en: {
     meta: {
-      title: "MAGICION · Holy Doughnut Studio",
-      description: "MAGICION, an action card-spell game by Holy Doughnut Studio. Coming soon to Android.",
+      title: "Holy Doughnut Studio",
+      description: "Holy Doughnut Studio, an indie game studio from Indonesia. Makers of MAGICION and Donut Town.",
       logoAlt: "Holy Doughnut Studio logo",
     },
     nav: {
