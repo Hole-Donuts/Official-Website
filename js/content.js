@@ -205,7 +205,7 @@ window.HD_CONTENT = {
        2. Set playUrl to "donut-town/index.html".
        While it is empty "", the section shows a "coming soon" screen instead.
        Run the build through tools/protect-game.js first, like MAGICION. */
-    playUrl: "",
+    playUrl: "donut-town/index.html",
 
     keyArt: {
       src: "assets/donut-town/key-art.webp",
