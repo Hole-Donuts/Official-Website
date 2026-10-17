@@ -4,7 +4,8 @@
    Contents:
      1. Design tokens (colors, fonts): change the look here
      2. Base & helpers
-     3. Navigation
+     3. Navigation (incl. game tabs)
+     3b. Game switcher: panels sliding sideways
      4. Hero: key art, pitch, facts
      5. Section headings & screenshots
      6. Pillars (playing cards) & reaction recipes
@@ -320,6 +321,145 @@ p {
 .language-switch:hover {
   background: var(--cyan);
   color: var(--black);
+}
+
+
+/* Game tabs in the nav: MAGICION | Donut Town */
+.game-tabs {
+  display: flex;
+  gap: 4px;
+  padding: 3px;
+  border: 2px solid var(--white);
+  border-radius: 999px;
+}
+
+.game-tab {
+  padding: 5px 14px;
+  border-radius: 999px;
+  color: var(--white-dim);
+  font-family: var(--font-pixel);
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background 0.2s, color 0.2s;
+}
+
+.game-tab:hover {
+  color: var(--white);
+}
+
+.game-tab.active[data-game-tab="magicion"] {
+  background: var(--gold);
+  color: var(--sky);
+}
+
+.game-tab.active[data-game-tab="donut-town"] {
+  background: var(--dt-glaze);
+  color: #fff;
+}
+
+
+/* 3b. Game switcher ---------------------------------------------------- */
+/* All game panels sit side by side on one track; the track slides so
+   one panel fills the screen. #games is only as tall as that panel
+   (height set by js/main.js), overflow: clip hides the rest. */
+.games {
+  overflow: clip;
+  transition: height 0.45s ease;
+}
+
+.games-track {
+  display: flex;
+  align-items: flex-start;
+  transition: transform 0.55s cubic-bezier(0.22, 0.8, 0.24, 1);
+}
+
+.game-panel {
+  flex: 0 0 100%;
+  min-width: 0;
+}
+
+/* #links land below the sticky nav */
+[id] {
+  scroll-margin-top: 96px;
+}
+
+/* "Our other game" card at the end of each panel */
+.next-game {
+  display: grid;
+  grid-template-columns: 140px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 18px;
+  margin-block: 0 72px;
+  padding: 12px 22px 12px 12px;
+  border-radius: 16px;
+  text-decoration: none;
+  transition: transform 0.15s;
+}
+
+.next-game:hover {
+  transform: translateY(-3px);
+}
+
+.next-game img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 9;
+  border-radius: 10px;
+}
+
+.next-game-text {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.next-game-label {
+  font-family: var(--font-pixel);
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0.75;
+}
+
+.next-game b {
+  font-size: 1.6rem;
+  line-height: 1.1;
+}
+
+.next-game-arrow {
+  font-size: 2rem;
+  line-height: 1;
+}
+
+/* in MAGICION: night sky card pointing to Donut Town */
+#magicion .next-game {
+  border: 3px solid var(--dt-glaze);
+  background: var(--sky-2);
+  color: var(--white);
+}
+
+#magicion .next-game b {
+  font-family: var(--font-dt);
+  font-weight: 800;
+  color: #ff8fb4;
+}
+
+/* in Donut Town: cream card pointing back to MAGICION */
+.dt .next-game {
+  margin-block: 48px 0;
+  border: 3px solid var(--dt-ink);
+  background: var(--sky);
+  color: var(--white);
+  box-shadow: 0 5px 0 var(--dt-ink);
+}
+
+.dt .next-game b {
+  font-family: var(--font-game);
+  font-weight: 400;
+  color: var(--gold);
 }
 
 
@@ -1356,6 +1496,25 @@ p {
 @media (max-width: 600px) {
   .dt-phones {
     gap: 16px;
+  }
+
+  /* nav: logo + game tabs only */
+  .brand-name {
+    display: none;
+  }
+
+  .game-tab {
+    padding: 5px 10px;
+    font-size: 0.66rem;
+  }
+
+  .next-game {
+    grid-template-columns: 96px minmax(0, 1fr) auto;
+    gap: 12px;
+  }
+
+  .next-game b {
+    font-size: 1.25rem;
   }
 
   .nav ul {

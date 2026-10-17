@@ -28,6 +28,8 @@ window.HD_TRANSLATIONS = {
       bestiary: "Bestiary",
       bosses: "Bos",
       donutTown: "Donut Town",
+      dtGallery: "Galeri",
+      dtRoadmap: "Roadmap",
       contact: "Kontak",
       switchTo: "EN",
       switchLabel: "Switch to English",
@@ -118,6 +120,10 @@ window.HD_TRANSLATIONS = {
       milestone: "Milestone {value}",
       status: { next: "Berikutnya", planned: "Direncanakan", later: "Nanti", done: "Selesai" },
     },
+    switcher: {
+      label: "Game kami",
+      other: "Game kami yang lain",
+    },
     footer: {
       note: "dibuat sambil ngemil, beneran.",
     },
@@ -137,6 +143,8 @@ window.HD_TRANSLATIONS = {
       bestiary: "Bestiary",
       bosses: "Bosses",
       donutTown: "Donut Town",
+      dtGallery: "Gallery",
+      dtRoadmap: "Roadmap",
       contact: "Contact",
       switchTo: "ID",
       switchLabel: "Ganti ke Bahasa Indonesia",
@@ -226,6 +234,10 @@ window.HD_TRANSLATIONS = {
       roadmapIntro: "Features we're building next, in the order we plan to ship them. Plans can change as we playtest.",
       milestone: "Milestone {value}",
       status: { next: "Next up", planned: "Planned", later: "Later", done: "Done" },
+    },
+    switcher: {
+      label: "Our games",
+      other: "Our other game",
     },
     footer: {
       note: "made while snacking. really.",

@@ -36,22 +36,38 @@
     <div class="wrap">
       <a class="brand" href="#top">
         <img src="assets/logo.png" alt="" width="451" height="842">
-        Holy Doughnut
+        <span class="brand-name">Holy Doughnut</span>
       </a>
+      <!-- Game switcher: slides the page between the two games (js/main.js, section 8c) -->
+      <div class="game-tabs" role="tablist" data-i18n-aria="switcher.label">
+        <a class="game-tab" role="tab" href="#magicion" data-game-tab="magicion">MAGICION</a>
+        <a class="game-tab" role="tab" href="#donut-town" data-game-tab="donut-town">Donut Town</a>
+      </div>
       <div class="nav-right">
+        <!-- data-game: link only shows while that game is on screen -->
         <ul>
-          <li><a class="nav-link nav-play" href="#play" data-i18n="nav.play"></a></li>
-          <li><a class="nav-link" href="#gameplay" data-i18n="nav.gameplay"></a></li>
-          <li><a class="nav-link" href="#loot" data-i18n="nav.loot"></a></li>
-          <li><a class="nav-link" href="#bestiary" data-i18n="nav.bestiary"></a></li>
-          <li><a class="nav-link" href="#bosses" data-i18n="nav.bosses"></a></li>
-          <li><a class="nav-link nav-donut" href="#donut-town" data-i18n="nav.donutTown"></a></li>
+          <li data-game="magicion"><a class="nav-link nav-play" href="#play" data-i18n="nav.play"></a></li>
+          <li data-game="magicion"><a class="nav-link" href="#gameplay" data-i18n="nav.gameplay"></a></li>
+          <li data-game="magicion"><a class="nav-link" href="#loot" data-i18n="nav.loot"></a></li>
+          <li data-game="magicion"><a class="nav-link" href="#bestiary" data-i18n="nav.bestiary"></a></li>
+          <li data-game="magicion"><a class="nav-link" href="#bosses" data-i18n="nav.bosses"></a></li>
+          <li data-game="donut-town"><a class="nav-link" href="#dt-gallery" data-i18n="nav.dtGallery"></a></li>
+          <li data-game="donut-town"><a class="nav-link" href="#dt-roadmap" data-i18n="nav.dtRoadmap"></a></li>
           <li><a class="nav-link" href="#contact" data-i18n="nav.contact"></a></li>
         </ul>
         <button class="language-switch" id="language-switch" type="button" data-i18n="nav.switchTo" data-i18n-aria="nav.switchLabel"></button>
       </div>
     </div>
   </nav>
+
+  <!-- ============ GAMES: one panel per game, side by side ============
+       Only the active panel is shown; the others wait off to the side.
+       Switching is handled in js/main.js (section 8c). -->
+  <main class="games" id="games">
+  <div class="games-track" id="games-track">
+
+  <!-- ==================== PANEL 1: MAGICION ==================== -->
+  <div class="game-panel" id="magicion" data-game="magicion">
 
   <!-- ============ HERO: key art + summary ============ -->
   <header class="hero" id="top">
@@ -78,7 +94,6 @@
     </div>
   </header>
 
-  <main>
     <!-- ============ PLAY: the browser build, loaded by magicion/embed.js ============ -->
     <section class="section play" id="play">
       <div class="wrap">
@@ -173,8 +188,11 @@
       </div>
     </section>
 
-    <!-- ============ DONUT TOWN: second game (data: DONUT_TOWN in js/content.js) ============ -->
-    <section class="dt" id="donut-town">
+    <div class="wrap"><a class="next-game" data-next-game="donut-town" href="#donut-town"></a></div>
+  </div>
+
+  <!-- ==================== PANEL 2: DONUT TOWN (data: DONUT_TOWN in js/content.js) ==================== -->
+    <section class="game-panel dt" id="donut-town" data-game="donut-town">
       <div class="dt-hero">
         <div class="wrap">
           <p class="dt-eyebrow" data-i18n="donutTown.eyebrow"></p>
@@ -191,7 +209,7 @@
         </div>
       </div>
 
-      <div class="dt-gallery">
+      <div class="dt-gallery" id="dt-gallery">
         <div class="wrap">
           <div class="dt-head">
             <h3 data-i18n="donutTown.galleryTitle"></h3>
@@ -202,16 +220,19 @@
         </div>
       </div>
 
-      <div class="dt-roadmap">
+      <div class="dt-roadmap" id="dt-roadmap">
         <div class="wrap">
           <div class="dt-head">
             <h3 data-i18n="donutTown.roadmapTitle"></h3>
             <p data-i18n="donutTown.roadmapIntro"></p>
           </div>
           <ol class="dt-milestones" id="dt-milestones"></ol>
+          <a class="next-game" data-next-game="magicion" href="#magicion"></a>
         </div>
       </div>
     </section>
+
+  </div>
   </main>
 
   <!-- ============ CONTACT (addresses come from SITE.contact in js/content.js) ============ -->

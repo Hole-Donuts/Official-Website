@@ -13,6 +13,7 @@
      7. Loot, bestiary, bosses
      8. Contact copy buttons
      8b. Donut Town (second game)
+     8c. Game switcher (slides between MAGICION and Donut Town)
      9. Start
    ===================================================================== */
 
@@ -40,6 +41,7 @@
   const state = {
     language: pickStartLanguage(),
     activeCallout: 0,
+    game: "magicion", // game panel on screen, set by showGame() (section 8c)
   };
 
   /* Order: #en / #id in the URL, then the visitor's last choice, then SITE.defaultLanguage */
@@ -436,6 +438,156 @@
   }
 
   /* ---------------------------------------------------------------
+     8c. Game switcher. Each game is a panel inside #games-track; the
+         track slides sideways so one panel fills the screen. Opened
+         by the tabs in the nav, the "other game" cards at the end of
+         each panel, any #link that points inside a panel, or a
+         sideways swipe on phones.
+     --------------------------------------------------------------- */
+  const games = $("#games");
+  const track = $("#games-track");
+  const panels = [...document.querySelectorAll(".game-panel")];
+  const panelIds = panels.map((panel) => panel.dataset.game);
+  const navBar = $(".nav");
+
+  // Card info for the "our other game" links
+  const GAME_CARDS = {
+    "magicion": () => ({ title: GAME.title, art: GAME.images.keyArt }),
+    "donut-town": () => ({ title: DONUT_TOWN.title, art: DONUT_TOWN.keyArt.src }),
+  };
+
+  function navHeight() {
+    return navBar ? navBar.offsetHeight : 0;
+  }
+
+  function activePanel() {
+    return panels[panelIds.indexOf(state.game)] || panels[0];
+  }
+
+  // The container is only as tall as the panel on screen
+  function updateGamesHeight() {
+    games.style.height = `${activePanel().offsetHeight}px`;
+  }
+
+  function scrollToElement(element, smooth) {
+    const top = element.getBoundingClientRect().top + window.scrollY - navHeight() - 8;
+    window.scrollTo({ top: Math.max(0, top), behavior: smooth ? "smooth" : "auto" });
+  }
+
+  function showGame(game, { animate = true, target = null, scroll = true, updateHash = true, track: trackStats = true } = {}) {
+    const index = panelIds.indexOf(game);
+    if (index === -1) return;
+    const changed = state.game !== game;
+    state.game = game;
+
+    if (!animate) track.style.transition = "none";
+    track.style.transform = index ? `translateX(${-index * 100}%)` : "none";
+    if (!animate) {
+      void track.offsetWidth; // apply without animation, then restore it
+      track.style.transition = "";
+    }
+
+    panels.forEach((panel) => {
+      const on = panel.dataset.game === game;
+      panel.inert = !on;
+      panel.setAttribute("aria-hidden", on ? "false" : "true");
+    });
+    document.querySelectorAll("[data-game-tab]").forEach((tab) => {
+      const on = tab.dataset.gameTab === game;
+      tab.classList.toggle("active", on);
+      tab.setAttribute("aria-selected", on ? "true" : "false");
+    });
+    document.querySelectorAll(".nav li[data-game]").forEach((item) => {
+      item.hidden = item.dataset.game !== game;
+    });
+    updateGamesHeight();
+
+    // Bring the new game into view: the requested spot, or the top of the panel
+    if (target) {
+      requestAnimationFrame(() => scrollToElement(target, animate));
+    } else if (scroll && window.scrollY > games.offsetTop - navHeight()) {
+      scrollToElement(games, animate);
+    }
+
+    if (updateHash) history.replaceState(null, "", `#${target ? target.id : game}`);
+    if (changed && trackStats) countEvent(`switch/${game}`, "Switched game");
+  }
+
+  /* #links: open the panel that holds the target first. Returns true when handled. */
+  function followHashLink(id) {
+    const target = id && document.getElementById(id);
+    const panel = target && target.closest(".game-panel");
+    if (!panel) return false; // contact, footer... normal anchor behaviour
+    const isPanel = target === panel;
+    if (panel.dataset.game !== state.game || isPanel) {
+      showGame(panel.dataset.game, { target: isPanel ? null : target });
+      return true;
+    }
+    return false;
+  }
+
+  function renderNextGameCards() {
+    document.querySelectorAll("[data-next-game]").forEach((link) => {
+      const to = link.dataset.nextGame;
+      const from = link.closest(".game-panel").dataset.game;
+      const card = GAME_CARDS[to] && GAME_CARDS[to]();
+      if (!card) return;
+      const arrow = panelIds.indexOf(to) > panelIds.indexOf(from) ? "→" : "←";
+      link.innerHTML = `
+        <img src="${escapeHtml(card.art)}" alt="" width="1920" height="1080" loading="lazy">
+        <span class="next-game-text">
+          <span class="next-game-label">${t("switcher.other")}</span>
+          <b>${escapeHtml(card.title)}</b>
+        </span>
+        <span class="next-game-arrow" aria-hidden="true">${arrow}</span>`;
+    });
+  }
+
+  function setupSwitcher() {
+    // Re-measure when a panel changes height (images loading, window resize)
+    if ("ResizeObserver" in window) {
+      const observer = new ResizeObserver(() => updateGamesHeight());
+      panels.forEach((panel) => observer.observe(panel));
+    } else {
+      window.addEventListener("resize", updateGamesHeight);
+    }
+
+    // Sideways swipe on phones (not inside the game player itself)
+    let swipe = null;
+    games.addEventListener("touchstart", (event) => {
+      const touch = event.touches[0];
+      swipe = event.touches.length === 1 && !event.target.closest("[data-magicion]")
+        ? { x: touch.clientX, y: touch.clientY, time: Date.now() }
+        : null;
+    }, { passive: true });
+    games.addEventListener("touchend", (event) => {
+      if (!swipe) return;
+      const touch = event.changedTouches[0];
+      const dx = touch.clientX - swipe.x;
+      const dy = touch.clientY - swipe.y;
+      const quick = Date.now() - swipe.time < 700;
+      swipe = null;
+      if (!quick || Math.abs(dx) < 70 || Math.abs(dx) < Math.abs(dy) * 1.5) return;
+      const next = panelIds.indexOf(state.game) + (dx < 0 ? 1 : -1);
+      if (next >= 0 && next < panelIds.length) showGame(panelIds[next]);
+    }, { passive: true });
+
+    // Start on the game the link points to (e.g. .../#donut-town or #bestiary).
+    // Links outside the panels (#contact) or no link at all: first game, URL untouched.
+    const target = location.hash && document.getElementById(location.hash.slice(1));
+    const panel = target && target.closest(".game-panel");
+    state.game = panelIds[0];
+    showGame(panel ? panel.dataset.game : panelIds[0], {
+      animate: false,
+      target: panel && target !== panel ? target : null,
+      scroll: false,
+      updateHash: false,
+      track: false,
+    });
+    if (target && !panel) requestAnimationFrame(() => scrollToElement(target, false));
+  }
+
+  /* ---------------------------------------------------------------
      9. Start
      --------------------------------------------------------------- */
   function renderAll() {
@@ -448,10 +600,17 @@
     renderBestiary();
     renderBosses();
     renderDonutTown();
+    renderNextGameCards();
   }
 
   // One click listener for the whole page
   document.addEventListener("click", (event) => {
+    const hashLink = event.target.closest('a[href^="#"]');
+    if (hashLink && followHashLink(hashLink.getAttribute("href").slice(1))) {
+      event.preventDefault();
+      return;
+    }
+
     const callout = event.target.closest("[data-callout]");
     if (callout) return highlightCallout(Number(callout.dataset.callout));
 
@@ -467,4 +626,5 @@
   setupStats();
   setupPlay();
   renderAll();
+  setupSwitcher();
 })();
