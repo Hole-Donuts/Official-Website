@@ -213,6 +213,29 @@
      --------------------------------------------------------------- */
   const play = { loaded: false, lastRun: null, ready: false };
 
+  /* ---------------------------------------------------------------
+     5c. Visitor stats (GoatCounter). Counts page views, plus game
+         events from the player: run started, boss defeated, run ended.
+     --------------------------------------------------------------- */
+  function setupStats() {
+    const code = (SITE.goatcounter || "").trim();
+    if (!code) return;
+    const script = document.createElement("script");
+    script.async = true;
+    script.src = "https://gc.zgo.at/count.js";
+    script.dataset.goatcounter = `https://${code}.goatcounter.com/count`;
+    document.body.appendChild(script);
+  }
+
+  function countEvent(path, title) {
+    if (!SITE.goatcounter || !window.goatcounter || !window.goatcounter.count) return;
+    window.goatcounter.count({ path, title, event: true });
+  }
+
+  function slug(text) {
+    return String(text || "unknown").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+  }
+
   function setupPlay() {
     if (!GAME.playUrl) {
       $("#play").hidden = true;
@@ -224,9 +247,17 @@
       play.ready = true;
       renderPlayStatus();
     });
+    player.addEventListener("magicion:runStart", (event) => {
+      countEvent(`game/run-start/${slug(event.detail.spell)}`, "Run started");
+    });
+    player.addEventListener("magicion:bossDefeated", (event) => {
+      countEvent(`game/boss-defeated/${slug(event.detail.boss)}`, "Boss defeated");
+    });
     player.addEventListener("magicion:runEnd", (event) => {
       play.lastRun = event.detail;
       renderPlayStatus();
+      const run = event.detail;
+      countEvent(`game/run-end/${run.win ? "win" : "loss"}/realm-${run.realm}`, run.win ? "Run won" : "Run lost");
     });
 
     const script = document.createElement("script");
@@ -375,6 +406,7 @@
     }
   });
 
+  setupStats();
   setupPlay();
   renderAll();
 })();

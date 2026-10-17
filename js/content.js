@@ -26,6 +26,9 @@ window.HD_CONTENT = {
     // Language shown on first visit (must be in the list above)
     defaultLanguage: "en",
     studioName: "Holy Doughnut Studio",
+    // GoatCounter site code for visitor stats, e.g. "holydoughnut" for
+    // https://holydoughnut.goatcounter.com. Leave empty "" to turn stats off.
+    goatcounter: "",
     contact: {
       email: "holydoughnut@siteprofree.email",
       discordUrl: "https://discord.gg/nP9xS3Ca9",
