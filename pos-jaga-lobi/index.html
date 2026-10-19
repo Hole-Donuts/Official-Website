@@ -1,0 +1,1302 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0d1115">
+<meta name="description" content="Pos Jaga Lobi: a first-person lobby security desk game for the visitor reception, access card, CCTV and patrol SOP (ISO/IEC 27001 A.7) by Ihsan Mahendra · Holy Doughnut Studio. English and Bahasa Indonesia.">
+<meta name="author" content="Ihsan Mahendra">
+<link rel="icon" type="image/png" sizes="32x32" href="../assets/favicon-32.png">
+<link rel="apple-touch-icon" href="../assets/apple-touch-icon.png">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Pos Jaga Lobi</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=Caveat:wght@500;600&display=swap">
+<style>
+/* Layout: first-person security desk. Dark HUD strip on top, illustrated lobby + desk scene in the middle, action panel with numbered cards at the bottom. Single dark look, by choice. */
+:root{
+  color-scheme:dark;
+  --hud:#0d1115; --panel:#12171c; --card:#1a2128; --card2:#212a33; --line:#2f3a45;
+  --ink:#e9edf0; --mute:#97a3ae;
+  --amber:#f2b33d; --amber-ink:#1b1406;
+  --good:#4cc38a; --bad:#e8604c;
+  --paper:#f3efe6; --paper-ink:#1d2329; --rule:#d9d2c3;
+  --display:'Bricolage Grotesque','IBM Plex Sans',system-ui,sans-serif;
+  --sans:'IBM Plex Sans',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --mono:'IBM Plex Mono',ui-monospace,Menlo,Consolas,monospace;
+  --hand:'Caveat','Segoe Print','Comic Sans MS',cursive;
+}
+html,body{height:100%}
+body{background:var(--hud);color:var(--ink);font-family:var(--sans);overflow:hidden}
+#app{display:grid;grid-template-rows:auto minmax(200px,1fr) auto;height:100%}
+button{font:inherit;color:inherit}
+
+/* HUD */
+.hud{display:flex;flex-wrap:wrap;align-items:center;gap:10px 28px;padding-block:10px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));background:var(--hud);border-bottom:1px solid #1c242c}
+.eyebrow{font:500 11px/1.2 var(--mono);letter-spacing:.12em;color:var(--mute);text-transform:uppercase}
+.hud h1{font:700 19px/1.2 var(--display);margin:3px 0 0;text-wrap:balance}
+.stats{display:flex;gap:22px;margin-left:auto;align-items:center;flex-wrap:wrap}
+.stat .k{font:500 10.5px var(--mono);letter-spacing:.12em;color:var(--mute)}
+.stat .v{font:600 20px/1.25 var(--mono);font-variant-numeric:tabular-nums}
+.pips{display:flex;gap:5px;margin-top:5px;align-items:center}
+.pip{width:15px;height:15px;border-radius:50%;border:2px solid #9aa5b0}
+.pip.on{background:var(--bad);border-color:var(--bad)}
+.pips small{font:500 11px var(--mono);color:var(--bad)}
+.btn{font:600 14px var(--sans);border-radius:6px;padding:10px 16px;border:1px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer}
+.btn:hover{background:var(--card2)}
+.btn.primary{background:var(--amber);color:var(--amber-ink);border-color:var(--amber)}
+.btn.primary:hover{filter:brightness(1.06)}
+.btn.bad{border-color:#7a3a33;color:#ff9c8c}
+.btn[disabled]{opacity:.4;cursor:default}
+.btn:focus-visible,.act:focus-visible,.feed:focus-visible,.mk:focus-visible,.lang button:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
+.lang{display:flex;border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.lang button{background:transparent;border:0;padding:9px 11px;font:600 12px var(--mono);letter-spacing:.06em;color:var(--mute);cursor:pointer}
+.lang button[aria-pressed="true"]{background:var(--card2);color:var(--ink)}
+
+/* Scene */
+.stage{position:relative;min-height:0;background:#232b34;overflow:hidden}
+#scene{width:100%;height:100%;display:block}
+#scene text{font-family:var(--mono)}
+.obj{cursor:pointer;transition:filter .15s}
+.obj:hover,.obj:focus{filter:drop-shadow(0 0 7px rgba(242,179,61,.95));outline:none}
+.obj.attn{animation:attn 1.3s ease-in-out infinite}
+@keyframes attn{0%,100%{filter:drop-shadow(0 0 2px rgba(242,179,61,.3))}50%{filter:drop-shadow(0 0 10px rgba(242,179,61,1))}}
+#visitor{transition:transform 1.1s ease,opacity .45s}
+.blink{animation:blink .8s steps(2) infinite}
+@keyframes blink{50%{opacity:.15}}
+.scan{animation:scan 3s linear infinite}
+@keyframes scan{from{transform:translateY(0)}to{transform:translateY(138px)}}
+.hint{position:absolute;top:8px;left:50%;transform:translateX(-50%);font:500 12px var(--mono);color:var(--amber);letter-spacing:.06em;background:rgba(13,17,21,.72);padding:4px 10px;border-radius:4px;white-space:nowrap;max-width:calc(100% - 32px);overflow:hidden;text-overflow:ellipsis}
+.toasts{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);display:grid;gap:8px;width:min(560px,calc(100% - 32px));z-index:5;pointer-events:none}
+.toast{background:rgba(14,19,23,.96);border:1px solid var(--line);border-left:4px solid var(--mute);border-radius:6px;padding:10px 14px;font-size:13.5px;line-height:1.45;animation:tin .25s ease-out;box-shadow:0 8px 24px rgba(0,0,0,.35)}
+.toast.good{border-left-color:var(--good)}
+.toast.bad{border-left-color:var(--bad)}
+.toast.info{border-left-color:var(--amber)}
+.toast b{display:block;font-size:14px;margin-bottom:2px}
+.toast.bad b{color:#ff9c8c}.toast.good b{color:#7fe0b0}
+@keyframes tin{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+
+/* Bottom panel */
+.panel{background:var(--panel);border-top:1px solid #1c242c;padding-block:12px 14px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:grid;gap:12px}
+.info{display:flex;align-items:flex-start;gap:14px;min-height:44px}
+.tag{font:600 11px var(--mono);letter-spacing:.1em;background:var(--amber);color:var(--amber-ink);padding:5px 8px;border-radius:3px;white-space:nowrap;margin-top:1px}
+.info .txt{min-width:0}
+.info .t{font:600 15px var(--sans)}
+.info .d{color:var(--mute);font-size:13.5px;margin:3px 0 0;max-width:90ch;line-height:1.45}
+.info .keys{margin-left:auto;font:12px var(--mono);color:var(--mute);white-space:nowrap}
+.actions{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px}
+.act{position:relative;display:flex;align-items:center;gap:12px;text-align:left;background:var(--card);border:1px solid var(--line);border-radius:6px;padding:10px 40px 10px 12px;cursor:pointer;min-height:56px}
+.act:hover{border-color:#5a6875;background:var(--card2)}
+.act b{display:block;font-size:14px;font-weight:600}
+.act small{display:block;color:var(--mute);font:12px var(--mono);margin-top:2px}
+.act kbd{position:absolute;top:6px;right:8px;font:11px var(--mono);color:var(--mute);border:1px solid var(--line);border-radius:3px;padding:0 5px}
+.act .chk{position:absolute;bottom:6px;right:8px;font:600 11px var(--mono);color:var(--good)}
+.act.done{border-color:#2f5a46}
+.act.danger b{color:#ff9c8c}
+.act .chip{width:24px;height:34px;border-radius:3px;flex:none;box-shadow:inset 0 -8px 0 rgba(255,255,255,.25)}
+.ico{width:38px;height:30px;flex:none;display:grid;place-items:center}
+.ico svg{width:38px;height:30px}
+.idle{color:var(--mute);font:13px var(--mono);padding:16px 0;grid-column:1/-1}
+
+/* Modals */
+.modal{position:fixed;inset:0;background:rgba(6,9,12,.74);display:grid;place-items:center;z-index:20;padding-block:16px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.sheet{background:var(--panel);border:1px solid var(--line);border-radius:10px;width:min(1000px,100%);max-height:100%;overflow:auto;padding:22px;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+.sheet h2{font:700 25px/1.15 var(--display);margin:6px 0 6px;text-wrap:balance}
+.sheet h3{font:600 15px var(--sans);margin:0 0 6px}
+.sheet p{line-height:1.55;max-width:70ch}
+.lead{color:var(--mute);margin:0 0 16px}
+.eb{font:500 11px var(--mono);letter-spacing:.12em;color:var(--amber);text-transform:uppercase}
+.sheet .row{display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end;margin-top:18px;align-items:center}
+.sheet .row .grow{margin-right:auto}
+.x{float:right;margin-left:12px}
+
+.docgrid{display:grid;grid-template-columns:minmax(0,300px) minmax(0,1fr);gap:16px;align-items:start}
+.ktp{background:linear-gradient(135deg,#c4def0,#8fbfe2);color:#11202c;border-radius:10px;padding:12px;font-size:12px;display:grid;grid-template-columns:minmax(0,1fr) 76px;gap:8px;box-shadow:0 4px 14px rgba(0,0,0,.3)}
+.ktp .h{grid-column:1/-1;font:600 10.5px var(--mono);letter-spacing:.1em;border-bottom:1px solid rgba(17,32,44,.25);padding-bottom:5px}
+.ktp dl{margin:0;display:grid;gap:3px}
+.ktp dt{font:500 9.5px var(--mono);letter-spacing:.06em;opacity:.7;text-transform:uppercase}
+.ktp dd{margin:0 0 3px;font-weight:600;overflow-wrap:anywhere}
+.ktp .foto svg{width:76px;height:90px;border-radius:4px;display:block}
+.compare{display:flex;gap:12px;margin-top:12px;align-items:flex-end}
+.compare figure{margin:0;text-align:center;font:11px var(--mono);color:var(--mute)}
+.compare svg{width:70px;height:82px;border-radius:4px;display:block;margin-bottom:4px}
+.letter{background:var(--paper);color:var(--paper-ink);border-radius:4px;padding:16px 16px 22px;font-size:13px;line-height:1.5;position:relative;min-height:220px;box-shadow:0 4px 14px rgba(0,0,0,.3)}
+.letter .lh{font:600 10.5px var(--mono);letter-spacing:.1em;border-bottom:2px solid var(--paper-ink);padding-bottom:6px;margin-bottom:10px}
+.letter h4{font:700 15px var(--sans);margin:0}
+.letter .no{font:11px var(--mono);color:#5d646b;margin-bottom:8px}
+.letter ul{margin:0 0 10px;padding-left:18px}
+.letter .sig{font:600 26px/1 var(--hand);color:#1f3a7a}
+.letter .signer{font-size:11.5px;color:#4b5259}
+.letter.empty{display:grid;place-items:center;color:#7c8288;font-style:italic}
+.stamp{position:absolute;right:14px;bottom:16px;border:2px solid #b0362b;color:#b0362b;border-radius:50%;width:66px;height:66px;display:grid;place-items:center;font:700 8.5px/1.2 var(--mono);transform:rotate(-14deg);opacity:.75;text-align:center}
+.docgrid .ref{grid-column:1/-1}
+.ref{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:12px;font-size:12.5px;overflow-x:auto;display:grid;gap:8px}
+table{border-collapse:collapse;width:100%}
+th,td{text-align:left;padding:5px 6px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font:500 10px var(--mono);color:var(--mute);letter-spacing:.08em;text-transform:uppercase}
+.acc{font:600 10.5px var(--mono);padding:2px 6px;border-radius:3px;color:#fff;white-space:nowrap}
+
+.book{background:var(--paper);color:var(--paper-ink);border-radius:6px;padding:14px 16px;overflow-x:auto}
+.book table{min-width:640px}
+.book th{color:#6b6458;border-bottom:2px solid #c9c0ae}
+.book td{border-bottom:1px solid var(--rule);font:600 21px/1.1 var(--hand);color:#1f3a7a;padding:7px 6px}
+.book td.jam{font:12px var(--mono);color:var(--paper-ink)}
+.book tr.cur{background:rgba(242,179,61,.18)}
+.book td.miss{outline:2px dashed var(--bad);outline-offset:-3px;font:12px var(--mono);color:#b0362b}
+.book .empty{font:13px var(--sans);color:#7c8288;font-style:italic}
+
+.call{display:grid;gap:12px;font-size:15px}
+.dial{font:13px var(--mono);color:var(--mute)}
+.say{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:14px 16px;line-height:1.55}
+.ring{font:13px var(--mono);color:var(--amber)}
+
+.cctv{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:14px;align-items:start}
+.big{background:#000;border-radius:6px;overflow:hidden;border:1px solid var(--line)}
+.big canvas,.feed canvas{display:block;width:100%;height:auto}
+.bigcap{font:12px var(--mono);color:var(--mute);margin-top:8px}
+.thumbs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.feed{position:relative;border:2px solid transparent;border-radius:5px;cursor:pointer;background:#000;padding:0;overflow:hidden}
+.feed:hover{border-color:#5a6875}
+.feed.sel{border-color:var(--amber)}
+.report{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--amber);border-radius:6px;padding:12px 14px;margin-bottom:14px;line-height:1.5}
+
+.patrol{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:16px;align-items:start}
+.plan{background:#0f1418;border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.plan svg{display:block;width:100%;height:auto}
+.mk{cursor:pointer}
+.detail{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:14px;display:grid;gap:10px}
+.detail svg{width:100%;height:auto;border-radius:4px;display:block;background:#2a323a}
+.crit{font-size:13px;color:var(--mute);line-height:1.5}
+.crit b{color:var(--ink)}
+
+/* Briefing */
+.brief{min-height:360px}
+.flow{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin:14px 0}
+.flow div{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:12px;font-size:13px;line-height:1.45;position:relative}
+.flow div b{display:block;font-size:14px;margin:4px 0}
+.flow .n{font:600 11px var(--mono);color:var(--amber)}
+.tiers{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:12px}
+.tier{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:12px;font-size:13px;line-height:1.45;display:grid;gap:6px;align-content:start}
+.tier .bar{height:6px;border-radius:3px}
+.tier dt{font:500 10px var(--mono);letter-spacing:.08em;color:var(--mute);text-transform:uppercase}
+.tier dd{margin:0}
+.tier dl{margin:0;display:grid;gap:3px}
+.list{margin:10px 0;padding-left:20px;line-height:1.7}
+.cols{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:12px}
+.cols>div{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:14px;line-height:1.5;font-size:14px}
+.iso{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:12px 0}
+.iso div{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:10px 12px;font-size:13.5px}
+.iso code{font:600 12px var(--mono);color:var(--amber);display:block}
+.dots{display:flex;gap:6px}
+.dots i{width:8px;height:8px;border-radius:50%;background:var(--line)}
+.dots i.on{background:var(--amber)}
+
+/* Report */
+.kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:14px 0}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:12px}
+.kpi .k{font:500 10.5px var(--mono);letter-spacing:.1em;color:var(--mute);text-transform:uppercase}
+.kpi .v{font:600 24px var(--mono);font-variant-numeric:tabular-nums;margin-top:4px}
+.grade{display:inline-block;font:600 12px var(--mono);letter-spacing:.08em;padding:4px 10px;border-radius:4px;margin-top:4px}
+.vlist{display:grid;gap:8px;margin-top:8px}
+.vlist div{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--bad);border-radius:6px;padding:10px 12px;font-size:13.5px;line-height:1.5}
+.vlist div b{display:block}
+.vlist .ok{border-left-color:var(--good)}
+
+@media (max-width:820px){
+  .docgrid,.cctv,.patrol,.cols,.iso{grid-template-columns:minmax(0,1fr)}
+  .flow{grid-template-columns:minmax(0,1fr)}
+  .tiers,.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .stats{gap:14px;margin-left:0}
+  .info .keys{display:none}
+  .actions{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .act{padding-right:34px}
+}
+@media (max-width:440px){.tiers{grid-template-columns:minmax(0,1fr)}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+</head>
+<body>
+<div id="app">
+  <header class="hud">
+    <div>
+      <div class="eyebrow" data-t="SOP-SEC-03 · Penerimaan Tamu &amp; Patroli|SOP-SEC-03 · Visitor Reception &amp; Patrol">SOP-SEC-03 · Penerimaan Tamu &amp; Patroli</div>
+      <h1 id="dayTitle">Hari 1 · Senin, 19 Okt 2026</h1>
+    </div>
+    <div class="stats">
+      <div class="stat"><div class="k" data-t="JAM|TIME">JAM</div><div class="v" id="hClock">08:00</div></div>
+      <div class="stat"><div class="k" data-t="TAMU|VISITORS">TAMU</div><div class="v" id="hGuests">0/4</div></div>
+      <div class="stat"><div class="k" data-t="PELANGGARAN|VIOLATIONS">PELANGGARAN</div><div class="pips" id="hViol"></div></div>
+      <div class="lang" role="group" aria-label="Bahasa / Language">
+        <button type="button" data-lang="id" aria-pressed="true">ID</button>
+        <button type="button" data-lang="en" aria-pressed="false">EN</button>
+      </div>
+      <button class="btn primary" id="btnSop" type="button" data-t="Briefing SOP|SOP Briefing">Briefing SOP</button>
+    </div>
+  </header>
+
+  <main class="stage">
+    <svg id="scene" viewBox="0 0 1280 540" preserveAspectRatio="xMidYMid meet" aria-label="Security desk">
+      <defs>
+        <linearGradient id="wallG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2f3944"/><stop offset="1" stop-color="#232b34"/></linearGradient>
+        <linearGradient id="skyG" x1="0" y1="0" x2="0" y2="1"><stop id="sk1" offset="0" stop-color="#8fb7d9"/><stop id="sk2" offset="1" stop-color="#d9e6ee"/></linearGradient>
+        <linearGradient id="woodG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#a9693e"/><stop offset="1" stop-color="#8a522e"/></linearGradient>
+      </defs>
+      <rect width="1280" height="300" fill="url(#wallG)"/>
+      <rect y="286" width="1280" height="14" fill="#1a2027"/>
+
+      <!-- entrance door -->
+      <text x="465" y="44" text-anchor="middle" font-size="12" letter-spacing="3" fill="#8a97a5">NUSANTARA DATA PRIMA</text>
+      <rect x="358" y="58" width="214" height="242" fill="#161c22"/>
+      <rect x="368" y="68" width="94" height="228" fill="url(#skyG)"/>
+      <rect x="468" y="68" width="94" height="228" fill="url(#skyG)"/>
+      <g fill="#2b3542" opacity=".85">
+        <rect x="368" y="210" width="26" height="86"/><rect x="398" y="186" width="22" height="110"/><rect x="424" y="230" width="38" height="66"/>
+        <rect x="468" y="220" width="30" height="76"/><rect x="502" y="196" width="24" height="100"/><rect x="530" y="238" width="32" height="58"/>
+      </g>
+      <rect x="452" y="160" width="5" height="44" rx="2" fill="#9aa5b0"/><rect x="473" y="160" width="5" height="44" rx="2" fill="#9aa5b0"/>
+      <rect x="418" y="118" width="94" height="16" rx="2" fill="rgba(13,17,21,.55)"/>
+      <text x="465" y="130" text-anchor="middle" font-size="9" fill="#e9edf0" data-t="TAMU LAPOR|VISITORS REPORT">TAMU LAPOR</text>
+
+      <!-- wall clock -->
+      <g transform="translate(260 88)">
+        <circle r="34" fill="#e9e4d8" stroke="#141a20" stroke-width="5"/>
+        <g stroke="#2a2f35" stroke-width="2"><path d="M0-27v5M0 22v5M-27 0h5M22 0h5"/></g>
+        <line id="hHand" x1="0" y1="0" x2="0" y2="-15" stroke="#141a20" stroke-width="4" stroke-linecap="round"/>
+        <line id="mHand" x1="0" y1="0" x2="0" y2="-24" stroke="#141a20" stroke-width="2.5" stroke-linecap="round"/>
+        <circle r="3" fill="#c94a3c"/>
+      </g>
+
+      <!-- gate -->
+      <text x="1160" y="188" text-anchor="middle" font-size="10" letter-spacing="2" fill="#8a97a5" data-t="AKSES KARTU|CARD ACCESS">AKSES KARTU</text>
+      <rect x="1088" y="204" width="34" height="96" rx="4" fill="#3a4652"/>
+      <rect x="1198" y="204" width="34" height="96" rx="4" fill="#3a4652"/>
+      <rect x="1122" y="236" width="76" height="30" fill="#9fb3c3" opacity=".35"/>
+      <circle class="gl" cx="1105" cy="218" r="5" fill="#e8604c"/>
+      <circle class="gl" cx="1215" cy="218" r="5" fill="#e8604c"/>
+      <!-- plant -->
+      <path d="M1005 300 l-6-46 h44 l-6 46z" fill="#c8693c"/>
+      <path d="M1020 254 C1000 220 990 210 985 196 C1005 205 1015 225 1020 254 M1020 254 C1022 220 1030 200 1036 186 C1040 210 1030 235 1020 254 M1020 254 C1040 232 1055 228 1064 226 C1055 240 1040 250 1020 254" fill="#4c9a64"/>
+
+      <!-- SOP note -->
+      <g id="objSop" class="obj" tabindex="0" role="button" aria-label="SOP-SEC-03" data-obj="sop" transform="rotate(-3 100 75)">
+        <rect x="30" y="26" width="160" height="104" fill="#f1ede4"/>
+        <circle cx="108" cy="30" r="6" fill="#d9483b"/>
+        <text x="42" y="52" font-size="9" fill="#6b6458">SOP-SEC-03</text>
+        <text x="42" y="74" font-size="17" font-weight="700" fill="#1d2329" style="font-family:var(--display)" data-t="Terima Tamu|Visitor Intake">Terima Tamu</text>
+        <rect x="42" y="84" width="130" height="4" fill="#b9c0c8"/><rect x="42" y="93" width="130" height="4" fill="#b9c0c8"/><rect x="42" y="102" width="100" height="4" fill="#b9c0c8"/>
+        <text x="42" y="122" font-size="8.5" fill="#6b6458" data-t="Ketuk untuk baca|Tap to read">Ketuk untuk baca</text>
+      </g>
+
+      <g id="visitor" style="opacity:0"></g>
+      <g id="bubble"></g>
+
+      <!-- desk -->
+      <rect y="300" width="1280" height="225" fill="url(#woodG)"/>
+      <rect y="300" width="1280" height="3" fill="#c07c4c"/>
+      <g stroke="#7a4626" stroke-width="1.5" opacity=".5"><path d="M0 345H1280M0 392H1280M0 440H1280M0 488H1280"/></g>
+      <rect y="520" width="1280" height="20" fill="#5a3520"/>
+
+      <!-- CCTV monitor -->
+      <g id="objCctv" class="obj" tabindex="0" role="button" aria-label="CCTV" data-obj="cctv">
+        <text x="165" y="160" text-anchor="middle" font-size="10" letter-spacing="1.5" fill="#f2b33d" data-t="CCTV · 6 KAMERA|CCTV · 6 CAMERAS">CCTV · 6 KAMERA</text>
+        <rect x="150" y="330" width="30" height="28" fill="#1a1f24"/>
+        <ellipse cx="165" cy="360" rx="60" ry="9" fill="#1a1f24"/>
+        <rect x="30" y="166" width="270" height="168" rx="8" fill="#111518"/>
+        <rect x="40" y="176" width="250" height="140" fill="#0a0e0c"/>
+        <g fill="#1d2a25">
+          <rect x="44" y="180" width="119" height="64"/><rect x="167" y="180" width="119" height="64"/>
+          <rect x="44" y="248" width="119" height="64"/><rect x="167" y="248" width="119" height="64"/>
+        </g>
+        <g fill="#33463f">
+          <rect x="60" y="214" width="34" height="18"/><rect x="104" y="220" width="40" height="16"/>
+          <rect x="210" y="190" width="30" height="50"/>
+          <path d="M44 312 L84 268 L124 268 L163 312Z"/>
+          <rect x="190" y="280" width="70" height="14"/>
+        </g>
+        <circle cx="54" cy="188" r="3" fill="#e8604c" class="blink"/>
+        <g id="monAlert" style="display:none">
+          <rect x="40" y="290" width="250" height="26" fill="#7a1f17"/>
+          <text x="165" y="307" text-anchor="middle" font-size="11" font-weight="600" fill="#ffd9d2" class="blink" data-t="LAPORAN MASUK · BUKA CCTV|INCOMING REPORT · OPEN CCTV">LAPORAN MASUK · BUKA CCTV</text>
+        </g>
+        <g><rect class="scan" x="40" y="176" width="250" height="2" fill="rgba(140,220,180,.18)"/></g>
+        <circle cx="282" cy="326" r="2.5" fill="#4cc38a"/>
+      </g>
+
+      <!-- patrol clipboard + keys -->
+      <g id="objPatrol" class="obj" tabindex="0" role="button" aria-label="Patrol" data-obj="patrol">
+        <g transform="rotate(-6 95 465)">
+          <rect x="40" y="410" width="112" height="104" rx="4" fill="#6b4a2c"/>
+          <rect x="48" y="420" width="96" height="90" fill="#f3efe6"/>
+          <rect x="78" y="404" width="36" height="12" rx="3" fill="#9aa5b0"/>
+          <text x="54" y="438" font-size="8.5" fill="#1d2329" data-t="PATROLI · 5 TITIK|PATROL · 5 POINTS">PATROLI · 5 TITIK</text>
+          <g fill="none" stroke="#7c8288" stroke-width="1.3"><rect x="55" y="447" width="7" height="7"/><rect x="55" y="461" width="7" height="7"/><rect x="55" y="475" width="7" height="7"/><rect x="55" y="489" width="7" height="7"/></g>
+          <g fill="#b9c0c8"><rect x="67" y="449" width="60" height="3"/><rect x="67" y="463" width="52" height="3"/><rect x="67" y="477" width="62" height="3"/><rect x="67" y="491" width="48" height="3"/></g>
+        </g>
+        <g transform="translate(186 478) rotate(-20)">
+          <circle r="11" fill="none" stroke="#d9a83a" stroke-width="3"/>
+          <rect x="9" y="-3" width="34" height="6" rx="2" fill="#d9a83a"/><rect x="34" y="2" width="4" height="7" fill="#d9a83a"/><rect x="40" y="2" width="3" height="5" fill="#d9a83a"/>
+        </g>
+      </g>
+
+      <!-- mug -->
+      <g transform="translate(252 388)"><ellipse rx="20" ry="7" cy="22" fill="rgba(0,0,0,.18)"/><rect x="-17" y="-18" width="34" height="38" rx="4" fill="#e9e4d8"/><ellipse cy="-18" rx="17" ry="6" fill="#3d2a1e"/><path d="M17-8 q12 0 12 10 t-12 10" fill="none" stroke="#e9e4d8" stroke-width="5"/></g>
+
+      <!-- guest book -->
+      <g id="objBook" class="obj" tabindex="0" role="button" aria-label="Guest book" data-obj="book">
+        <path d="M296 396 L412 388 L524 396 L520 488 L412 482 L300 488Z" fill="#2f5d50"/>
+        <path d="M304 398 L410 392 L410 476 L306 482Z" fill="#f3efe6"/>
+        <path d="M414 392 L516 398 L514 482 L414 476Z" fill="#ebe6da"/>
+        <g stroke="#c9c0ae" stroke-width="1.5"><path d="M314 412 L400 408M314 426 L400 422M314 440 L400 436M314 454 L400 450M314 468 L400 464M424 410 L506 414M424 424 L506 428M424 438 L506 442M424 452 L506 456"/></g>
+        <g stroke="#1f3a7a" stroke-width="1.6" fill="none"><path d="M318 420 q6-6 10 0 t10 0 t12-2M318 434 q8-5 12 0 t14 0M428 418 q6-6 12 0 t10 0"/></g>
+        <rect x="376" y="486" width="72" height="16" rx="2" fill="#24473d"/>
+        <text x="412" y="498" text-anchor="middle" font-size="9" fill="#e9e4d8" data-t="BUKU TAMU|GUEST BOOK">BUKU TAMU</text>
+        <rect x="528" y="402" width="6" height="74" rx="3" fill="#1d2b44" transform="rotate(14 531 440)"/>
+      </g>
+
+      <!-- visitor documents -->
+      <g id="objDocs" class="obj" tabindex="0" role="button" aria-label="Documents" data-obj="docs" style="display:none">
+        <rect x="556" y="384" width="216" height="92" rx="6" fill="rgba(20,25,30,.35)"/>
+        <g transform="rotate(-5 620 425)">
+          <rect x="574" y="398" width="92" height="58" rx="5" fill="#a9cdea"/>
+          <rect x="582" y="408" width="24" height="30" rx="2" fill="#c8483d"/>
+          <g fill="#4f6f8a"><rect x="612" y="410" width="44" height="4"/><rect x="612" y="420" width="38" height="4"/><rect x="612" y="430" width="46" height="4"/></g>
+        </g>
+        <g id="docLetter" transform="rotate(5 715 425)">
+          <rect x="676" y="374" width="82" height="104" fill="#f4f1ea"/>
+          <g fill="#b9c0c8"><rect x="686" y="386" width="60" height="4"/><rect x="686" y="400" width="52" height="3"/><rect x="686" y="410" width="60" height="3"/><rect x="686" y="420" width="44" height="3"/><rect x="686" y="430" width="56" height="3"/></g>
+          <circle cx="738" cy="458" r="11" fill="none" stroke="#b0362b" stroke-width="2" opacity=".7"/>
+        </g>
+      </g>
+
+      <!-- access card rack -->
+      <g id="objCards" class="obj" tabindex="0" role="button" aria-label="Access cards" data-obj="cards">
+        <rect x="804" y="332" width="30" height="46" rx="3" fill="#3fa66b"/>
+        <rect x="840" y="328" width="30" height="50" rx="3" fill="#3d7fd1"/>
+        <rect x="876" y="332" width="30" height="46" rx="3" fill="#c94a3c"/>
+        <rect x="912" y="328" width="30" height="50" rx="3" fill="#e98a2b"/>
+        <g fill="rgba(255,255,255,.55)"><rect x="811" y="340" width="16" height="4"/><rect x="847" y="336" width="16" height="4"/><rect x="883" y="340" width="16" height="4"/><rect x="919" y="336" width="16" height="4"/></g>
+        <rect x="796" y="366" width="154" height="44" rx="6" fill="#20272d"/>
+        <text x="873" y="392" text-anchor="middle" font-size="9.5" letter-spacing="1.2" fill="#c9d2da" data-t="KARTU AKSES|ACCESS CARDS">KARTU AKSES</text>
+      </g>
+
+      <!-- phone -->
+      <g id="objPhone" class="obj" tabindex="0" role="button" aria-label="Phone" data-obj="phone">
+        <path d="M982 368 Q984 352 1000 350 L1074 350 Q1090 352 1092 368 L1098 420 L976 420Z" fill="#1d2328"/>
+        <rect x="984" y="338" width="106" height="22" rx="11" fill="#2a3238"/>
+        <rect x="1000" y="372" width="34" height="12" rx="2" fill="#4c8a6a"/>
+        <g fill="#5b6670"><circle cx="1048" cy="378" r="3"/><circle cx="1060" cy="378" r="3"/><circle cx="1072" cy="378" r="3"/><circle cx="1048" cy="390" r="3"/><circle cx="1060" cy="390" r="3"/><circle cx="1072" cy="390" r="3"/><circle cx="1048" cy="402" r="3"/><circle cx="1060" cy="402" r="3"/><circle cx="1072" cy="402" r="3"/></g>
+        <text x="1017" y="404" text-anchor="middle" font-size="8" fill="#9aa5b0">EXT</text>
+      </g>
+
+      <!-- radio -->
+      <g id="objHt" class="obj" tabindex="0" role="button" aria-label="Radio" data-obj="ht">
+        <rect x="1138" y="288" width="7" height="36" rx="3" fill="#15191d"/>
+        <rect x="1124" y="318" width="44" height="86" rx="7" fill="#1a1f24"/>
+        <circle id="htLed" cx="1158" cy="330" r="4" fill="#3b4652"/>
+        <g stroke="#323b44" stroke-width="2"><path d="M1132 346h28M1132 354h28M1132 362h28M1132 370h28"/></g>
+        <text x="1146" y="394" text-anchor="middle" font-size="8" fill="#9aa5b0" data-t="HT|RADIO">HT</text>
+      </g>
+
+      <!-- appointment list -->
+      <g id="objList" class="obj" tabindex="0" role="button" aria-label="Appointments" data-obj="list" transform="rotate(-7 1115 485)">
+        <rect x="1024" y="430" width="180" height="130" rx="4" fill="#6b4a2c"/>
+        <rect x="1032" y="440" width="164" height="120" fill="#f3efe6"/>
+        <rect x="1090" y="424" width="48" height="12" rx="3" fill="#9aa5b0"/>
+        <text x="1042" y="460" font-size="10" font-weight="600" fill="#1d2329" data-t="JANJI TEMU · SPK|APPOINTMENTS · WO">JANJI TEMU · SPK</text>
+        <g fill="#b9c0c8"><rect x="1042" y="470" width="140" height="3"/><rect x="1042" y="480" width="120" height="3"/><rect x="1042" y="490" width="134" height="3"/><rect x="1042" y="500" width="110" height="3"/><rect x="1042" y="510" width="128" height="3"/></g>
+        <rect x="1150" y="476" width="30" height="8" rx="2" fill="#3d7fd1" opacity=".7"/>
+      </g>
+    </svg>
+    <div class="hint" id="hint"></div>
+    <div class="toasts" id="toasts" aria-live="polite"></div>
+  </main>
+
+  <footer class="panel">
+    <div class="info">
+      <span class="tag" id="iTag">POS</span>
+      <div class="txt"><div class="t" id="iTitle"></div><p class="d" id="iDesc"></p></div>
+      <span class="keys" id="iKeys"></span>
+    </div>
+    <div class="actions" id="actions"></div>
+  </footer>
+</div>
+
+<div id="modalRoot"></div>
+
+<script>
+const $ = s => document.querySelector(s);
+const fmt = m => String(Math.floor(m/60)).padStart(2,'0')+':'+String(m%60).padStart(2,'0');
+
+/* ---------- Language ---------- */
+let LANG=(navigator.language||'').toLowerCase().startsWith('id')?'id':'en';
+try{ const s=localStorage.getItem('posjaga-lang'); if(s==='en'||s==='id') LANG=s; }catch(e){}
+const t=(id,en)=>LANG==='en'?en:id;                  // inline UI strings
+const tx=x=>Array.isArray(x)?x[LANG==='en'?1:0]:x;   // data values: [id,en] pair or plain string
+
+/* ---------- Reference data ---------- */
+const TIERS = {
+  magang:     {label:['Magang','Intern'], color:'#3fa66b', sub:['Hijau · area kerja divisi','Green · division work area']},
+  rendah:     {label:['Tamu · Akses rendah','Visitor · Low access'], color:'#3d7fd1', sub:['Biru · lobi & ruang rapat','Blue · lobby & meeting rooms']},
+  tinggi:     {label:['Tamu · Akses tinggi','Visitor · High access'], color:'#c94a3c', sub:['Merah · termasuk area terbatas','Red · incl. restricted areas']},
+  kontraktor: {label:['Pekerja / kontraktor','Worker / contractor'], color:'#e98a2b', sub:['Oranye · area renovasi saja','Orange · renovation area only']}
+};
+const ACC = {magang:[['Magang','Intern'],'#3fa66b'], rendah:[['Rendah','Low'],'#3d7fd1'], tinggi:[['Tinggi','High'],'#c94a3c']};
+const CAMS = {
+  c1:['CAM-01 · Parkir Basement','CAM-01 · Basement Parking'], c2:['CAM-02 · Pintu Samping','CAM-02 · Side Door'], c3:['CAM-03 · Koridor Server','CAM-03 · Server Corridor'],
+  c4:['CAM-04 · Pintu Darurat Lt.2','CAM-04 · Fire Exit 2F'], c5:['CAM-05 · Renovasi Lt.3','CAM-05 · Renovation 3F'], c6:['CAM-06 · Lobi','CAM-06 · Lobby']
+};
+const POINTS = {
+  arsip:   {name:['Ruang Arsip','Archive Room'], crit:['Lemari arsip terkunci, tidak ada dokumen tertinggal di luar lemari.','Archive cabinets locked, no documents left outside them.'], issue:['Laci arsip berisi map RAHASIA terbuka. Amankan, kunci, dan laporkan ke pemilik dokumen.','An archive drawer with CONFIDENTIAL folders is open. Secure it, lock it, and report to the document owner.'], x:105, y:78},
+  server:  {name:['Ruang Server','Server Room'], crit:['Pintu tertutup rapat, reader kartu menyala, tidak ada pengganjal.','Door fully closed, card reader on, nothing propping it open.'], issue:['Pintu ruang server diganjal kursi. Tutup, catat di laporan patroli, dan laporkan ke TI.','The server room door is propped open with a chair. Close it, log it in the patrol report, and notify IT.'], x:487, y:78},
+  darurat: {name:['Pintu Darurat Lt.1','Fire Exit 1F'], crit:['Jalur evakuasi bebas hambatan, tanda EXIT menyala, pintu tertutup.','Evacuation route clear, EXIT sign lit, door closed.'], issue:['Kardus menghalangi pintu darurat. Minta pemilik barang memindahkan sekarang juga.','Boxes are blocking the fire exit. Have the owner move them immediately.'], x:92, y:248},
+  apar:    {name:['APAR Lobi','Lobby Extinguisher'], crit:['Jarum tekanan di zona hijau, segel dan pin utuh.','Pressure needle in the green zone, seal and pin intact.'], issue:['Jarum tekanan APAR di zona merah. Laporkan ke GA untuk isi ulang/penggantian.','The extinguisher pressure is in the red zone. Report to GA for refill or replacement.'], x:300, y:248},
+  panel:   {name:['Panel Listrik Utama','Main Electrical Panel'], crit:['Pintu panel tertutup dan tergembok.','Panel door closed and padlocked.'], issue:['Gembok panel listrik terbuka. Kunci kembali dan laporkan ke GA/teknisi gedung.','The electrical panel padlock is open. Lock it again and report to GA / the building technician.'], x:505, y:248}
+};
+const MISS_LBL = {paraf:['paraf','signature'], instansi:['instansi','organization'], keperluan:['keperluan','purpose']};
+
+const SPK = {from:'PT NUSANTARA DATA PRIMA · GENERAL AFFAIRS', title:['Surat Perintah Kerja (SPK)','Work Order (SPK)'], no:'GA/SPK/112/2026',
+  lines:[['Pelaksana: CV Bangun Karya','Contractor: CV Bangun Karya'],['Pekerjaan: Renovasi Ruang Rapat Lt.3','Job: Renovation of 3F Meeting Room'],['Berlaku: 12–30 Okt 2026','Valid: 12–30 Oct 2026'],['Personel: Joko Prasetyo, Agus Salim','Personnel: Joko Prasetyo, Agus Salim']],
+  sig:'Hari S.', sign:'Hari Susanto · General Affairs', stamp:true};
+const RENO = [{vendor:'CV Bangun Karya', spk:'GA/SPK/112/2026', berlaku:['12–30 Okt 2026','12–30 Oct 2026'], area:['R. Rapat Lt.3','3F Meeting Room'], personel:'Joko Prasetyo, Agus Salim'}];
+const HRD = {who:['Bu Dewi','Ms. Dewi'], unit:['HRD','HR'], ext:'201'};
+const GA = {who:['Pak Hari','Mr. Hari'], unit:'General Affairs', ext:'230'};
+const TI = {who:['Pak Arif','Mr. Arif'], unit:['Manajer TI','IT Manager'], ext:'240'};
+const MAYA = {who:['Bu Maya','Ms. Maya'], unit:'Marketing', ext:'214'};
+const YUSUF = {who:['Pak Yusuf','Mr. Yusuf'], unit:['Keuangan','Finance'], ext:'220'};
+const HRD_FROM = ['PT NUSANTARA DATA PRIMA · HRD','PT NUSANTARA DATA PRIMA · HR'];
+const TI_FROM = ['PT NUSANTARA DATA PRIMA · TI','PT NUSANTARA DATA PRIMA · IT'];
+const HRD_SIGN = ['Dewi Lestari · Manajer HRD','Dewi Lestari · HR Manager'];
+const TI_SIGN = ['Arif Nugroho · Manajer TI','Arif Nugroho · IT Manager'];
+const INVITE = ['EMAIL UNDANGAN · DICETAK','PRINTED EMAIL INVITATION'];
+const MEET = ['Undangan Rapat','Meeting Invitation'];
+const INTERN_LTR = ['Surat Penerimaan Magang','Internship Acceptance Letter'];
+const PERMIT = ['Formulir Izin Akses Area Terbatas','Restricted Area Access Permit'];
+
+const V = {
+  rina:{name:'Rina Putri', claim:['Mahasiswi magang · Divisi Keuangan','Intern · Finance Division'], org:'Univ. Diponegoro', purpose:['Mulai magang','Internship start'], target:HRD,
+    look:{skin:'#c68a5e', style:'hijab', hijab:'#7d93c4', top:'#eef0ea', acc:['bag']},
+    greet:['Selamat pagi, Pak. Saya Rina, mahasiswi magang. Hari ini hari pertama saya di divisi Keuangan.','Good morning, sir. I\'m Rina, an intern. Today is my first day in the Finance division.'],
+    ktp:{nama:'RINA PUTRI', nik:'3374 0156 0904 0003', ttl:'Semarang, 06-04-2004'},
+    doc:{from:HRD_FROM, title:INTERN_LTR, no:'HR/045/X/2026', lines:[['Nama: Rina Putri','Name: Rina Putri'],['Asal: Universitas Diponegoro','From: Diponegoro University'],['Periode: 19 Okt 2026 – 19 Jan 2027','Period: 19 Oct 2026 – 19 Jan 2027'],['Penempatan: Divisi Keuangan','Placement: Finance Division']], sig:'Dewi L.', sign:HRD_SIGN, stamp:true},
+    phone:['"Benar, Rina mulai magang hari ini. Silakan beri kartu magang, nanti mentornya menjemput di lobi."','"Yes, Rina starts her internship today. Please give her an intern card; her mentor will pick her up in the lobby."'],
+    answer:'magang', why:['Surat penerimaan HRD berlaku mulai hari ini, nama cocok dengan KTP dan daftar, HRD mengonfirmasi. Kartu yang tepat: Magang.','The HR acceptance letter is valid from today, the name matches the ID and the list, and HR confirmed. Correct card: Intern.']},
+  budi:{name:'Budi Santoso', claim:['Tamu bisnis · rapat dengan Marketing','Business visitor · meeting with Marketing'], org:'PT Aksara Media', purpose:['Rapat kampanye Q4','Q4 campaign meeting'], target:MAYA, miss:'paraf',
+    look:{skin:'#b77b52', hair:'#1b1512', style:'short', top:'#2f4058', acc:['shirt','lapel','tie'], tie:'#a33a35'},
+    greet:['Pagi, Pak. Budi dari PT Aksara Media, ada rapat dengan Bu Maya jam sepuluh.','Morning. Budi from PT Aksara Media, I have a meeting with Ms. Maya at ten.'],
+    ktp:{nama:'BUDI SANTOSO', nik:'3175 0412 1188 0007', ttl:'Jakarta, 12-11-1988'},
+    doc:{from:INVITE, title:MEET, lines:[['Kepada: Budi Santoso, PT Aksara Media','To: Budi Santoso, PT Aksara Media'],['Agenda: Kampanye produk Q4','Agenda: Q4 product campaign'],['Waktu: Senin, 19 Okt 2026 · 10:00','Time: Monday, 19 Oct 2026 · 10:00'],['Tempat: Ruang Rapat 1, Lt.1','Place: Meeting Room 1, 1F']], sig:'Maya A.', sign:'Maya Anggraini · Marketing'},
+    phone:['"Ya, Pak Budi sudah saya tunggu di Ruang Rapat 1. Saya jemput ke lobi."','"Yes, I\'m expecting Mr. Budi in Meeting Room 1. I\'ll come down to the lobby."'],
+    answer:'rendah', why:['Tamu bisnis dengan janji temu terdaftar dan dikonfirmasi host. Ia hanya butuh ruang rapat, jadi kartunya Akses rendah.','A business visitor with a listed appointment confirmed by the host. He only needs a meeting room, so the card is Low access.']},
+  dimas:{name:'Dimas Pratama', claim:['Sales asuransi · tanpa janji','Insurance sales · no appointment'], org:'Asuransi Proteksi Jaya', purpose:['Menawarkan produk','Selling products'], target:HRD,
+    look:{skin:'#d39b6e', hair:'#2a1d14', style:'short', top:'#e8e4da', acc:['tie','glasses'], tie:'#2f5d9a'},
+    greet:['Siang, Pak. Saya Dimas dari Asuransi Proteksi Jaya. Mau ke bagian HR sebentar saja, menawarkan program untuk karyawan.','Afternoon, sir. I\'m Dimas from Proteksi Jaya Insurance. I just need a few minutes with HR to offer a staff program.'],
+    ktp:{nama:'DIMAS PRATAMA', nik:'3273 2205 0791 0002', ttl:'Bandung, 22-05-1991'},
+    doc:{from:['ASURANSI PROTEKSI JAYA','PROTEKSI JAYA INSURANCE'], title:['Brosur & kartu nama','Brochure & business card'], lines:[['Dimas Pratama · Agen Senior','Dimas Pratama · Senior Agent'],['"Program kesehatan karyawan"','"Employee health program"'],['Tanpa surat undangan dari perusahaan','No invitation from the company']], sig:'', sign:'—'},
+    phone:['"Kami tidak ada janji dengan sales asuransi. Tolong jangan diizinkan naik, Pak. Kalau perlu, titip brosurnya saja."','"We have no appointment with an insurance salesperson. Please don\'t let him up. He can leave the brochure if he wants."'],
+    rejectLine:['Oh, baik, Pak. Saya titip brosurnya saja.','Oh, all right. I\'ll just leave the brochure.'],
+    answer:'tolak', why:['Tidak ada janji, tidak tercantum di daftar, dan HRD menolak. Tamu tanpa kepentingan yang terverifikasi ditolak dengan sopan.','No appointment, not on the list, and HR declined. A visitor with no verified business is politely refused.']},
+  joko:{name:'Joko Prasetyo', claim:['Pekerja renovasi · CV Bangun Karya','Renovation worker · CV Bangun Karya'], org:'CV Bangun Karya', purpose:['Renovasi R. Rapat Lt.3','3F meeting room renovation'], target:GA,
+    look:{skin:'#9c6a43', hair:'#151110', style:'helmet', top:'#5b6b74', acc:['vest']},
+    greet:['Permisi, Pak. Joko dari CV Bangun Karya, lanjut kerjaan renovasi ruang rapat lantai 3.','Excuse me, sir. Joko from CV Bangun Karya, continuing the 3rd-floor meeting room renovation.'],
+    ktp:{nama:'JOKO PRASETYO', nik:'3301 1003 0285 0004', ttl:'Cilacap, 10-03-1985'},
+    doc:SPK,
+    phone:['"Betul, Joko dari CV Bangun Karya. SPK aktif sampai 30 Oktober. Area kerjanya hanya ruang rapat lantai 3."','"Correct, Joko from CV Bangun Karya. The work order runs until 30 October. His work area is the 3rd-floor meeting room only."'],
+    answer:'kontraktor', why:['Nama tercantum di SPK aktif GA/SPK/112/2026 dan dikonfirmasi GA. Kartu Kontraktor, area renovasi saja.','His name is on active work order GA/SPK/112/2026 and GA confirmed. Contractor card, renovation area only.']},
+
+  sari:{name:'Sari Wulandari', claim:['Auditor ISO 27001 · ke ruang server','ISO 27001 auditor · to the server room'], org:'PT Sertifikasi Mutu Indonesia', purpose:['Audit surveilans ISO','ISO surveillance audit'], target:TI,
+    look:{skin:'#d6a27a', hair:'#22160f', style:'long', top:'#5c3d58', acc:['shirt','lapel','glasses']},
+    greet:['Selamat pagi. Saya Sari Wulandari, auditor surveilans ISO 27001. Hari ini jadwal audit ruang server bersama Pak Arif.','Good morning. I\'m Sari Wulandari, ISO 27001 surveillance auditor. Today I\'m auditing the server room with Mr. Arif.'],
+    ktp:{nama:'SARI WULANDARI', nik:'3171 5507 0383 0001', ttl:'Jakarta, 15-07-1983'},
+    doc:{from:TI_FROM, title:PERMIT, no:'TI/IZN/078/2026', lines:[['Nama: Sari Wulandari','Name: Sari Wulandari'],['Instansi: PT Sertifikasi Mutu Indonesia','Organization: PT Sertifikasi Mutu Indonesia'],['Area: Ruang Server, Ruang Arsip','Area: Server Room, Archive Room'],['Tanggal: 20 Okt 2026 · didampingi Manajer TI','Date: 20 Oct 2026 · escorted by IT Manager']], sig:'Arif N.', sign:TI_SIGN, stamp:true},
+    phone:['"Benar, beliau auditor surveilans. Formulir izin sudah saya tanda tangani. Saya turun menjemput sekarang."','"Yes, she\'s the surveillance auditor. I signed her permit. I\'m coming down to escort her now."'],
+    answer:'tinggi', why:['Akses ruang server wajib Formulir Izin Akses Area Terbatas bertanda tangan Manajer TI. Dokumen lengkap dan terverifikasi, jadi kartunya Akses tinggi.','Server room access requires a Restricted Area Access Permit signed by the IT Manager. Documents are complete and verified, so the card is High access.']},
+  hendra:{name:'Hendra Wijaya', claim:['"Teknisi darurat" AC ruang server','"Emergency technician" for server room AC'], org:'PT Datacool Teknik', purpose:['Servis AC presisi','Precision AC service'], target:TI,
+    look:{skin:'#c08860', hair:'#1a1410', style:'cap', capColor:'#1f4f7a', top:'#3a77a8', acc:['stripe']},
+    greet:['Pak, urgent! Saya teknisi Datacool, AC presisi ruang server rusak. Kalau telat servernya bisa mati. Saya langsung naik ya.','Sir, it\'s urgent! I\'m a Datacool technician, the server room AC is down. If I\'m late the servers could crash. I\'ll just head up, OK?'],
+    ktp:{nama:'HENDRA WIJAYA', nik:'3603 1809 1290 0006', ttl:'Tangerang, 18-09-1990'},
+    doc:{from:'PT DATACOOL TEKNIK', title:['Surat Jalan Teknisi','Technician Dispatch Note'], no:'DC/SJ/5521', lines:[['Pekerjaan: Servis AC presisi','Job: Precision AC service'],['Lokasi: ruang server klien','Location: client server room'],['Tanggal: ditulis tangan "20/10"','Date: handwritten "20/10"'],['Diterbitkan oleh vendor sendiri','Issued by the vendor itself']], sig:'ttd', sign:['Supervisor Datacool','Datacool Supervisor']},
+    phone:['"Saya tidak memanggil vendor AC hari ini. Jangan izinkan dia masuk, saya akan cek langsung ke Datacool."','"I didn\'t call any AC vendor today. Don\'t let him in. I\'ll check with Datacool directly."'],
+    rejectLine:['Ya sudah, nanti kantor saya yang telepon.','Fine, my office will call you then.'],
+    answer:'tolak', why:['Klaim "darurat" tanpa izin akses internal dan tidak dikonfirmasi Manajer TI adalah pola rekayasa sosial. Tolak, lalu laporkan ke TI.','An "emergency" claim with no internal access permit and no confirmation from the IT Manager is a social engineering pattern. Refuse, then report to IT.']},
+  rudi:{name:'Rudi Hartono', claim:['Pekerja pengganti · CV Bangun Karya','Substitute worker · CV Bangun Karya'], org:'CV Bangun Karya', purpose:['Renovasi R. Rapat Lt.3','3F meeting room renovation'], target:GA,
+    look:{skin:'#8e5d3b', hair:'#111', style:'helmet', top:'#6b5a4a', acc:['vest']},
+    greet:['Pak, saya Rudi dari CV Bangun Karya. Agus lagi sakit, saya yang gantikan hari ini. Ini SPK-nya.','Sir, I\'m Rudi from CV Bangun Karya. Agus is sick, so I\'m covering for him today. Here\'s the work order.'],
+    ktp:{nama:'RUDI HARTONO', nik:'3301 0707 0892 0003', ttl:'Cilacap, 07-07-1992'},
+    doc:SPK,
+    phone:['"Belum ada pemberitahuan pengganti dari CV Bangun Karya. Selama namanya belum ada di daftar SPK, jangan diizinkan masuk."','"We haven\'t been told about any substitute from CV Bangun Karya. Until his name is on the work order, don\'t let him in."'],
+    rejectLine:['Oke, Pak. Saya minta mandor kirim revisi daftar ke GA.','OK, sir. I\'ll ask my foreman to send GA an updated list.'],
+    answer:'tolak', why:['Personel pengganti harus tercantum di SPK dari GA sebelum masuk. Nama Rudi tidak ada, jadi tolak sampai daftar diperbarui.','A substitute must be listed on the GA work order before entering. Rudi is not listed, so refuse until the list is updated.']},
+  fajar:{name:'Fajar Nugraha', claim:['Tamu bisnis · rapat dengan Keuangan','Business visitor · meeting with Finance'], org:'Bank Mandala', purpose:['Pembaruan fasilitas kredit','Credit facility renewal'], target:YUSUF, miss:'instansi',
+    look:{skin:'#c99067', hair:'#1d1712', style:'short', top:'#1f2f45', acc:['shirt','lapel','tie','glasses'], tie:'#c8a23a'},
+    greet:['Pagi, Pak. Fajar dari Bank Mandala, rapat dengan Pak Yusuf jam sebelas.','Morning. Fajar from Bank Mandala, meeting Mr. Yusuf at eleven.'],
+    ktp:{nama:'FAJAR NUGRAHA', nik:'3174 0302 1087 0005', ttl:'Jakarta, 03-02-1987'},
+    doc:{from:INVITE, title:MEET, lines:[['Kepada: Fajar Nugraha, Bank Mandala','To: Fajar Nugraha, Bank Mandala'],['Agenda: Pembaruan fasilitas kredit','Agenda: Credit facility renewal'],['Waktu: Selasa, 20 Okt 2026 · 11:00','Time: Tuesday, 20 Oct 2026 · 11:00'],['Tempat: Ruang Rapat 2, Lt.1','Place: Meeting Room 2, 1F']], sig:'Yusuf R.', sign:['Yusuf Ramadhan · Keuangan','Yusuf Ramadhan · Finance']},
+    phone:['"Ya, rapat jam sebelas. Silakan, staf saya jemput di lobi."','"Yes, the eleven o\'clock meeting. Go ahead, my staff will meet him in the lobby."'],
+    answer:'rendah', why:['Janji temu terdaftar dan dikonfirmasi host, jadi Akses rendah. Kolom instansi di buku tamu wajib terisi sebelum kartu diberikan.','Listed appointment confirmed by the host, so Low access. The organization field in the guest book must be filled before the card is issued.']},
+  kevin:{name:'Kevin Aditya', claim:['Mahasiswa magang · Divisi Marketing','Intern · Marketing Division'], org:'Univ. Bina Nusantara', purpose:['Magang','Internship'], target:HRD,
+    look:{skin:'#e0b48f', hair:'#3a2a1c', style:'short', top:'#8a9a5b', acc:['bag']},
+    greet:['Halo, Pak. Saya Kevin, anak magang baru. Boleh langsung naik ke divisi Marketing?','Hi, sir. I\'m Kevin, the new intern. Can I go straight up to Marketing?'],
+    ktp:{nama:'KEVIN ADITYA', nik:'3172 1408 0305 0008', ttl:'Jakarta, 14-08-2005'},
+    doc:{from:HRD_FROM, title:INTERN_LTR, no:'HR/051/X/2026', lines:[['Nama: Kevin Aditya','Name: Kevin Aditya'],['Asal: Universitas Bina Nusantara','From: Bina Nusantara University'],['Periode: 2 Nov 2026 – 2 Feb 2027','Period: 2 Nov 2026 – 2 Feb 2027'],['Penempatan: Divisi Marketing','Placement: Marketing Division']], sig:'Dewi L.', sign:HRD_SIGN, stamp:true},
+    phone:['"Kevin baru mulai tanggal 2 November. Hari ini belum ada orientasi, mohon diminta kembali sesuai tanggal."','"Kevin only starts on 2 November. There\'s no orientation today, please ask him to come back on that date."'],
+    rejectLine:['Waduh, saya salah lihat tanggal. Maaf, Pak.','Oops, I misread the date. Sorry, sir.'],
+    answer:'tolak', why:['Periode magang baru mulai 2 November. Surat belum berlaku hari ini, jadi tolak dan minta kembali sesuai tanggal.','The internship only starts on 2 November. The letter is not valid yet, so refuse and ask him to return on that date.']},
+
+  agus:{name:'Agus Salim', claim:['Pekerja renovasi · CV Bangun Karya','Renovation worker · CV Bangun Karya'], org:'CV Bangun Karya', purpose:['Renovasi R. Rapat Lt.3','3F meeting room renovation'], target:GA,
+    look:{skin:'#a87048', hair:'#1a1410', style:'helmet', top:'#4d5b44', acc:['vest']},
+    greet:['Pagi, Pak. Agus, CV Bangun Karya. Sudah sehat, lanjut renovasi lantai 3.','Morning, sir. Agus, CV Bangun Karya. I\'m better now, back on the 3rd-floor renovation.'],
+    ktp:{nama:'AGUS SALIM', nik:'3301 2112 0480 0001', ttl:'Cilacap, 21-12-1980'},
+    doc:SPK,
+    phone:['"Ya, Agus tercantum di SPK. Silakan, area kerja hanya lantai 3."','"Yes, Agus is on the work order. Go ahead, 3rd floor only."'],
+    answer:'kontraktor', why:['Tercantum di SPK aktif dan dikonfirmasi GA. Kartu Kontraktor.','Listed on the active work order and confirmed by GA. Contractor card.']},
+  taufik:{name:'Taufik Rahman', claim:['Mantan karyawan · "ambil barang"','Former employee · "picking up belongings"'], org:['— (eks. Keuangan)','— (ex-Finance)'], purpose:['Ambil barang','Pick up belongings'], target:HRD,
+    look:{skin:'#b98058', hair:'#2b2018', style:'short', top:'#7a4a3a', acc:['glasses']},
+    greet:['Eh, Pak! Masih ingat saya? Taufik, dulu di Keuangan. Mau ambil barang di meja lama sekalian ketemu Rizal.','Hey! Remember me? Taufik, I used to be in Finance. Just grabbing my stuff from my old desk and saying hi to Rizal.'],
+    ktp:{nama:'TAUFIK RAHMAN', nik:'3175 0909 0689 0002', ttl:'Jakarta, 09-09-1989'},
+    doc:{from:'PT NUSANTARA DATA PRIMA', title:['Kartu Karyawan (lama)','Employee Card (old)'], no:'K-2019-0412', lines:[['Nama: Taufik Rahman','Name: Taufik Rahman'],['Divisi: Keuangan','Division: Finance'],['Status: NONAKTIF','Status: INACTIVE'],['Berlaku s/d: 31 Agu 2026','Valid until: 31 Aug 2026']], sig:'', sign:['HRD','HR']},
+    phone:['"Taufik sudah resign per 31 Agustus, semua aksesnya dicabut. Barangnya akan kami antar ke lobi, dia tidak perlu naik."','"Taufik resigned on 31 August and all his access was revoked. We\'ll bring his things down to the lobby; he doesn\'t need to go up."'],
+    rejectLine:['Oh, ya sudah. Saya tunggu di lobi saja.','Oh, fine. I\'ll wait in the lobby.'],
+    answer:'tolak', why:['Mantan karyawan tidak lagi memiliki hak akses. Barang pribadi diantar HRD ke lobi; tolak masuk area kantor.','Former employees no longer have access rights. HR brings personal items to the lobby; refuse entry to the office.']},
+  gunawan:{name:'Gunawan Hadi', claim:['Direktur Operasional Grup · ke ruang server','Group Operations Director · to the server room'], org:['Kantor Pusat Grup','Group Head Office'], purpose:['Tinjauan ruang server','Server room review'], target:{who:['Bu Ratna','Ms. Ratna'], unit:['Sekretaris Direksi','Board Secretary'], ext:'100'}, miss:'keperluan',
+    look:{skin:'#c9946a', hair:'#a3a8ad', style:'short', top:'#22252b', acc:['shirt','lapel','tie'], tie:'#5a2a6a'},
+    greet:['Selamat siang. Gunawan, Direktur Operasional dari kantor pusat. Saya ada agenda tinjauan ruang server.','Good afternoon. Gunawan, Operations Director from head office. I\'m here to review the server room.'],
+    ktp:{nama:'GUNAWAN HADI', nik:'3171 0104 0172 0003', ttl:'Jakarta, 01-04-1972'},
+    doc:{from:TI_FROM, title:PERMIT, no:'TI/IZN/081/2026', lines:[['Nama: Gunawan Hadi','Name: Gunawan Hadi'],['Instansi: Kantor Pusat Grup','Organization: Group Head Office'],['Area: Ruang Server','Area: Server Room'],['Tanggal: 21 Okt 2026 · didampingi Manajer TI','Date: 21 Oct 2026 · escorted by IT Manager']], sig:'Arif N.', sign:TI_SIGN, stamp:true},
+    phone:['"Benar, Pak Gunawan dijadwalkan meninjau ruang server bersama Pak Arif. Izinnya sudah ada."','"Yes, Mr. Gunawan is scheduled to review the server room with Mr. Arif. His permit is in place."'],
+    answer:'tinggi', why:['Jabatan tinggi tidak menggantikan prosedur. Izin akses area terbatas ada dan terkonfirmasi, jadi Akses tinggi, dan buku tamu tetap diisi lengkap.','Seniority does not replace procedure. The restricted area permit exists and is confirmed, so High access, and the guest book must still be complete.']},
+  kurir:{name:['Kurir makanan','Food courier'], claim:['Kurir · ingin naik ke Lt.4','Courier · wants to go up to 4F'], org:['Ojek daring','Delivery app'], purpose:['Antar makanan','Food delivery'], target:MAYA,
+    look:{skin:'#a56d45', hair:'#111', style:'cap', capColor:'#2e9e55', top:'#2e9e55', acc:['stripe']},
+    greet:['Pak, antar makanan pesanan Bu Maya. Saya antar langsung ke lantai 4 ya, biar cepat.','Sir, food delivery for Ms. Maya. I\'ll take it straight up to the 4th floor, it\'s faster.'],
+    ktp:{nama:'SLAMET RIYADI', nik:'3174 1111 0995 0009', ttl:'Jakarta, 11-11-1995'},
+    doc:{from:['APLIKASI PESAN-ANTAR','DELIVERY APP'], title:['Struk pesanan','Order receipt'], lines:[['Pemesan: Maya A.','Customer: Maya A.'],['Antar ke: Lantai 4, Marketing','Deliver to: 4th floor, Marketing'],['2x Nasi ayam geprek','2x Smashed chicken rice']], sig:'', sign:'—'},
+    phone:['"Oh iya, itu pesanan saya. Tolong dititip di meja security saja, nanti saya turun."','"Oh yes, that\'s my order. Please leave it at the security desk, I\'ll come down."'],
+    rejectLine:['Siap, Pak. Saya titip di sini ya.','Sure, sir. I\'ll leave it here.'],
+    answer:'tolak', why:['Kurir tidak naik ke area kerja. Paket atau makanan dititipkan di meja keamanan dan diambil karyawan di lobi.','Couriers do not go up to work areas. Parcels and food are left at the security desk and collected by staff in the lobby.']},
+  nadia:{name:'"Nadia Kusuma"', claim:['Tamu bisnis · rapat dengan Marketing','Business visitor · meeting with Marketing'], org:'PT Aksara Media', purpose:['Review materi kampanye','Campaign material review'], target:MAYA,
+    look:{skin:'#d8a47c', style:'hijab', hijab:'#c46b6b', top:'#f0ebe2', acc:['bag']},
+    photo:{skin:'#e2b48c', hair:'#3a2418', style:'long', top:'#d8d4cc', acc:[]},
+    greet:['Siang, Pak. Saya Nadia dari PT Aksara, janji dengan Bu Maya. KTP saya ketinggalan, ini pakai KTP kakak saya dulu ya.','Afternoon. I\'m Nadia from PT Aksara, meeting Ms. Maya. I forgot my ID, so I\'ll use my sister\'s for now, OK?'],
+    ktp:{nama:'LESTARI AYU', nik:'3175 4203 0294 0004', ttl:'Jakarta, 02-03-1994'},
+    doc:{from:INVITE, title:MEET, lines:[['Kepada: Nadia Kusuma, PT Aksara Media','To: Nadia Kusuma, PT Aksara Media'],['Agenda: Review materi kampanye','Agenda: Campaign material review'],['Waktu: Rabu, 21 Okt 2026 · 13:30','Time: Wednesday, 21 Oct 2026 · 13:30'],['Tempat: Ruang Rapat 1, Lt.1','Place: Meeting Room 1, 1F']], sig:'Maya A.', sign:'Maya Anggraini · Marketing'},
+    phone:['"Ya, saya ada janji dengan Nadia dari PT Aksara jam setengah dua."','"Yes, I have a meeting with Nadia from PT Aksara at half past one."'],
+    rejectLine:['Hmm, baik. Saya minta Bu Maya turun ke lobi saja.','Hmm, OK. I\'ll ask Ms. Maya to come down to the lobby.'],
+    answer:'tolak', why:['Konfirmasi host tidak cukup. Identitas harus cocok dengan nama di daftar; KTP atas nama orang lain berarti tolak. Tawarkan host menemui tamu di lobi.','Host confirmation is not enough. The ID must match the name on the list; an ID in someone else\'s name means refuse. Offer that the host meets the visitor in the lobby.']},
+  putu:{name:'Putu Ardana', claim:['Mahasiswa magang · Divisi TI','Intern · IT Division'], org:'Politeknik Negeri Bali', purpose:['Mulai magang','Internship start'], target:HRD,
+    look:{skin:'#a8724a', hair:'#16110d', style:'short', top:'#f2f0ea', acc:['bag']},
+    greet:['Om swastiastu, Pak. Saya Putu Ardana, mahasiswa magang dari Politeknik Negeri Bali, mulai hari ini di divisi TI.','Om swastiastu, sir. I\'m Putu Ardana, an intern from Bali State Polytechnic, starting today in the IT division.'],
+    ktp:{nama:'PUTU ARDANA', nik:'5171 0306 0604 0001', ttl:'Denpasar, 03-06-2004'},
+    doc:{from:HRD_FROM, title:INTERN_LTR, no:'HR/052/X/2026', lines:[['Nama: Putu Ardana','Name: Putu Ardana'],['Asal: Politeknik Negeri Bali','From: Bali State Polytechnic'],['Periode: 21 Okt 2026 – 21 Jan 2027','Period: 21 Oct 2026 – 21 Jan 2027'],['Penempatan: Divisi TI','Placement: IT Division']], sig:'Dewi L.', sign:HRD_SIGN, stamp:true},
+    phone:['"Putu mulai magang hari ini di divisi TI. Silakan beri kartu magang."','"Putu starts his internship in IT today. Please give him an intern card."'],
+    answer:'magang', why:['Surat magang berlaku hari ini, terdaftar, dan dikonfirmasi HRD. Kartu Magang.','The internship letter is valid today, listed, and confirmed by HR. Intern card.']}
+};
+
+const EVENTS = {
+  darurat:{cam:'c4', anomaly:true, from:['Pak Slamet (HT)','Mr. Slamet (radio)'], msg:['"Pos, alarm pintu darurat lantai 2 bunyi terus. Tolong cek kamera dulu."','"Desk, the 2nd-floor fire exit alarm keeps going off. Please check the camera first."'], why:['Pintu darurat Lt.2 terbuka dan diganjal kardus. Laporkan agar segera ditutup; pintu darurat tidak boleh diganjal.','The 2F fire exit is open and propped with a box. Report it so it gets closed; fire exits must never be propped open.']},
+  tailgate:{cam:'c2', anomaly:true, from:['Resepsionis Lt.1 (HT)','1F receptionist (radio)'], msg:['"Pos, tadi sepertinya ada yang ikut masuk di belakang karyawan lewat pintu samping. Bisa dicek?"','"Desk, I think someone just followed an employee in through the side door. Can you check?"'], why:['Dua orang masuk dengan satu tap kartu (tailgating). Laporkan dan cegat orang tanpa kartu.','Two people entered on one card tap (tailgating). Report it and stop the person without a card.']},
+  parkir:{cam:'c1', anomaly:false, from:['Supervisor (HT)','Supervisor (radio)'], msg:['"Pos, alarm mobil di parkir basement sudah berhenti. Pastikan tidak ada apa-apa di sana."','"Desk, the car alarm in the basement has stopped. Make sure nothing is going on down there."'], why:['Parkir basement normal, tidak ada orang di sekitar kendaraan. Status aman, tidak perlu eskalasi.','Basement parking is normal, no one near the vehicles. Status safe, no escalation needed.']},
+  server:{cam:'c3', anomaly:true, from:['Sistem akses (HT)','Access system (radio)'], msg:['"Peringatan: tiga kali akses ditolak di pintu ruang server."','"Warning: three denied access attempts at the server room door."'], why:['Pekerja renovasi mencoba masuk ruang server di luar area SPK-nya. Laporkan ke TI dan kirim petugas.','A renovation worker is trying to enter the server room, outside his work order area. Report to IT and send an officer.']}
+};
+
+const DAYS = [
+  {label:['Senin, 19 Okt 2026','Monday, 19 Oct 2026'], date:'19-10-2026', start:480,
+   appts:[{jam:'08:30',nama:'Rina Putri',instansi:'Univ. Diponegoro',tujuan:['Bu Dewi · HRD','Ms. Dewi · HR'],akses:'magang'},
+          {jam:'10:00',nama:'Budi Santoso',instansi:'PT Aksara Media',tujuan:['Bu Maya · Marketing','Ms. Maya · Marketing'],akses:'rendah'},
+          {jam:'15:00',nama:'Laras Wibowo',instansi:'PT Kirana Logistik',tujuan:['Pak Yusuf · Keuangan','Mr. Yusuf · Finance'],akses:'rendah'}],
+   steps:[{t:'v',v:V.rina},{t:'v',v:V.budi},{t:'cctv',e:EVENTS.darurat},{t:'v',v:V.dimas},{t:'patrol',p:{panel:true}},{t:'v',v:V.joko}]},
+  {label:['Selasa, 20 Okt 2026','Tuesday, 20 Oct 2026'], date:'20-10-2026', start:480,
+   appts:[{jam:'08:30',nama:'Sari Wulandari',instansi:'PT Sertifikasi Mutu Indonesia',tujuan:['Pak Arif · TI','Mr. Arif · IT'],akses:'tinggi'},
+          {jam:'11:00',nama:'Fajar Nugraha',instansi:'Bank Mandala',tujuan:['Pak Yusuf · Keuangan','Mr. Yusuf · Finance'],akses:'rendah'}],
+   steps:[{t:'v',v:V.sari},{t:'v',v:V.hendra},{t:'cctv',e:EVENTS.tailgate},{t:'v',v:V.rudi},{t:'patrol',p:{server:true,darurat:true,apar:true}},{t:'v',v:V.fajar},{t:'v',v:V.kevin}]},
+  {label:['Rabu, 21 Okt 2026','Wednesday, 21 Oct 2026'], date:'21-10-2026', start:480,
+   appts:[{jam:'10:00',nama:'Gunawan Hadi',instansi:['Kantor Pusat Grup','Group Head Office'],tujuan:['Bu Ratna · Direksi / Pak Arif','Ms. Ratna · Board / Mr. Arif'],akses:'tinggi'},
+          {jam:'13:30',nama:'Nadia Kusuma',instansi:'PT Aksara Media',tujuan:['Bu Maya · Marketing','Ms. Maya · Marketing'],akses:'rendah'},
+          {jam:'15:00',nama:'Putu Ardana',instansi:'Politeknik Negeri Bali',tujuan:['Bu Dewi · HRD','Ms. Dewi · HR'],akses:'magang'}],
+   steps:[{t:'v',v:V.agus},{t:'v',v:V.taufik},{t:'cctv',e:EVENTS.parkir},{t:'v',v:V.gunawan},{t:'v',v:V.kurir},{t:'patrol',p:{arsip:true}},{t:'v',v:V.nadia},{t:'cctv',e:EVENTS.server},{t:'v',v:V.putu}]}
+];
+
+/* ---------- State ---------- */
+const S = {day:0, step:0, clock:480, mode:'idle', v:null, f:{}, ev:null, patrol:null, viol:[], res:[], book:[], started:false, hover:null, total:[], bubble:null, hint:null};
+let modalClose = null, modalReopen = null, cctvRaf = 0;
+
+/* ---------- Drawing helpers ---------- */
+function figure(L){
+  const s=L.skin, h=L.hair||'#1c1714', acc=L.acc||[];
+  let o='';
+  if(L.style==='long') o+=`<path d="M-32,-188 Q-40,-140 -28,-112 L28,-112 Q40,-140 32,-188Z" fill="${h}"/>`;
+  o+=`<path d="M-72,12 L-72,-92 Q-72,-134 -30,-138 L30,-138 Q72,-134 72,-92 L72,12Z" fill="${L.top}"/>`;
+  if(acc.includes('shirt')) o+=`<path d="M-22,-138 L0,-104 L22,-138Z" fill="#eef1f3"/>`;
+  if(acc.includes('lapel')) o+=`<path d="M-30,-138 L-4,-98 L-16,-30 L-46,-118Z" fill="rgba(0,0,0,.22)"/><path d="M30,-138 L4,-98 L16,-30 L46,-118Z" fill="rgba(0,0,0,.22)"/>`;
+  if(acc.includes('tie')) o+=`<path d="M-6,-136 L6,-136 L4,-124 L9,-74 L0,-62 L-9,-74 L-4,-124Z" fill="${L.tie||'#8a2f2a'}"/>`;
+  if(acc.includes('vest')) o+=`<path d="M-62,12 L-62,-100 Q-60,-128 -28,-136 L-14,-60 L-14,12Z" fill="#f07f22"/><path d="M62,12 L62,-100 Q60,-128 28,-136 L14,-60 L14,12Z" fill="#f07f22"/><rect x="-62" y="-44" width="48" height="8" fill="#e8eef0"/><rect x="14" y="-44" width="48" height="8" fill="#e8eef0"/>`;
+  if(acc.includes('stripe')) o+=`<rect x="-72" y="-62" width="144" height="8" fill="rgba(255,255,255,.35)"/>`;
+  if(acc.includes('bag')) o+=`<path d="M-48,-132 L44,12" stroke="#3a2a20" stroke-width="7"/>`;
+  if(L.lanyard) o+=`<path d="M-16,-136 L-4,-82 M16,-136 L4,-82" stroke="${L.lanyard}" stroke-width="4" fill="none"/><rect x="-13" y="-84" width="26" height="34" rx="3" fill="${L.lanyard}"/><rect x="-9" y="-78" width="18" height="6" fill="rgba(255,255,255,.7)"/>`;
+  if(L.style==='hijab'){
+    o+=`<ellipse cx="0" cy="-176" rx="37" ry="42" fill="${L.hijab}"/><path d="M-36,-168 Q-60,-118 -50,-96 L50,-96 Q60,-118 36,-168Z" fill="${L.hijab}"/>`;
+    o+=`<ellipse cx="0" cy="-176" rx="22" ry="27" fill="${s}"/>`;
+  } else {
+    o+=`<rect x="-11" y="-152" width="22" height="20" fill="${s}"/><ellipse cx="0" cy="-178" rx="26" ry="30" fill="${s}"/>`;
+    o+=`<ellipse cx="-26" cy="-176" rx="4" ry="7" fill="${s}"/><ellipse cx="26" cy="-176" rx="4" ry="7" fill="${s}"/>`;
+  }
+  o+=`<circle cx="-9" cy="-180" r="2.7" fill="#1b1b1b"/><circle cx="9" cy="-180" r="2.7" fill="#1b1b1b"/>`;
+  o+=`<path d="M-12,-188 l7,-2 M12,-188 l-7,-2" stroke="${L.style==='hijab'?'#3a2a20':h}" stroke-width="2.4" stroke-linecap="round"/>`;
+  o+=`<path d="M-1,-176 q3,6 -1,8" fill="none" stroke="rgba(0,0,0,.25)" stroke-width="1.6"/>`;
+  o+=`<path d="M-7,-162 Q0,-157 7,-162" fill="none" stroke="#5a2f24" stroke-width="2" stroke-linecap="round"/>`;
+  if(L.style==='short'||L.style==='long') o+=`<path d="M-27,-180 Q-31,-215 0,-213 Q31,-215 27,-180 Q25,-199 4,-202 Q-18,-201 -27,-180Z" fill="${h}"/>`;
+  if(L.style==='helmet') o+=`<path d="M-31,-188 Q-31,-224 0,-224 Q31,-224 31,-188Z" fill="#f2c230"/><rect x="-37" y="-192" width="74" height="7" rx="3" fill="#dda91a"/><rect x="-3" y="-224" width="6" height="34" fill="#dda91a"/>`;
+  if(L.style==='cap') o+=`<path d="M-30,-186 Q-31,-221 0,-222 Q31,-221 30,-186Z" fill="${L.capColor}"/><path d="M-30,-188 L-46,-184 L-30,-182Z" fill="${L.capColor}"/>`;
+  if(acc.includes('glasses')) o+=`<g fill="none" stroke="#1d1d1d" stroke-width="2"><rect x="-19" y="-186" width="15" height="11" rx="3"/><rect x="4" y="-186" width="15" height="11" rx="3"/><path d="M-4,-181 L4,-181"/></g>`;
+  return o;
+}
+function photo(L, bg='#c8483d'){
+  return `<svg viewBox="-46 -232 92 108" aria-hidden="true"><rect x="-46" y="-232" width="92" height="108" fill="${bg}"/>${figure(L)}</svg>`;
+}
+function wrap(str, n){
+  const words=str.split(' '), lines=[]; let cur='';
+  for(const w of words){ if((cur+' '+w).trim().length>n){ lines.push(cur.trim()); cur=w; } else cur+=' '+w; }
+  if(cur.trim()) lines.push(cur.trim());
+  return lines;
+}
+function bubble(src){
+  S.bubble=src||null;
+  const g=$('#bubble');
+  if(!src){ g.innerHTML=''; return; }
+  const lines=wrap(tx(src),36), h=22+lines.length*20, x=772, y=Math.max(20, 120-h);
+  g.innerHTML=`<path d="M${x+18},${y+h-4} L738,148 L${x+46},${y+h-4}Z" fill="#f3efe6"/>
+    <rect x="${x}" y="${y}" width="340" height="${h}" rx="10" fill="#f3efe6"/>
+    <text x="${x+16}" y="${y+28}" font-size="15" fill="#1d2329" style="font-family:var(--sans)">${lines.map((l,i)=>`<tspan x="${x+16}" dy="${i?20:0}">${esc(l)}</tspan>`).join('')}</text>`;
+}
+function esc(s){ return String(s).replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+
+const POS = {door:'translate(465px,300px) scale(.6)', desk:'translate(700px,332px) scale(1)', gate:'translate(1160px,300px) scale(.6)'};
+function placeVisitor(where, opacity, animate){
+  const g=$('#visitor');
+  if(!animate){ g.style.transition='none'; }
+  g.style.transform=POS[where]; g.style.opacity=opacity;
+  if(!animate){ g.getBoundingClientRect(); g.style.transition=''; }
+}
+function setGate(open){ document.querySelectorAll('.gl').forEach(c=>c.setAttribute('fill', open?'#4cc38a':'#e8604c')); }
+
+/* ---------- HUD, sky, clock ---------- */
+function mix(a,b,k){ const p=x=>[1,3,5].map(i=>parseInt(x.slice(i,i+2),16)); const A=p(a),B=p(b); return '#'+A.map((v,i)=>Math.round(v+(B[i]-v)*k).toString(16).padStart(2,'0')).join(''); }
+function hud(){
+  const d=DAYS[S.day];
+  $('#dayTitle').textContent=`${t('Hari','Day')} ${S.day+1} · ${tx(d.label)}`;
+  $('#hClock').textContent=fmt(S.clock);
+  const tot=d.steps.filter(s=>s.t==='v').length, done=S.res.filter(r=>r.kind==='tamu').length;
+  $('#hGuests').textContent=`${done}/${tot}`;
+  const n=S.viol.length;
+  $('#hViol').innerHTML=[0,1,2].map(i=>`<span class="pip${i<n?' on':''}"></span>`).join('')+(n>3?`<small>+${n-3}</small>`:'');
+  $('#hViol').setAttribute('aria-label', n+t(' pelanggaran',' violations'));
+  const h=(S.clock/60)%12, m=S.clock%60;
+  $('#hHand').setAttribute('transform',`rotate(${h*30+m/2})`);
+  $('#mHand').setAttribute('transform',`rotate(${m*6})`);
+  const k=Math.min(1,Math.max(0,(S.clock-480)/540));
+  let top,bot;
+  if(k<.5){ top=mix('#8fb7d9','#5f9bd4',k*2); bot=mix('#dfe9ef','#cfe3f1',k*2); }
+  else { top=mix('#5f9bd4','#5b4b7a',(k-.5)*2); bot=mix('#cfe3f1','#f2a46b',(k-.5)*2); }
+  $('#sk1').setAttribute('stop-color',top); $('#sk2').setAttribute('stop-color',bot);
+}
+function hint(src){ S.hint=src; $('#hint').textContent=tx(src); }
+
+function toast(kind,title,body,ms){
+  const el=document.createElement('div');
+  el.className='toast '+kind;
+  el.innerHTML=`<b>${esc(tx(title))}</b>${esc(tx(body||''))}`;
+  const box=$('#toasts'); box.prepend(el);
+  while(box.children.length>3) box.lastChild.remove();
+  setTimeout(()=>el.remove(), ms||(kind==='bad'?7500:5200));
+}
+// title & why are [id,en] pairs so the shift report follows a language switch
+function viol(title, why){
+  S.viol.push({title, why, who:S.v?S.v.name:(S.ev?CAMS[S.ev.cam]:['Patroli','Patrol'])});
+  toast('bad',['Pelanggaran SOP · '+title[0],'SOP violation · '+title[1]], why);
+  hud();
+}
+
+/* ---------- Bottom panel ---------- */
+const ICON = {
+  doc:'<svg viewBox="0 0 38 30"><rect x="2" y="8" width="20" height="13" rx="2" fill="#8fbfe2"/><rect x="5" y="11" width="6" height="7" fill="#c8483d"/><rect x="20" y="3" width="15" height="24" fill="#f3efe6"/><path d="M23 9h9M23 13h9M23 17h7" stroke="#9a9488" stroke-width="1.5"/></svg>',
+  phone:'<svg viewBox="0 0 38 30"><path d="M6 14 Q7 9 12 9 L26 9 Q31 9 32 14 L34 26 L4 26Z" fill="#3a444d"/><rect x="5" y="4" width="28" height="8" rx="4" fill="#5b6670"/><rect x="10" y="16" width="8" height="4" fill="#4c8a6a"/></svg>',
+  book:'<svg viewBox="0 0 38 30"><path d="M3 6 L19 4 L35 6 L35 26 L19 24 L3 26Z" fill="#2f5d50"/><path d="M5 7 L18 6 L18 22 L5 24Z" fill="#f3efe6"/><path d="M20 6 L33 7 L33 24 L20 22Z" fill="#ebe6da"/></svg>',
+  card:'<svg viewBox="0 0 38 30"><rect x="4" y="4" width="10" height="16" rx="2" fill="#3fa66b"/><rect x="11" y="6" width="10" height="16" rx="2" fill="#3d7fd1"/><rect x="18" y="8" width="10" height="16" rx="2" fill="#c94a3c"/><rect x="25" y="10" width="10" height="16" rx="2" fill="#e98a2b"/></svg>',
+  stop:'<svg viewBox="0 0 38 30"><circle cx="19" cy="15" r="11" fill="none" stroke="#e8604c" stroke-width="3"/><path d="M11 23 L27 7" stroke="#e8604c" stroke-width="3"/></svg>',
+  ht:'<svg viewBox="0 0 38 30"><rect x="16" y="1" width="4" height="10" fill="#5b6670"/><rect x="11" y="8" width="16" height="21" rx="3" fill="#3a444d"/><circle cx="22" cy="12" r="2" fill="#f2b33d"/></svg>',
+  cctv:'<svg viewBox="0 0 38 30"><rect x="3" y="4" width="32" height="20" rx="2" fill="#3a444d"/><rect x="6" y="7" width="12" height="7" fill="#33463f"/><rect x="20" y="7" width="12" height="7" fill="#33463f"/><rect x="6" y="15" width="12" height="7" fill="#33463f"/><rect x="20" y="15" width="12" height="7" fill="#33463f"/><rect x="16" y="24" width="6" height="4" fill="#3a444d"/></svg>',
+  key:'<svg viewBox="0 0 38 30"><circle cx="11" cy="15" r="6" fill="none" stroke="#d9a83a" stroke-width="3"/><path d="M17 15h16M28 15v5M32 15v4" stroke="#d9a83a" stroke-width="3"/></svg>',
+  back:'<svg viewBox="0 0 38 30"><path d="M16 7 L7 15 L16 23 M8 15 H31" fill="none" stroke="#c9d2da" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  list:'<svg viewBox="0 0 38 30"><rect x="8" y="2" width="22" height="27" rx="2" fill="#f3efe6"/><rect x="14" y="0" width="10" height="5" rx="1" fill="#9aa5b0"/><path d="M12 10h14M12 15h14M12 20h10" stroke="#9a9488" stroke-width="1.5"/></svg>'
+};
+const OBJ_INFO = {
+  book:[['WAJIB','REQUIRED'],['Buku Tamu','Guest Book'],['Setiap tamu mengisi nama, instansi, keperluan, yang ditemui, jam, dan paraf. Kolom kosong = tidak lengkap.','Every visitor fills in name, organization, purpose, host, time and signature. An empty field means incomplete.']],
+  cards:[['TERKONTROL','CONTROLLED'],['Rak Kartu Akses','Access Card Rack'],['Hijau magang · Biru akses rendah · Merah akses tinggi · Oranye kontraktor.','Green intern · Blue low access · Red high access · Orange contractor.']],
+  phone:[['VERIFIKASI','VERIFY'],['Telepon Internal','Internal Phone'],['Konfirmasi janji ke karyawan atau unit yang dituju sebelum memberi akses.','Confirm the appointment with the employee or unit being visited before granting access.']],
+  cctv:[['PEMANTAUAN','MONITORING'],['Monitor CCTV','CCTV Monitor'],['6 kamera. Buka sesuai laporan dan pilih kamera yang relevan sebelum memutuskan.','6 cameras. Open it when a report comes in and pick the relevant camera before deciding.']],
+  ht:[['KOMUNIKASI','RADIO'],['HT (Handy Talky)','Two-way Radio'],['Laporan dari rekan & supervisor. Minta rekan jaga pos sebelum berangkat patroli.','Reports from colleagues and the supervisor. Ask a colleague to cover the desk before patrolling.']],
+  patrol:[['PATROLI','PATROL'],['Kunci & Checklist Patroli','Patrol Keys & Checklist'],['5 titik vital: ruang server, panel listrik, pintu darurat, ruang arsip, APAR.','5 vital points: server room, electrical panel, fire exit, archive room, extinguisher.']],
+  list:[['REFERENSI','REFERENCE'],['Daftar Janji Temu & SPK','Appointments & Work Orders'],['Tamu terjadwal hari ini dan personel kontraktor yang disetujui GA.','Today\'s scheduled visitors and contractor personnel approved by GA.']],
+  docs:[['PERIKSA','CHECK'],['Dokumen Tamu','Visitor Documents'],['Cocokkan nama di KTP, surat, dan daftar. Periksa tanggal berlaku dan penandatangan.','Match the name on the ID, letter and list. Check validity dates and who signed.']],
+  sop:['SOP',['SOP-SEC-03 · Terima Tamu','SOP-SEC-03 · Visitor Intake'],['Baca ulang briefing alur penerimaan tamu, kartu akses, patroli, dan CCTV.','Re-read the briefing on visitor intake, access cards, patrol and CCTV.']]
+};
+
+function actionsFor(){
+  const v=S.v, f=S.f;
+  switch(S.mode){
+    case 'visitor': return [
+      {t:t('Periksa dokumen','Check documents'), s:t('KTP & surat','ID & letter'), ico:'doc', done:f.docs, fn:openDocs},
+      {t:t('Verifikasi','Verify'), s:t('Telepon ','Call ')+tx(v.target.who), ico:'phone', done:f.verify, fn:()=>openPhone()},
+      {t:t('Arahkan ke buku tamu','Send to guest book'), s:t('Isi data diri','Fill in details'), ico:'book', done:f.book, fn:openBook},
+      {t:t('Beri kartu akses','Issue access card'), s:t('Pilih tingkat','Choose level'), ico:'card', fn:()=>{S.mode='cards'; render();}},
+      {t:t('Tolak dengan sopan','Refuse politely'), s:t('Tidak berkepentingan','No valid purpose'), ico:'stop', danger:true, fn:()=>decide('tolak')}
+    ];
+    case 'cards': return [...Object.entries(TIERS).map(([k,x])=>({t:tx(x.label), s:tx(x.sub), chip:x.color, fn:()=>decide(k)})),
+      {t:t('Kembali','Back'), s:t('Batal pilih kartu','Cancel card choice'), ico:'back', fn:()=>{S.mode='visitor'; render();}}];
+    case 'alert': return [
+      {t:t('Dengar ulang HT','Replay radio'), s:tx(S.ev.from), ico:'ht', fn:replayRadio},
+      {t:t('Buka monitor CCTV','Open CCTV monitor'), s:t('Pilih kamera relevan','Pick the relevant camera'), ico:'cctv', fn:openCctv}
+    ];
+    case 'patrol': return [
+      {t:t('Minta rekan jaga pos','Ask colleague to cover'), s:t('Via HT ke Pak Slamet','Radio Mr. Slamet'), ico:'ht', done:S.patrol.handover, fn:handover},
+      {t:S.patrol.started?t('Lanjutkan patroli','Continue patrol'):t('Mulai patroli','Start patrol'), s:t('5 titik vital','5 vital points'), ico:'key', fn:startPatrol},
+      {t:t('Lihat daftar & SPK','View list & orders'), s:t('Referensi','Reference'), ico:'list', fn:openList}
+    ];
+  }
+  return [];
+}
+function replayRadio(){ toast('info',['Laporan via HT · '+S.ev.from[0],'Radio report · '+S.ev.from[1]], S.ev.msg); }
+function render(){
+  const acts=actionsFor(), box=$('#actions');
+  if(!acts.length){
+    box.innerHTML=`<div class="idle">${S.started?t('Menunggu… pantau lobi.','Waiting… keep an eye on the lobby.'):t('Selesaikan briefing untuk memulai shift.','Finish the briefing to start your shift.')}</div>`;
+  } else {
+    box.innerHTML=acts.map((a,i)=>`<button class="act${a.done?' done':''}${a.danger?' danger':''}" type="button" data-i="${i}">
+      ${a.chip?`<span class="chip" style="background:${a.chip}"></span>`:`<span class="ico">${ICON[a.ico]}</span>`}
+      <span><b>${esc(a.t)}</b><small>${esc(a.s)}</small></span><kbd>${i+1}</kbd>${a.done?'<span class="chk">✓</span>':''}</button>`).join('');
+    box.querySelectorAll('.act').forEach(b=>b.onclick=()=>acts[+b.dataset.i].fn());
+  }
+  $('#iKeys').textContent = S.mode==='cards' ? t('1–4 pilih · 5/Esc kembali','1–4 choose · 5/Esc back') : acts.length ? t(`1–${acts.length} pilih`,`1–${acts.length} choose`) : '';
+  showInfo();
+  const attn={objDocs:S.mode==='visitor'&&!S.f.docs, objCctv:S.mode==='alert', objHt:S.mode==='alert'||(S.mode==='patrol'&&!S.patrol.handover), objPatrol:S.mode==='patrol', objCards:S.mode==='cards'};
+  Object.entries(attn).forEach(([id,on])=>$('#'+id).classList.toggle('attn',!!on));
+  $('#monAlert').style.display = S.mode==='alert' ? '' : 'none';
+  const led=$('#htLed'); led.setAttribute('fill', S.mode==='alert'?'#f2b33d':'#3b4652'); led.classList.toggle('blink', S.mode==='alert');
+}
+function showInfo(){
+  let tag='POS', ti=t('Pos lobi','Lobby desk'), d=t('Menunggu tamu berikutnya. Klik benda di meja untuk melihat fungsinya.','Waiting for the next visitor. Click objects on the desk to see what they do.');
+  if(S.hover && OBJ_INFO[S.hover]) [tag,ti,d]=OBJ_INFO[S.hover].map(tx);
+  else if(S.mode==='visitor'){ tag=t('TAMU','VISITOR'); ti=tx(S.v.claim); d=t('Alur SOP: periksa dokumen → verifikasi → buku tamu → kartu akses. Tolak bila tidak memenuhi syarat.','SOP flow: check documents → verify → guest book → access card. Refuse if requirements are not met.'); }
+  else if(S.mode==='cards'){ tag=t('KARTU','CARD'); ti=t('Pilih tingkat kartu akses','Choose the access card level'); d=t('Sesuaikan dengan dokumen dan izin yang sudah diverifikasi. Tamu tidak memenuhi syarat? Tekan Kembali, lalu pilih Tolak.','Match it to the verified documents and permits. Visitor doesn\'t qualify? Press Back, then choose Refuse.'); }
+  else if(S.mode==='alert'){ tag=t('HT','RADIO'); ti=t('Laporan · ','Report · ')+tx(S.ev.from); d=tx(S.ev.msg); }
+  else if(S.mode==='patrol'){ tag=t('PATROLI','PATROL'); ti=t('Jadwal patroli titik vital','Vital point patrol scheduled'); d=t('Pos tidak boleh kosong: minta rekan berjaga sebelum berangkat, lalu periksa 5 titik.','The desk must never be empty: ask a colleague to cover before you leave, then check 5 points.'); }
+  $('#iTag').textContent=tag; $('#iTitle').textContent=ti; $('#iDesc').textContent=d;
+}
+
+/* ---------- Modal ---------- */
+function openModal(html, onClose, wide, reopen){
+  closeModal(true);
+  const root=$('#modalRoot');
+  root.innerHTML=`<div class="modal" role="dialog" aria-modal="true"><div class="sheet"${wide?` style="width:min(${wide}px,100%)"`:''}>${html}</div></div>`;
+  modalClose=onClose||null; modalReopen=reopen||null;
+  root.querySelector('.modal').addEventListener('click',e=>{ if(e.target.closest('[data-close]')) closeModal(); });
+  const f=root.querySelector('.sheet button:not([disabled])'); if(f) f.focus({preventScroll:true});
+  return root.querySelector('.sheet');
+}
+function closeModal(silent){
+  const root=$('#modalRoot'); if(!root.innerHTML) return;
+  const cb=modalClose; modalClose=null; modalReopen=null; root.innerHTML='';
+  cancelAnimationFrame(cctvRaf); cctvRaf=0;
+  if(!silent && cb) cb();
+}
+const modalOpen=()=>!!$('#modalRoot').innerHTML;
+const closeBtn=()=>`<button class="btn x" type="button" data-close>${t('Tutup · Esc','Close · Esc')}</button>`;
+
+/* ---------- Visitor flow ---------- */
+function startDay(d){
+  S.day=d; S.step=0; S.clock=DAYS[d].start; S.viol=[]; S.res=[]; S.book=[]; S.v=null; S.ev=null; S.patrol=null; S.mode='idle';
+  $('#visitor').innerHTML=''; placeVisitor('door',0,false); bubble(null); $('#objDocs').style.display='none'; setGate(false);
+  hud(); render(); hint([`Hari ${d+1} dimulai · pos lobi dibuka`,`Day ${d+1} begins · lobby desk open`]);
+  const n=DAYS[d].steps.filter(s=>s.t==='v').length;
+  toast('info',[`Hari ${d+1} · ${DAYS[d].label[0]}`,`Day ${d+1} · ${DAYS[d].label[1]}`], [`${n} tamu akan datang. Periksa daftar janji temu di meja kanan bawah.`,`${n} visitors are coming. Check the appointment list at the bottom right of the desk.`]);
+  setTimeout(next,1500);
+}
+function next(){
+  const st=DAYS[S.day].steps[S.step++];
+  if(!st){ endDay(); return; }
+  if(st.t==='v') arrive(st.v);
+  else if(st.t==='cctv') alertEv(st.e);
+  else patrolReady(st.p);
+}
+function arrive(v){
+  S.v=v; S.f={docs:false,verify:false,book:false,filled:!v.miss,logged:false}; S.mode='wait';
+  $('#visitor').innerHTML=figure(v.look);
+  placeVisitor('door',0,false);
+  requestAnimationFrame(()=>{ $('#visitor').style.opacity=1; placeVisitor('desk',1,true); });
+  hint(['Tamu datang ke meja','A visitor approaches the desk']);
+  render();
+  setTimeout(()=>{
+    bubble(v.greet);
+    $('#objDocs').style.display=''; $('#docLetter').style.display=v.doc?'':'none';
+    S.mode='visitor'; hint(['Klik dokumen di meja atau tekan 1–5','Click the documents on the desk or press 1–5']); render();
+  },1150);
+}
+function openDocs(){
+  const v=S.v; if(!v) return toast('info',['Tidak ada dokumen','No documents'],['Belum ada tamu di meja.','No visitor at the desk yet.']);
+  S.f.docs=true; render();
+  const d=v.doc, ph=v.photo||v.look;
+  openModal(`${closeBtn()}
+    <div class="eb">${t('Langkah 2 · Periksa identitas &amp; dokumen','Step 2 · Check identity &amp; documents')}</div>
+    <h2>${t('Dokumen dari tamu','Visitor documents')}</h2>
+    <p class="lead">${t('Cocokkan nama dan foto KTP dengan orang di depan Anda, lalu dengan surat dan daftar. Periksa tanggal berlaku dan siapa yang menandatangani.','Match the ID name and photo to the person in front of you, then to the letter and the list. Check validity dates and who signed.')}</p>
+    <div class="docgrid">
+      <div>
+        <div class="ktp"><div class="h">${t('KARTU IDENTITAS · KTP','IDENTITY CARD · KTP')}</div>
+          <dl><dt>NIK</dt><dd>${v.ktp.nik}</dd><dt>${t('Nama','Name')}</dt><dd>${v.ktp.nama}</dd><dt>${t('Tempat/Tgl lahir','Place/Date of birth')}</dt><dd>${v.ktp.ttl}</dd><dt>${t('Berlaku','Valid')}</dt><dd>${t('Seumur hidup','Lifetime')}</dd></dl>
+          <div class="foto">${photo(ph)}</div></div>
+        <div class="compare"><figure>${photo(ph)}${t('Foto KTP','ID photo')}</figure><figure>${photo(v.look,'#3a4652')}${t('Tamu di meja','Visitor at desk')}</figure></div>
+      </div>
+      ${d?`<div class="letter"><div class="lh">${esc(tx(d.from))}</div><h4>${esc(tx(d.title))}</h4>${d.no?`<div class="no">No. ${esc(d.no)}</div>`:'<div class="no">&nbsp;</div>'}
+        <ul>${d.lines.map(l=>`<li>${esc(tx(l))}</li>`).join('')}</ul>
+        <div class="sig">${esc(d.sig||'')}</div><div class="signer">${esc(tx(d.sign))}</div>${d.stamp?'<div class="stamp">NUSANTARA<br>DATA<br>PRIMA</div>':''}</div>`
+        :`<div class="letter empty">${t('Tamu tidak membawa surat.','The visitor brought no letter.')}</div>`}
+      <div class="ref">${listHTML()}</div>
+    </div>`, null, 1100, openDocs);
+}
+function listHTML(){
+  const d=DAYS[S.day];
+  return `<div class="eb">${t('Janji temu','Appointments')} · ${tx(d.label)}</div>
+    <table><thead><tr><th>${t('Jam','Time')}</th><th>${t('Nama','Name')}</th><th>${t('Instansi','Organization')}</th><th>${t('Bertemu','Host')}</th><th>${t('Akses','Access')}</th></tr></thead><tbody>
+    ${d.appts.map(a=>`<tr><td>${a.jam}</td><td><b>${esc(a.nama)}</b></td><td>${esc(tx(a.instansi))}</td><td>${esc(tx(a.tujuan))}</td><td><span class="acc" style="background:${ACC[a.akses][1]}">${tx(ACC[a.akses][0])}</span></td></tr>`).join('')}
+    </tbody></table>
+    <div class="eb" style="margin-top:6px">${t('SPK kontraktor aktif · disetujui GA','Active contractor work orders · approved by GA')}</div>
+    <table><thead><tr><th>${t('Pelaksana','Contractor')}</th><th>${t('No. SPK','Order no.')}</th><th>${t('Berlaku','Valid')}</th><th>Area</th><th>${t('Personel','Personnel')}</th></tr></thead><tbody>
+    ${RENO.map(r=>`<tr><td>${r.vendor}</td><td>${r.spk}</td><td>${tx(r.berlaku)}</td><td>${tx(r.area)}</td><td><b>${r.personel}</b></td></tr>`).join('')}
+    </tbody></table>`;
+}
+function openList(){
+  openModal(`${closeBtn()}
+    <div class="eb">${t('Referensi pos','Desk reference')}</div><h2>${t('Daftar janji temu &amp; SPK','Appointments &amp; work orders')}</h2>
+    <p class="lead">${t('Tamu yang tidak ada di daftar tetap harus diverifikasi ke pihak yang dituju. Kontraktor wajib tercantum namanya di SPK.','Visitors not on the list must still be verified with the person they are visiting. Contractors must be named on the work order.')}</p>
+    <div class="ref">${listHTML()}</div>`, null, 860, openList);
+}
+function openPhone(answered){
+  const v=S.v; if(!v) return toast('info',['Tidak ada yang perlu diverifikasi','Nothing to verify'],['Belum ada tamu di meja.','No visitor at the desk yet.']);
+  S.f.verify=true; render();
+  const tg=v.target;
+  const sh=openModal(`${closeBtn()}
+    <div class="eb">${t('Langkah 3 · Verifikasi ke pihak dituju','Step 3 · Verify with the host')}</div><h2>${t('Telepon internal','Internal phone')}</h2>
+    <div class="call"><div class="dial">${t('Menghubungi','Calling')} ${esc(tx(tg.who))} · ${esc(tx(tg.unit))} · ext. ${tg.ext}</div>
+    <div class="ring" id="ring"${answered?' hidden':''}>${t('Tuut… tuut…','Ring… ring…')}</div>
+    <div class="say" id="say"${answered?'':' hidden'}><b>${esc(tx(tg.who))}:</b> ${esc(tx(v.phone))}</div></div>`, null, 640, ()=>openPhone(true));
+  if(!answered) setTimeout(()=>{ const r=sh.querySelector('#ring'), s=sh.querySelector('#say'); if(r&&s){ r.hidden=true; s.hidden=false; } },900);
+}
+function entryOf(v){
+  const e={jam:fmt(S.clock), nama:tx(v.name).replace(/"/g,''), instansi:v.org, keperluan:v.purpose, bertemu:v.target.who, paraf:true};
+  if(v.miss && !S.f.filled) e[v.miss]= v.miss==='paraf'?false:'';
+  return e;
+}
+function rowHTML(e,cur){
+  const empty=`<td class="miss">${t('kosong','empty')}</td>`;
+  const cell=k=>e[k]===''?empty:`<td>${esc(tx(e[k]))}</td>`;
+  return `<tr class="${cur?'cur':''}"><td class="jam">${e.jam}</td>${cell('nama')}${cell('instansi')}${cell('keperluan')}${cell('bertemu')}
+    ${e.paraf?'<td><svg width="56" height="22" viewBox="0 0 56 22"><path d="M3 16 q6-14 12-2 t10-4 t12 2 t14-8" fill="none" stroke="#1f3a7a" stroke-width="2"/></svg></td>':empty}</tr>`;
+}
+function openBook(){
+  const v=S.v;
+  const draw=()=>{
+    const rows=S.book.map(e=>rowHTML(e,false)).join('');
+    const cur=v&&!S.f.logged?rowHTML(entryOf(v),true):'';
+    const incomplete=v&&!S.f.filled;
+    sh.innerHTML=`${closeBtn()}
+      <div class="eb">${t('Langkah 4 · Buku tamu','Step 4 · Guest book')}</div><h2>${t('Buku Tamu','Guest Book')} · ${tx(DAYS[S.day].label)}</h2>
+      <p class="lead">${v?t('Tamu mengisi baris yang disorot. Pastikan semua kolom terisi sebelum buku ditutup.','The visitor fills in the highlighted row. Make sure every field is filled before closing the book.'):t('Arsip pengisian hari ini.','Today\'s entries.')}</p>
+      <div class="book"><table><thead><tr><th>${t('Jam','Time')}</th><th>${t('Nama','Name')}</th><th>${t('Instansi','Organization')}</th><th>${t('Keperluan','Purpose')}</th><th>${t('Bertemu','Host')}</th><th>${t('Paraf','Signature')}</th></tr></thead>
+      <tbody>${rows}${cur}${!rows&&!cur?`<tr><td colspan="6" class="empty">${t('Belum ada entri hari ini.','No entries yet today.')}</td></tr>`:''}</tbody></table></div>
+      <div class="row">${incomplete?`<button class="btn" type="button" id="bkFill">${t('Minta tamu melengkapi','Ask visitor to complete it')}</button>`:''}
+      <button class="btn primary" type="button" data-close>${v?t('Selesai, tutup buku','Done, close the book'):t('Tutup','Close')}</button></div>`;
+    const b=sh.querySelector('#bkFill');
+    if(b) b.onclick=()=>{ S.f.filled=true; toast('good',['Data dilengkapi','Entry completed'],[`Tamu mengisi kolom ${MISS_LBL[v.miss][0]} yang kosong.`,`The visitor filled in the empty ${MISS_LBL[v.miss][1]} field.`]); if(S.f.logged){ S.book[S.book.length-1]=entryOf(v); } draw(); };
+  };
+  const sh=openModal('', ()=>{
+    if(!v||S.f.logged) return;
+    S.f.book=true; S.f.logged=true;
+    if(!S.f.filled) viol(['Buku tamu tidak lengkap','Incomplete guest book'],[`Kolom ${MISS_LBL[v.miss][0]} kosong saat buku ditutup. Semua kolom wajib terisi sebelum kartu diberikan.`,`The ${MISS_LBL[v.miss][1]} field was empty when the book was closed. Every field must be filled before a card is issued.`]);
+    S.book.push(entryOf(v)); render();
+  }, 900, openBook);
+  draw();
+}
+function decide(choice){
+  const v=S.v, f=S.f; if(!v || S.mode==='wait') return;
+  S.mode='wait'; render();
+  let ok=true;
+  if(choice==='tolak'){
+    if(v.answer!=='tolak'){ ok=false; viol(['Menolak tamu yang sah','Refused a legitimate visitor'], v.why); }
+  } else {
+    if(v.answer==='tolak'){ ok=false; viol(['Akses diberikan kepada pihak tak berwenang','Access given to an unauthorized person'], v.why); }
+    else if(choice!==v.answer){ ok=false; viol(['Tingkat kartu salah: '+TIERS[choice].label[0],'Wrong card level: '+TIERS[choice].label[1]], v.why); }
+    const miss=[]; if(!f.docs) miss.push(['periksa dokumen','document check']); if(!f.verify) miss.push(['verifikasi','verification']); if(!f.book) miss.push(['buku tamu','guest book']);
+    if(miss.length){ ok=false; viol(['Langkah SOP terlewat','Skipped SOP step'],['Kartu diberikan sebelum: '+miss.map(m=>m[0]).join(', ')+'. Urutan SOP wajib diikuti untuk setiap tamu.','Card issued before: '+miss.map(m=>m[1]).join(', ')+'. The SOP sequence is required for every visitor.']); }
+  }
+  S.res.push({kind:'tamu', ok});
+  if(ok) toast('good', choice==='tolak'?['Penolakan tepat','Correct refusal']:['Kartu tepat · '+TIERS[choice].label[0],'Correct card · '+TIERS[choice].label[1]], v.why);
+  const granted=choice!=='tolak';
+  bubble(granted?['Terima kasih, Pak.','Thank you, sir.']:(v.answer==='tolak'?(v.rejectLine||['Baik, Pak. Saya mengerti.','All right, I understand.']):['Lho, saya kan sudah ada janji…','But I do have an appointment…']));
+  if(granted){ v.look.lanyard=TIERS[choice].color; $('#visitor').innerHTML=figure(v.look); }
+  hud();
+  setTimeout(()=>{
+    bubble(null); $('#objDocs').style.display='none';
+    if(granted) setGate(true);
+    placeVisitor(granted?'gate':'door',0,true);
+    setTimeout(()=>{ delete v.look.lanyard; setGate(false); S.v=null; S.mode='idle'; S.clock+=25; hud(); render(); hint(['Menunggu tamu berikutnya','Waiting for the next visitor']); setTimeout(next,700); },1250);
+  },1700);
+}
+
+/* ---------- CCTV ---------- */
+function alertEv(e){
+  S.ev=e; S.mode='alert'; hint(['HT berbunyi · buka monitor CCTV','Radio call · open the CCTV monitor']); render();
+  replayRadio();
+}
+function poly(c,pts,fill){ c.fillStyle=fill; c.beginPath(); pts.forEach((p,i)=>i?c.lineTo(p[0],p[1]):c.moveTo(p[0],p[1])); c.closePath(); c.fill(); }
+function guy(c,x,y,s,col,hat){
+  c.fillStyle='#9fb0a8'; c.beginPath(); c.arc(x,y-30*s,6*s,0,7); c.fill();
+  c.fillStyle=col; c.beginPath(); c.roundRect?c.roundRect(x-8*s,y-23*s,16*s,23*s,4*s):c.rect(x-8*s,y-23*s,16*s,23*s); c.fill();
+  if(hat){ c.fillStyle=hat; c.beginPath(); c.arc(x,y-31*s,6.5*s,Math.PI,0); c.fill(); }
+}
+function car(c,x,y,w,h,col){ c.fillStyle=col; c.fillRect(x,y,w,h); c.fillStyle='#1b2420'; c.fillRect(x+w*.18,y+h*.12,w*.64,h*.32); c.fillStyle='#0f1412'; c.fillRect(x+4,y+h-4,10,6); c.fillRect(x+w-14,y+h-4,10,6); }
+function drawFeed(cv, cam, tm){
+  const c=cv.getContext('2d'), W=cv.width, H=cv.height;
+  c.setTransform(W/320,0,0,H/180,0,0);
+  const an=!!(S.ev && S.ev.cam===cam && S.ev.anomaly);
+  const wall='#27322e', floor='#1f2925';
+  c.fillStyle='#18201d'; c.fillRect(0,0,320,180);
+  if(cam==='c1'){
+    c.fillStyle='#202a26'; c.fillRect(0,0,320,52); poly(c,[[0,180],[320,180],[250,52],[70,52]],floor);
+    c.strokeStyle='#3a4a44'; c.lineWidth=1.5; for(let i=0;i<5;i++){ c.beginPath(); c.moveTo(20+i*70,180); c.lineTo(95+i*33,60); c.stroke(); }
+    c.fillStyle='#34413c'; c.fillRect(152,18,18,150);
+    car(c,40,116,76,40,'#4a5a54'); car(c,196,122,80,42,'#56645e'); car(c,104,72,52,26,'#43514b'); car(c,190,68,48,24,'#3f4c47');
+  } else if(cam==='c2'){
+    c.fillStyle=wall; c.fillRect(0,0,320,124); c.fillStyle=floor; c.fillRect(0,124,320,56);
+    c.fillStyle='#141a18'; c.fillRect(128,30,64,96);
+    if(an){ c.fillStyle='#6a7a72'; c.fillRect(132,34,56,92); }
+    else { c.fillStyle='#3d4b45'; c.fillRect(132,34,56,92); c.fillStyle='#596860'; c.fillRect(176,78,6,3); }
+    c.fillStyle='#10151a'; c.fillRect(198,68,10,14); c.fillStyle=an?'#3fd17a':'#2a6a46'; c.fillRect(201,71,4,4);
+    if(an){ guy(c,150+Math.sin(tm*2),128,1.35,'#8fa29a'); guy(c,172+Math.sin(tm*2+1)*1.5,130,1.4,'#b8a985'); }
+    else { const x=30+((tm*22)%260); guy(c,x,158,1.2,'#8fa29a'); }
+  } else if(cam==='c3'){
+    c.fillStyle='#141b18'; c.fillRect(0,0,320,180);
+    poly(c,[[0,0],[118,44],[118,126],[0,180]],'#2b3632'); poly(c,[[320,0],[202,44],[202,126],[320,180]],'#2b3632');
+    poly(c,[[0,180],[118,126],[202,126],[320,180]],floor);
+    c.fillStyle='#26302c'; c.fillRect(118,44,84,82);
+    c.fillStyle='#4a5853'; c.fillRect(138,56,44,70);
+    c.fillStyle='#d9e2dd'; c.font='600 8px "IBM Plex Mono", monospace'; c.fillText('SERVER',145,68);
+    c.fillStyle='#10151a'; c.fillRect(186,84,9,13);
+    c.fillStyle= an ? (Math.floor(tm*3)%2?'#ff4a3a':'#5a1d17') : '#3fd17a'; c.fillRect(188,87,5,5);
+    if(an) guy(c,166+Math.sin(tm*1.5)*2,128,1.5,'#f07f22','#f2c230');
+  } else if(cam==='c4'){
+    c.fillStyle=wall; c.fillRect(0,0,320,132); c.fillStyle=floor; c.fillRect(0,132,320,48);
+    c.fillStyle='#2fbf6a'; c.fillRect(138,16,44,16); c.fillStyle='#0c2a18'; c.font='700 10px "IBM Plex Mono", monospace'; c.fillText('EXIT',148,28);
+    c.fillStyle='#141a18'; c.fillRect(118,38,84,98);
+    if(an){ c.fillStyle='#6b7a73'; c.fillRect(122,42,76,94); poly(c,[[198,42],[236,32],[236,146],[198,136]],'#3e4c46'); c.fillStyle='#8a6a43'; c.fillRect(192,116,30,22); c.fillStyle='#b9975f'; c.fillRect(192,124,30,3); }
+    else { c.fillStyle='#3e4c46'; c.fillRect(122,42,76,94); c.fillStyle='#6b7a73'; c.fillRect(130,92,60,5); }
+  } else if(cam==='c5'){
+    c.fillStyle=wall; c.fillRect(0,0,320,118); c.fillStyle=floor; c.fillRect(0,118,320,62);
+    for(let i=-2;i<16;i++){ poly(c,[[i*24,96],[i*24+12,96],[i*24+20,104],[i*24+8,104]],i%2?'#d9b22a':'#1a1a1a'); }
+    c.strokeStyle='#8a939a'; c.lineWidth=3; c.beginPath(); c.moveTo(240,160); c.lineTo(262,40); c.moveTo(270,160); c.lineTo(282,40); c.stroke();
+    c.lineWidth=2; for(let y=60;y<160;y+=20){ c.beginPath(); c.moveTo(258,y); c.lineTo(280,y); c.stroke(); }
+    c.fillStyle='#4a524c'; c.fillRect(30,140,110,14);
+    guy(c,90+Math.sin(tm*.8)*14,150,1.3,'#f07f22','#f2c230'); guy(c,200+Math.cos(tm*.6)*10,156,1.25,'#f07f22','#f2c230');
+  } else if(cam==='c6'){
+    poly(c,[[0,180],[320,180],[260,60],[60,60]],floor); c.fillStyle=wall; c.fillRect(0,0,320,60);
+    c.fillStyle='#4a3a2c'; c.fillRect(100,108,120,30);
+    guy(c,160,108,1.2,'#2c3e5c');
+    c.fillStyle='#3a4652'; c.fillRect(250,70,8,40); c.fillRect(290,70,8,40);
+    const x=((tm*18)%380)-40; guy(c,x,170,1.3,'#8fa29a');
+  }
+  c.fillStyle='rgba(0,0,0,.14)'; for(let y=0;y<180;y+=3) c.fillRect(0,y,320,1);
+  c.fillStyle='rgba(225,235,230,.9)'; c.font='600 9px "IBM Plex Mono", monospace'; c.textAlign='left'; c.fillText(tx(CAMS[cam]),8,14);
+  c.textAlign='right'; c.fillText(`${DAYS[S.day].date} ${fmt(S.clock)}:${String(Math.floor(tm)%60).padStart(2,'0')}`,312,14); c.textAlign='left';
+  if(Math.floor(tm*2)%2){ c.fillStyle='#e8604c'; c.beginPath(); c.arc(12,168,3.5,0,7); c.fill(); }
+  c.fillStyle='rgba(225,235,230,.85)'; c.fillText('REC',20,171);
+}
+function openCctv(){
+  let sel=null;
+  const ev=S.ev;
+  const sh=openModal(`${closeBtn()}
+    <div class="eb">${t('Pemantauan keamanan fisik · A.7.4','Physical security monitoring · A.7.4')}</div><h2>${t('Monitor CCTV','CCTV Monitor')}</h2>
+    ${ev?`<div class="report"><b>${esc(tx(ev.from))}:</b> ${esc(tx(ev.msg))}</div>`:`<p class="lead">${t('Tidak ada laporan aktif. Pemantauan rutin.','No active reports. Routine monitoring.')}</p>`}
+    <div class="cctv">
+      <div><div class="big"><canvas id="bigCv" width="640" height="360"></canvas></div>
+        <div class="bigcap" id="bigCap">${ev?t('Pilih kamera yang sesuai dengan laporan.','Pick the camera that matches the report.'):t('Pilih kamera untuk diperbesar.','Pick a camera to enlarge it.')}</div>
+        ${ev?`<div class="row" style="justify-content:flex-start"><button class="btn bad" type="button" id="cvLapor" disabled>${t('Laporkan temuan','Report finding')}</button><button class="btn" type="button" id="cvAman" disabled>${t('Kondisi aman','All clear')}</button></div>`:''}
+      </div>
+      <div class="thumbs">${Object.keys(CAMS).map(k=>`<button class="feed" type="button" data-cam="${k}" aria-label="${tx(CAMS[k])}"><canvas width="320" height="180"></canvas></button>`).join('')}</div>
+    </div>`, null, 1100, openCctv);
+  const feeds=[...sh.querySelectorAll('.feed')], big=sh.querySelector('#bigCv');
+  feeds.forEach(b=>b.onclick=()=>{
+    sel=b.dataset.cam; feeds.forEach(x=>x.classList.toggle('sel',x===b));
+    sh.querySelector('#bigCap').textContent=tx(CAMS[sel])+(ev?t(' · putuskan: laporkan temuan atau nyatakan aman.',' · decide: report a finding or declare all clear.'):'');
+    sh.querySelectorAll('#cvLapor,#cvAman').forEach(x=>x.disabled=false);
+  });
+  if(ev){
+    sh.querySelector('#cvLapor').onclick=()=>judgeCctv(sel,'lapor');
+    sh.querySelector('#cvAman').onclick=()=>judgeCctv(sel,'aman');
+  }
+  const loop=ts=>{
+    const tm=ts/1000;
+    feeds.forEach(b=>drawFeed(b.firstElementChild,b.dataset.cam,tm));
+    if(sel) drawFeed(big,sel,tm); else { const c=big.getContext('2d'); c.setTransform(1,0,0,1,0,0); c.fillStyle='#0b0f0d'; c.fillRect(0,0,640,360); c.fillStyle='#5d6b66'; c.font='14px "IBM Plex Mono", monospace'; c.textAlign='center'; c.fillText(t('PILIH KAMERA','SELECT A CAMERA'),320,186); c.textAlign='left'; }
+    cctvRaf=requestAnimationFrame(loop);
+  };
+  cctvRaf=requestAnimationFrame(loop);
+}
+function judgeCctv(sel,dec){
+  const e=S.ev; if(!e||!sel) return;
+  const ok = sel===e.cam && (dec==='lapor')===e.anomaly;
+  if(!ok){
+    if(sel!==e.cam) viol(['Kamera tidak sesuai laporan','Wrong camera for the report'],[`Laporan menyangkut ${CAMS[e.cam][0]}, tetapi keputusan diambil dari ${CAMS[sel][0]}. ${e.why[0]}`,`The report concerned ${CAMS[e.cam][1]}, but the decision was made from ${CAMS[sel][1]}. ${e.why[1]}`]);
+    else viol(dec==='lapor'?['Eskalasi tidak perlu','Unnecessary escalation']:['Insiden terlewat','Missed incident'], e.why);
+  } else toast('good', e.anomaly?['Temuan dilaporkan','Finding reported']:['Kondisi aman dikonfirmasi','All clear confirmed'], e.why);
+  S.res.push({kind:'cctv', ok});
+  S.ev=null; S.mode='wait'; closeModal(true); S.clock+=10; hud(); render(); hint(['Kembali memantau lobi','Back to watching the lobby']);
+  setTimeout(next,1400);
+}
+
+/* ---------- Patrol ---------- */
+function patrolReady(p){
+  S.patrol={issues:p, handover:false, started:false, done:{}}; S.mode='patrol';
+  S.clock=Math.max(S.clock,13*60); hud();
+  hint(['Jadwal patroli · minta rekan jaga pos dulu','Patrol time · ask a colleague to cover first']); render();
+  toast('info',['Jadwal patroli 13:00','Patrol scheduled 13:00'],['Supervisor: "Waktunya patroli titik vital. Pastikan pos tetap dijaga."','Supervisor: "Time to patrol the vital points. Make sure the desk stays covered."']);
+}
+function handover(){
+  if(S.mode!=='patrol') return toast('info',['HT','Radio'],S.mode==='alert'?S.ev.msg:['Kanal sepi. Tidak ada laporan baru.','Channel quiet. No new reports.']);
+  if(S.patrol.handover) return;
+  S.patrol.handover=true; render();
+  toast('good',['Pos dijaga rekan','Desk covered'],['Pak Slamet (HT): "Siap, saya ke pos lobi sekarang. Silakan patroli."','Mr. Slamet (radio): "Copy, heading to the lobby desk now. Go ahead with your patrol."']);
+}
+function startPatrol(){
+  if(S.mode!=='patrol') return toast('info',['Belum jadwal patroli','No patrol scheduled yet'],['Jadwal patroli akan diumumkan supervisor lewat HT.','The supervisor will announce patrol time over the radio.']);
+  if(!S.patrol.handover && !S.patrol.started) viol(['Pos ditinggalkan tanpa pengganti','Desk left unattended'],['Pos lobi tidak boleh kosong. Minta rekan berjaga lewat HT sebelum berangkat patroli.','The lobby desk must never be empty. Ask a colleague to cover over the radio before patrolling.']);
+  S.patrol.started=true; render(); openPatrol();
+}
+function patrolArt(id, bad){
+  let o='<rect width="360" height="220" fill="#3b4652"/><rect y="186" width="360" height="34" fill="#2a323a"/>';
+  if(id==='server') o+=(bad
+    ? `<rect x="128" y="28" width="104" height="160" fill="#0d1114"/><path d="M128 28 L176 42 L176 180 L128 188Z" fill="#8995a1"/><rect x="150" y="150" width="46" height="8" fill="#6a4a30"/><rect x="152" y="158" width="5" height="28" fill="#4a3424"/><rect x="190" y="158" width="5" height="28" fill="#4a3424"/><rect x="186" y="112" width="8" height="40" fill="#6a4a30"/>`
+    : `<rect x="128" y="28" width="104" height="160" fill="#8995a1"/><rect x="214" y="104" width="6" height="22" rx="2" fill="#5b6670"/>`)
+    +`<rect x="150" y="40" width="60" height="16" fill="#1d2328"/><text x="180" y="52" text-anchor="middle" font-size="10" fill="#e9edf0" font-family="IBM Plex Mono, monospace">SERVER</text><rect x="246" y="96" width="20" height="30" rx="3" fill="#1d2328"/><circle cx="256" cy="106" r="4" fill="#4cc38a"/>`;
+  if(id==='panel') o+=`<rect x="104" y="24" width="152" height="166" rx="4" fill="#9aa4ad"/><path d="M170 44 l14 0 l-8 14 l10 0 l-18 22 l5-16 l-9 0z" fill="#f2c230"/>`
+    +(bad
+    ? `<rect x="112" y="92" width="136" height="90" fill="#1d2328"/><g fill="#5b6670">${[0,1,2].map(r=>[0,1,2,3,4,5].map(i=>`<rect x="${122+i*20}" y="${102+r*26}" width="12" height="18" rx="2"/>`).join('')).join('')}</g><path d="M248 92 L290 104 L290 196 L248 182Z" fill="#b3bcc4"/><path d="M262 132 a9 9 0 0 1 18 0" fill="none" stroke="#c9a23a" stroke-width="4" transform="translate(6 -8) rotate(-30 271 132)"/><rect x="262" y="132" width="18" height="16" rx="3" fill="#d9a83a"/>`
+    : `<rect x="112" y="92" width="136" height="90" fill="#aab3bb"/><path d="M228 124 a9 9 0 0 1 18 0" fill="none" stroke="#c9a23a" stroke-width="4"/><rect x="228" y="124" width="18" height="16" rx="3" fill="#d9a83a"/>`);
+  if(id==='darurat') o+=`<rect x="140" y="12" width="80" height="22" fill="#2fbf6a"/><text x="180" y="28" text-anchor="middle" font-size="13" font-weight="700" fill="#0c2a18" font-family="IBM Plex Mono, monospace">EXIT</text><rect x="126" y="42" width="108" height="146" fill="#5d7a6a"/><rect x="136" y="112" width="88" height="7" rx="3" fill="#c9d2da"/>`
+    +(bad?`<rect x="104" y="140" width="70" height="48" fill="#a07a4c"/><rect x="104" y="160" width="70" height="4" fill="#c9a46c"/><rect x="164" y="128" width="78" height="60" fill="#8a6a43"/><rect x="164" y="152" width="78" height="4" fill="#b9975f"/><rect x="128" y="104" width="56" height="36" fill="#b08a58"/>`:'');
+  if(id==='arsip') o+=`<rect x="116" y="30" width="128" height="160" rx="3" fill="#7b8790"/><circle cx="180" cy="40" r="5" fill="#2a323a"/>`
+    +[0,1,2].map(i=>`<rect x="124" y="${52+i*44}" width="112" height="38" fill="#8d99a2"/><rect x="164" y="${66+i*44}" width="32" height="6" rx="3" fill="#525d66"/>`).join('')
+    +(bad?`<rect x="104" y="44" width="152" height="30" fill="#a3aeb6"/><g>${[0,1,2,3].map(i=>`<rect x="${112+i*34}" y="30" width="28" height="22" fill="#e9e4d8"/><rect x="${112+i*34}" y="30" width="12" height="6" fill="#c94a3c"/>`).join('')}</g><rect x="112" y="78" width="92" height="16" fill="#c94a3c"/><text x="158" y="90" text-anchor="middle" font-size="10" font-weight="700" fill="#fff" font-family="IBM Plex Mono, monospace">${t('RAHASIA','CONFIDENTIAL')}</text>`:'');
+  if(id==='apar'){
+    const ang = bad ? -140 : -50;
+    o+=`<rect x="90" y="60" width="44" height="120" rx="18" fill="#c8302a"/><rect x="100" y="40" width="24" height="24" fill="#2a2a2a"/><path d="M124 46 q30 6 22 40" fill="none" stroke="#2a2a2a" stroke-width="5"/><circle cx="112" cy="54" r="7" fill="#e9e4d8"/>
+      <circle cx="250" cy="100" r="62" fill="#e9e4d8" stroke="#1d2328" stroke-width="5"/>
+      <path d="M200 100 A50 50 0 0 1 225 57" fill="none" stroke="#e8604c" stroke-width="12"/><path d="M225 57 A50 50 0 0 1 275 57" fill="none" stroke="#4cc38a" stroke-width="12"/><path d="M275 57 A50 50 0 0 1 300 100" fill="none" stroke="#e8604c" stroke-width="12"/>
+      <line x1="250" y1="100" x2="${250+44*Math.cos(ang*Math.PI/180)}" y2="${100+44*Math.sin(ang*Math.PI/180)}" stroke="#1d2328" stroke-width="4" stroke-linecap="round"/><circle cx="250" cy="100" r="5" fill="#1d2328"/>
+      <text x="250" y="140" text-anchor="middle" font-size="10" fill="#1d2328" font-family="IBM Plex Mono, monospace">${t('TEKANAN','PRESSURE')}</text>
+      <line x1="134" y1="54" x2="190" y2="80" stroke="#e9e4d8" stroke-dasharray="4 4"/>`;
+  }
+  return `<svg viewBox="0 0 360 220" aria-hidden="true">${o}</svg>`;
+}
+function openPatrol(){
+  let cur=null;
+  const sh=openModal('', null, 1040, openPatrol);
+  const P=S.patrol;
+  const draw=()=>{
+    const all=Object.keys(POINTS).every(k=>P.done[k]);
+    const mk=Object.entries(POINTS).map(([k,p])=>{
+      const d=P.done[k], col=d?(d.ok?'#4cc38a':'#e8604c'):'#f2b33d';
+      return `<g class="mk" tabindex="0" role="button" data-pt="${k}" aria-label="${tx(p.name)}"><circle cx="${p.x}" cy="${p.y}" r="${cur===k?17:14}" fill="${col}" fill-opacity="${d?1:.25}" stroke="${col}" stroke-width="3"/>
+        <text x="${p.x}" y="${p.y+4}" text-anchor="middle" font-size="12" font-weight="600" fill="${d?'#0d1115':'#f2b33d'}" font-family="IBM Plex Mono, monospace">${d?(d.ok?'✓':'!'):'?'}</text>
+        <text x="${p.x}" y="${p.y+32}" text-anchor="middle" font-size="11" fill="#c9d2da" font-family="IBM Plex Mono, monospace">${tx(p.name)}</text></g>`;
+    }).join('');
+    const p=cur&&POINTS[cur], d=cur&&P.done[cur];
+    sh.innerHTML=`${closeBtn()}
+      <div class="eb">${t('Patroli titik vital · A.7.1 / A.7.3','Vital point patrol · A.7.1 / A.7.3')}</div><h2>${t('Ronde patroli','Patrol round')}</h2>
+      <p class="lead">${t('Klik setiap titik pada denah, amati kondisinya, lalu tandai Normal atau Temuan.','Click each point on the floor plan, inspect it, then mark it Normal or Finding.')}</p>
+      <div class="patrol">
+        <div class="plan"><svg viewBox="0 0 600 320">
+          <rect x="10" y="10" width="580" height="300" fill="#151b20" stroke="#3a4652" stroke-width="2"/>
+          <g fill="#1b2228" stroke="#3a4652"><rect x="20" y="20" width="170" height="110"/><rect x="200" y="20" width="180" height="110"/><rect x="390" y="20" width="190" height="110"/><rect x="20" y="190" width="140" height="110"/><rect x="180" y="190" width="240" height="110"/><rect x="430" y="190" width="150" height="110"/></g>
+          <g font-family="IBM Plex Mono, monospace" font-size="10" fill="#6f7c88"><text x="28" y="36">${t('ARSIP','ARCHIVE')}</text><text x="208" y="36">${t('RUANG RAPAT','MEETING ROOM')}</text><text x="398" y="36">${t('RUANG SERVER','SERVER ROOM')}</text><text x="28" y="206">${t('TANGGA DARURAT','FIRE STAIRS')}</text><text x="188" y="206">${t('LOBI','LOBBY')}</text><text x="438" y="206">${t('RUANG PANEL','PANEL ROOM')}</text><text x="250" y="166">${t('KORIDOR LT.1','1F CORRIDOR')}</text></g>
+          <rect x="300" y="276" width="50" height="16" rx="2" fill="#f2b33d" fill-opacity=".2" stroke="#f2b33d"/><text x="325" y="288" text-anchor="middle" font-size="9" fill="#f2b33d" font-family="IBM Plex Mono, monospace">${t('POS','DESK')}</text>
+          ${mk}</svg></div>
+        <div class="detail">${p?`
+          <h3>${tx(p.name)}</h3>${patrolArt(cur, !!P.issues[cur])}
+          <div class="crit"><b>${t('Kriteria normal:','Normal criteria:')}</b> ${tx(p.crit)}</div>
+          ${d?`<div class="crit" style="color:${d.ok?'#7fe0b0':'#ff9c8c'}">${d.ok?t('Benar.','Correct.'):t('Keliru.','Incorrect.')} ${P.issues[cur]?tx(p.issue):t('Kondisi normal sesuai checklist.','Condition is normal per checklist.')}</div>`
+            :`<div class="row" style="justify-content:flex-start;margin-top:4px"><button class="btn" type="button" id="ptOk">Normal</button><button class="btn bad" type="button" id="ptBad">${t('Temuan','Finding')}</button></div>`}`
+          :`<p class="crit">${t('Pilih titik pada denah untuk memeriksa kondisinya.','Select a point on the floor plan to inspect it.')}</p>`}</div>
+      </div>
+      <div class="row"><span class="grow crit">${Object.keys(P.done).length}/5 ${t('titik diperiksa','points checked')}</span><button class="btn primary" type="button" id="ptBack" ${all?'':'disabled'}>${t('Kembali ke pos','Return to desk')}</button></div>`;
+    sh.querySelectorAll('.mk').forEach(m=>{ const go=()=>{cur=m.dataset.pt; draw();}; m.onclick=go; m.onkeydown=e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); go(); } }; });
+    const ok=sh.querySelector('#ptOk'), bad=sh.querySelector('#ptBad');
+    if(ok) ok.onclick=()=>judgePoint(cur,false,draw);
+    if(bad) bad.onclick=()=>judgePoint(cur,true,draw);
+    sh.querySelector('#ptBack').onclick=finishPatrol;
+  };
+  draw();
+}
+function judgePoint(k,saysBad,redraw){
+  const P=S.patrol, isBad=!!P.issues[k], ok=saysBad===isBad, p=POINTS[k];
+  P.done[k]={ok};
+  if(ok) toast('good', isBad?['Temuan dicatat · '+p.name[0],'Finding logged · '+p.name[1]]:['Normal · '+p.name[0],'Normal · '+p.name[1]], isBad?p.issue:['Kondisi sesuai checklist.','Condition matches the checklist.']);
+  else viol(isBad?['Temuan terlewat saat patroli','Finding missed on patrol']:['Temuan keliru saat patroli','False finding on patrol'], isBad?p.issue:[`${p.name[0]} dalam kondisi normal: ${p.crit[0]}`,`${p.name[1]} was normal: ${p.crit[1]}`]);
+  S.res.push({kind:'patrol', ok});
+  redraw();
+}
+function finishPatrol(){
+  closeModal(true); S.mode='wait'; S.patrol=null; S.clock+=40; hud(); render();
+  toast('info',['Kembali ke pos','Back at the desk'],['Laporan patroli dicatat. Pak Slamet kembali ke posnya.','Patrol report logged. Mr. Slamet returns to his post.']);
+  hint(['Patroli selesai','Patrol complete']); setTimeout(next,1200);
+}
+
+/* ---------- End of day ---------- */
+function endDay(){
+  S.mode='idle'; render(); hint(['Shift selesai','Shift over']);
+  S.total[S.day]={ok:S.res.filter(r=>r.ok).length, all:S.res.length};
+  showReport();
+}
+function showReport(){
+  const g=S.res.filter(r=>r.kind==='tamu'), c=S.res.filter(r=>r.kind==='cctv'), p=S.res.filter(r=>r.kind==='patrol');
+  const n=S.viol.length, pass=n<3, last=S.day===DAYS.length-1;
+  const grade = n===0?[t('PATUH SOP','SOP COMPLIANT'),'#4cc38a']:pass?[t('PERLU PERBAIKAN','NEEDS IMPROVEMENT'),'#f2b33d']:[t('BELUM LULUS','NOT PASSED'),'#e8604c'];
+  const sh=openModal(`<div class="eb">${t('Laporan shift','Shift report')} · ${t('Hari','Day')} ${S.day+1}</div>
+    <h2>${tx(DAYS[S.day].label)}</h2>
+    <span class="grade" style="background:${grade[1]};color:#0d1115">${grade[0]}</span>
+    <div class="kpis">
+      <div class="kpi"><div class="k">${t('Tamu tepat','Visitors correct')}</div><div class="v">${g.filter(r=>r.ok).length}/${g.length}</div></div>
+      <div class="kpi"><div class="k">${t('CCTV tepat','CCTV correct')}</div><div class="v">${c.filter(r=>r.ok).length}/${c.length}</div></div>
+      <div class="kpi"><div class="k">${t('Titik patroli','Patrol points')}</div><div class="v">${p.filter(r=>r.ok).length}/${p.length}</div></div>
+      <div class="kpi"><div class="k">${t('Pelanggaran','Violations')}</div><div class="v" style="color:${n?'#ff9c8c':'#7fe0b0'}">${n}</div></div>
+    </div>
+    <h3>${n?t('Catatan pelanggaran & alasan SOP','Violations & SOP reasons'):t('Tidak ada pelanggaran','No violations')}</h3>
+    <div class="vlist">${n?S.viol.map(x=>`<div><b>${esc(tx(x.title))} · ${esc(tx(x.who))}</b>${esc(tx(x.why))}</div>`).join(''):`<div class="ok">${t('Semua tamu, laporan CCTV, dan titik patroli ditangani sesuai SOP-SEC-03.','Every visitor, CCTV report and patrol point was handled according to SOP-SEC-03.')}</div>`}</div>
+    ${last&&pass?`<p class="lead" style="margin-top:16px">${t('Tiga hari selesai. Total keputusan tepat:','All three days done. Total correct decisions:')} ${S.total.reduce((a,x)=>a+(x?x.ok:0),0)}/${S.total.reduce((a,x)=>a+(x?x.all:0),0)}.</p>`:''}
+    ${!pass?`<p class="lead" style="margin-top:16px">${t('Batas lulus: kurang dari 3 pelanggaran per hari. Ulangi hari ini untuk melanjutkan.','Pass mark: fewer than 3 violations per day. Replay this day to continue.')}</p>`:''}
+    <div class="row">
+      <button class="btn" type="button" id="rpRetry">${t('Ulangi hari','Replay day')} ${S.day+1}</button>
+      ${pass?(last?`<button class="btn primary" type="button" id="rpRestart">${t('Main lagi dari Hari 1','Play again from Day 1')}</button>`:`<button class="btn primary" type="button" id="rpNext">${t('Lanjut ke Hari','Continue to Day')} ${S.day+2}</button>`):''}
+    </div>`, null, 860, showReport);
+  sh.querySelector('#rpRetry').onclick=()=>{ closeModal(true); startDay(S.day); };
+  const nx=sh.querySelector('#rpNext'); if(nx) nx.onclick=()=>{ closeModal(true); startDay(S.day+1); };
+  const rs=sh.querySelector('#rpRestart'); if(rs) rs.onclick=()=>{ closeModal(true); S.total=[]; startDay(0); };
+}
+
+/* ---------- Briefing ---------- */
+const BRIEF = [
+  ()=>`<div class="eb">${t('Briefing pagi · sebelum shift','Morning briefing · before your shift')}</div><h2>${t('Pos lobi adalah perimeter pertama','The lobby desk is the first perimeter')}</h2>
+    <p>${t('Anda bertugas di pos keamanan lobi PT Nusantara Data Prima. Setiap orang yang masuk melewati meja Anda. Satu tamu tanpa izin di ruang server bisa berarti kebocoran data seluruh pelanggan.','You are on duty at the lobby security desk of PT Nusantara Data Prima. Everyone who enters passes your desk. One unauthorized visitor in the server room could mean a breach of every customer\'s data.')}</p>
+    <p>${t('SOP-SEC-03 menerapkan kontrol keamanan fisik ISO/IEC 27001:2022 Annex A:','SOP-SEC-03 applies the ISO/IEC 27001:2022 Annex A physical security controls:')}</p>
+    <div class="iso"><div><code>A.7.1</code>${t('Perimeter keamanan fisik','Physical security perimeters')}</div><div><code>A.7.2</code>${t('Kontrol masuk fisik: identitas, verifikasi, kartu akses','Physical entry: identity, verification, access cards')}</div><div><code>A.7.3</code>${t('Pengamanan kantor, ruangan &amp; fasilitas','Securing offices, rooms &amp; facilities')}</div><div><code>A.7.4</code>${t('Pemantauan keamanan fisik: CCTV &amp; patroli','Physical security monitoring: CCTV &amp; patrol')}</div></div>
+    <p class="crit">${t('Shift berlangsung 3 hari. Setiap kesalahan dicatat sebagai pelanggaran beserta alasannya. Lulus jika kurang dari 3 pelanggaran per hari.','The shift runs for 3 days. Every mistake is logged as a violation with the reason. You pass with fewer than 3 violations per day.')}</p>
+    <p class="crit" style="margin-top:10px">${t('Game oleh','Game by')} <b>Ihsan Mahendra</b> · Holy Doughnut Studio</p>`,
+  ()=>`<div class="eb">${t('Alur penerimaan tamu','Visitor intake flow')}</div><h2>${t('Lima langkah, selalu berurutan','Five steps, always in order')}</h2>
+    <div class="flow">
+      <div><span class="n">1</span><b>${t('Sapa &amp; tanya keperluan','Greet &amp; ask the purpose')}</b>${t('Dengarkan siapa yang ingin ditemui dan untuk apa.','Find out who they want to see and why.')}</div>
+      <div><span class="n">2</span><b>${t('Periksa identitas &amp; dokumen','Check ID &amp; documents')}</b>${t('Nama dan foto KTP cocok dengan orangnya, surat, dan daftar. Surat berlaku hari ini.','ID name and photo match the person, the letter and the list. The letter is valid today.')}</div>
+      <div><span class="n">3</span><b>${t('Verifikasi ke pihak dituju','Verify with the host')}</b>${t('Telepon host, HRD, GA, atau Manajer TI.','Call the host, HR, GA or the IT Manager.')}</div>
+      <div><span class="n">4</span><b>${t('Arahkan ke buku tamu','Send to the guest book')}</b>${t('Semua kolom terisi, termasuk paraf. Kolom kosong? Minta dilengkapi.','Every field filled, including the signature. Empty field? Ask them to complete it.')}</div>
+      <div><span class="n">5</span><b>${t('Beri kartu sesuai tingkat','Issue the right card')}</b>${t('Atau tolak dengan sopan bila syarat tidak terpenuhi.','Or refuse politely if requirements are not met.')}</div>
+    </div>
+    <p class="crit">${t('Melewatkan satu langkah tetap dihitung pelanggaran, walaupun kartu yang diberikan benar.','Skipping a step counts as a violation even if the card you issue is correct.')}</p>`,
+  ()=>`<div class="eb">${t('Tingkat kartu akses','Access card levels')}</div><h2>${t('Kartu mengikuti izin, bukan jabatan','Cards follow permits, not job titles')}</h2>
+    <div class="tiers">
+      ${[['magang',['Mahasiswa magang','University interns'],['Surat penerimaan HRD yang berlaku hari ini','HR acceptance letter valid today'],['Area kerja divisi, didampingi mentor','Division work area, with a mentor']],
+         ['rendah',['Tamu bisnis, rapat','Business visitors, meetings'],['Janji temu terdaftar dan dikonfirmasi host','Listed appointment confirmed by the host'],['Lobi & ruang rapat Lt.1, didampingi','Lobby & 1F meeting rooms, escorted']],
+         ['tinggi',['Auditor, direksi grup, vendor TI','Auditors, group directors, IT vendors'],['Formulir Izin Akses Area Terbatas bertanda tangan Manajer TI','Restricted Area Access Permit signed by the IT Manager'],['Termasuk ruang server & arsip, didampingi','Incl. server & archive rooms, escorted']],
+         ['kontraktor',['Pekerja renovasi','Renovation workers'],['Nama tercantum di SPK aktif dari GA','Named on an active GA work order (SPK)'],['Area renovasi saja, wajib APD','Renovation area only, PPE required']]]
+        .map(([k,who,req,area])=>`<div class="tier"><div class="bar" style="background:${TIERS[k].color}"></div><b>${tx(TIERS[k].label)}</b><dl><dt>${t('Untuk','For')}</dt><dd>${tx(who)}</dd><dt>${t('Syarat','Requirement')}</dt><dd>${tx(req)}</dd><dt>Area</dt><dd>${tx(area)}</dd></dl></div>`).join('')}
+    </div>`,
+  ()=>`<div class="eb">${t('Penolakan','Refusals')}</div><h2>${t('Kapan tamu harus ditolak','When to refuse a visitor')}</h2>
+    <ul class="list">
+      <li>${t('Tidak ada janji dan pihak yang dituju tidak mengonfirmasi.','No appointment and the host does not confirm.')}</li>
+      <li>${t('Identitas tidak cocok dengan daftar atau surat, termasuk "pakai KTP saudara".','ID does not match the list or letter, including "using my sibling\'s ID".')}</li>
+      <li>${t('Surat belum berlaku atau sudah kedaluwarsa.','The letter is not yet valid or has expired.')}</li>
+      <li>${t('Meminta akses di atas izinnya, atau "darurat" tanpa izin internal.','Asks for more access than permitted, or claims an "emergency" with no internal permit.')}</li>
+      <li>${t('Mantan karyawan, kurir yang ingin naik, atau pekerja pengganti yang tidak tercantum di SPK.','Former employees, couriers who want to go upstairs, or substitute workers not on the work order.')}</li>
+    </ul>
+    <p class="crit">${t('Tolak dengan sopan, jelaskan alasannya, dan tawarkan alternatif: titip barang di pos, host turun ke lobi, atau jadwal ulang.','Refuse politely, explain why, and offer an alternative: leave items at the desk, have the host come down, or reschedule.')}</p>`,
+  ()=>`<div class="eb">${t('Patroli &amp; CCTV','Patrol &amp; CCTV')}</div><h2>${t('Pemantauan sesuai kebutuhan','Monitoring when it is needed')}</h2>
+    <div class="cols">
+      <div><b>${t('Patroli titik vital','Vital point patrol')}</b><br>${t('Saat jadwal patroli, minta rekan menjaga pos lewat HT dulu. Pos tidak boleh kosong. Periksa ruang server, panel listrik, pintu darurat, ruang arsip, dan APAR, lalu tandai Normal atau Temuan.','At patrol time, first ask a colleague over the radio to cover the desk. The desk must never be empty. Check the server room, electrical panel, fire exit, archive room and extinguisher, then mark each Normal or Finding.')}</div>
+      <div><b>${t('Pengecekan CCTV','CCTV checks')}</b><br>${t('Saat ada laporan lewat HT, buka monitor CCTV, pilih kamera yang sesuai laporan, lalu putuskan: laporkan temuan atau nyatakan aman. Jangan eskalasi tanpa bukti.','When a radio report comes in, open the CCTV monitor, pick the camera that matches the report, then decide: report a finding or declare all clear. Don\'t escalate without evidence.')}</div>
+    </div>
+    <p class="crit" style="margin-top:14px"><b>${t('Kontrol:','Controls:')}</b> ${t('klik benda di meja atau tekan angka 1–5 pada panel bawah. Esc untuk batal atau menutup jendela. Ganti bahasa dengan tombol ID/EN di kanan atas.','click objects on the desk or press 1–5 for the bottom panel. Esc cancels or closes a window. Switch language with the ID/EN buttons at the top right.')}</p>`
+];
+function openBrief(page){
+  let i=typeof page==='number'?page:0;
+  const sh=openModal('', ()=>{ if(!S.started){ S.started=true; startDay(0); } }, 980, ()=>openBrief(i));
+  const draw=()=>{
+    const lastPage=i===BRIEF.length-1;
+    sh.innerHTML=`<div class="lang x" role="group" aria-label="Bahasa / Language">${['id','en'].map(l=>`<button type="button" data-lang="${l}" aria-pressed="${l===LANG}">${l.toUpperCase()}</button>`).join('')}</div>
+      <div class="brief">${BRIEF[i]()}</div>
+      <div class="row"><div class="dots grow">${BRIEF.map((_,j)=>`<i class="${j===i?'on':''}"></i>`).join('')}</div>
+      ${i?`<button class="btn" type="button" id="bfPrev">${t('Kembali','Back')}</button>`:''}
+      <button class="btn primary" type="button" id="bfNext">${lastPage?(S.started?t('Tutup briefing','Close briefing'):t('Mulai shift · Hari 1','Start shift · Day 1')):t('Lanjut','Next')}</button></div>`;
+    sh.querySelectorAll('.lang button').forEach(b=>b.onclick=()=>setLang(b.dataset.lang));
+    const pv=sh.querySelector('#bfPrev'); if(pv) pv.onclick=()=>{i--; draw();};
+    sh.querySelector('#bfNext').onclick=()=>{ if(lastPage) closeModal(); else { i++; draw(); } };
+    sh.querySelector('#bfNext').focus({preventScroll:true});
+    sh.scrollTop=0;
+  };
+  draw();
+}
+
+/* ---------- Language switch ---------- */
+function applyStatic(){
+  document.documentElement.lang=LANG;
+  document.querySelectorAll('[data-t]').forEach(el=>{ const [a,b]=el.dataset.t.split('|'); el.textContent=LANG==='en'?b:a; });
+  document.querySelectorAll('.lang button').forEach(b=>b.setAttribute('aria-pressed', String(b.dataset.lang===LANG)));
+}
+function setLang(l){
+  if(l===LANG) return;
+  LANG=l; try{ localStorage.setItem('posjaga-lang',l); }catch(e){}
+  applyStatic(); hud(); render();
+  if(S.bubble) bubble(S.bubble);
+  if(S.hint) hint(S.hint);
+  // rebuild an open window in the new language, keeping its close handler
+  if(modalOpen() && modalReopen){ const r=modalReopen, c=modalClose; closeModal(true); r(); if(c) modalClose=c; }
+}
+document.querySelectorAll('.hud .lang button').forEach(b=>b.onclick=()=>setLang(b.dataset.lang));
+
+/* ---------- Scene object wiring ---------- */
+const OBJ_ACT = {
+  sop:()=>openBrief(0), list:openList, docs:()=>S.v&&openDocs(),
+  book:openBook,
+  phone:()=>S.mode==='visitor'?openPhone():toast('info',['Telepon internal','Internal phone'],['Tidak ada tamu yang perlu diverifikasi.','No visitor to verify.']),
+  cards:()=>{ if(S.mode==='visitor'){ S.mode='cards'; render(); } else if(S.mode!=='cards') toast('info',['Rak kartu akses','Access card rack'],['Kartu hanya diberikan kepada tamu yang sudah diverifikasi.','Cards are only issued to verified visitors.']); },
+  cctv:openCctv,
+  ht:()=>S.mode==='alert'?replayRadio():handover(),
+  patrol:startPatrol
+};
+document.querySelectorAll('#scene .obj').forEach(g=>{
+  const k=g.dataset.obj;
+  g.addEventListener('click',()=>{ if(!modalOpen()) OBJ_ACT[k](); });
+  g.addEventListener('keydown',e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); OBJ_ACT[k](); } });
+  g.addEventListener('mouseenter',()=>{ S.hover=k; showInfo(); });
+  g.addEventListener('mouseleave',()=>{ S.hover=null; showInfo(); });
+  g.addEventListener('focus',()=>{ S.hover=k; showInfo(); });
+  g.addEventListener('blur',()=>{ S.hover=null; showInfo(); });
+});
+$('#btnSop').onclick=()=>openBrief(0);
+document.addEventListener('keydown',e=>{
+  if(modalOpen()){ if(e.key==='Escape') closeModal(); return; }
+  if(e.key==='Escape' && S.mode==='cards'){ S.mode='visitor'; render(); return; }
+  const n=parseInt(e.key,10);
+  if(n>=1 && n<=9){ const a=actionsFor()[n-1]; if(a){ e.preventDefault(); a.fn(); } }
+});
+
+applyStatic(); hud(); render(); hint(['Briefing pagi sebelum shift','Morning briefing before your shift']); openBrief(0);
+</script>
+
+</body>
+</html>

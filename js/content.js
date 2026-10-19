@@ -360,6 +360,16 @@ window.HD_CONTENT = {
     },
     projects: [
       {
+        title: "Pos Jaga Lobi",
+        author: "Ihsan Mahendra",
+        client: "ISO 27001 awareness",
+        year: 2026,
+        image: "assets/gamification/pos-jaga-lobi.webp",
+        link: "pos-jaga-lobi/",
+        tags: ["ISO 27001", "Security awareness", "Browser game"],
+        en: { summary: "A first-person lobby security desk game for the visitor reception SOP. Check IDs and letters, call the host, fill the guest book, give the right access card or refuse, then check CCTV and patrol the vital points. Three days, 15 visitors. Plays in English and Bahasa Indonesia." },
+      },
+      {
         title: "Clear Desk 17.00",
         author: "Ihsan Mahendra",
         client: "ISO 27001 awareness",
