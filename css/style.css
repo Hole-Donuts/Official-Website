@@ -6,6 +6,8 @@
      2. Base & helpers
      3. Navigation (incl. game tabs)
      3b. Game switcher: panels sliding sideways
+     3c. Studio home panel (two game cards + Gamification button)
+     3d. Gamification panel
      4. Hero: key art, pitch, facts
      5. Section headings & screenshots
      6. Pillars (playing cards) & reaction recipes
@@ -359,6 +361,11 @@ p {
   color: #fff;
 }
 
+.game-tab.active[data-game-tab="gamification"] {
+  background: var(--cyan);
+  color: var(--black);
+}
+
 
 /* 3b. Game switcher ---------------------------------------------------- */
 /* All game panels sit side by side on one track; the track slides so
@@ -376,6 +383,7 @@ p {
 }
 
 .game-panel {
+  position: relative; /* keeps absolutely placed children inside their own panel */
   flex: 0 0 100%;
   min-width: 0;
 }
@@ -460,6 +468,450 @@ p {
   font-family: var(--font-game);
   font-weight: 400;
   color: var(--gold);
+}
+
+
+/* 3c. Studio home ---------------------------------------------------- */
+/* The studio's own look: black, cyan rays from the logo, white rules. */
+.home {
+  background: var(--black);
+}
+
+.home-hero {
+  overflow: hidden;
+  border-bottom: var(--rule) solid var(--white);
+}
+
+.home-hero .wrap {
+  display: grid;
+  grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+  align-items: center;
+  gap: 40px;
+  padding-block: 40px 56px;
+}
+
+.home-altar {
+  position: relative;
+  display: grid;
+  place-items: center;
+  padding-block: 16px;
+}
+
+/* rotating cyan sunburst behind the logo */
+.home-rays {
+  position: absolute;
+  width: 150%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: repeating-conic-gradient(from 0deg, var(--cyan) 0deg 4deg, transparent 4deg 10deg);
+  -webkit-mask: radial-gradient(circle, #000 18%, rgba(0, 0, 0, 0.5) 38%, transparent 66%);
+  mask: radial-gradient(circle, #000 18%, rgba(0, 0, 0, 0.5) 38%, transparent 66%);
+  opacity: 0.45;
+  animation: home-spin 80s linear infinite;
+}
+
+@keyframes home-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.home-logo {
+  position: relative;
+  width: min(260px, 64%);
+  height: auto;
+}
+
+.home-copy {
+  display: grid;
+  gap: 18px;
+  min-width: 0;
+}
+
+.home-eyebrow {
+  margin: 0;
+  color: var(--cyan);
+}
+
+.home-copy h1 {
+  color: var(--white);
+  font-family: var(--font-studio);
+  font-weight: 900;
+  font-size: clamp(2.8rem, 7vw, 5.6rem);
+  line-height: 0.92;
+  text-transform: uppercase;
+}
+
+.home-intro {
+  max-width: 48ch;
+  color: var(--white-dim);
+  font-size: 1.12rem;
+}
+
+.home-games {
+  padding-block: 56px 72px;
+}
+
+.home-games h2 {
+  margin-bottom: 24px;
+  color: var(--white);
+  font-family: var(--font-studio);
+  font-weight: 900;
+  font-size: clamp(2rem, 4.6vw, 3rem);
+  text-transform: uppercase;
+}
+
+/* the two main buttons */
+.home-cards {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px;
+}
+
+.home-card {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  overflow: hidden;
+  border-radius: 18px;
+  text-decoration: none;
+  transition: transform 0.18s;
+}
+
+.home-card:hover {
+  transform: translateY(-4px);
+}
+
+.home-card img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+}
+
+.home-card-body {
+  display: grid;
+  align-content: start;
+  gap: 8px;
+  padding: 20px 22px 24px;
+}
+
+.home-card-status {
+  justify-self: start;
+  padding: 3px 12px;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.home-card-title {
+  font-size: 2rem;
+  line-height: 1.05;
+}
+
+.home-card-pitch {
+  font-size: 1rem;
+}
+
+.home-card-button {
+  justify-self: start;
+  margin-top: 8px;
+  padding: 11px 18px;
+  border-radius: 999px;
+  font-weight: 700;
+}
+
+/* MAGICION card: its night sky and gold */
+.home-card-magicion {
+  border: 3px solid var(--sky-3);
+  background: var(--sky-2);
+  color: var(--white);
+}
+
+.home-card-magicion .home-card-status {
+  background: var(--sky-3);
+  color: var(--gold);
+}
+
+.home-card-magicion .home-card-title {
+  font-family: var(--font-game);
+  font-weight: 400;
+  color: var(--gold);
+}
+
+.home-card-magicion .home-card-pitch {
+  color: var(--white-dim);
+}
+
+.home-card-magicion .home-card-button {
+  background: var(--gold);
+  color: var(--sky);
+  font-family: var(--font-game);
+  font-weight: 400;
+  box-shadow: 0 4px 0 var(--gold-deep);
+}
+
+/* Donut Town card: cream, ink outline, pink glaze */
+.home-card-donut-town {
+  border: 3px solid var(--dt-ink);
+  background: var(--dt-cream);
+  color: var(--dt-ink);
+  box-shadow: 0 6px 0 #3a3d4f;
+}
+
+.home-card-donut-town .home-card-status {
+  border: 2px solid var(--dt-ink);
+  background: #fff;
+}
+
+.home-card-donut-town .home-card-title {
+  font-family: var(--font-dt);
+  font-weight: 800;
+  color: var(--dt-glaze);
+}
+
+.home-card-donut-town .home-card-pitch {
+  color: var(--dt-ink-soft);
+  font-family: var(--font-dt-body);
+}
+
+.home-card-donut-town .home-card-button {
+  border: 2px solid var(--dt-ink);
+  background: var(--dt-glaze);
+  color: #fff;
+  box-shadow: 0 3px 0 var(--dt-ink);
+}
+
+/* the special Gamification button: an "achievement unlocked" banner */
+.gami-button {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 22px;
+  margin-top: 28px;
+  padding: 20px 24px;
+  border: 3px dashed var(--cyan);
+  border-radius: 18px;
+  background:
+    repeating-linear-gradient(135deg, rgba(20, 230, 242, 0.06) 0 12px, transparent 12px 24px),
+    var(--night);
+  color: var(--white);
+  text-decoration: none;
+  transition: transform 0.18s, border-color 0.18s;
+}
+
+.gami-button:hover {
+  transform: translateY(-3px);
+  border-style: solid;
+}
+
+.gami-button-text {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+
+.gami-button-label {
+  color: var(--cyan);
+  font-family: var(--font-pixel);
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.gami-button b {
+  font-family: var(--font-studio);
+  font-weight: 900;
+  font-size: 1.9rem;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.gami-button-text > span:last-child {
+  color: var(--white-dim);
+}
+
+.gami-button-go {
+  padding: 10px 16px;
+  border: 2px solid var(--cyan);
+  border-radius: 999px;
+  color: var(--cyan);
+  font-family: var(--font-pixel);
+  font-size: 0.75rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+/* three overlapping medals in sprinkle colors */
+.gami-badges {
+  display: flex;
+}
+
+.gami-badges i {
+  width: 46px;
+  height: 46px;
+  border: 3px solid var(--black);
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 5px rgba(255, 255, 255, 0.35);
+}
+
+.gami-badges i + i {
+  margin-left: -14px;
+}
+
+.gami-badges i:nth-child(1) { background: var(--gold); }
+.gami-badges i:nth-child(2) { background: var(--pink); transform: translateY(-6px); }
+.gami-badges i:nth-child(3) { background: var(--cyan); }
+
+
+/* 3d. Gamification panel --------------------------------------------- */
+.gami {
+  min-height: 70vh;
+  background:
+    radial-gradient(circle at 80% 0%, rgba(20, 230, 242, 0.14), transparent 40%),
+    var(--black);
+}
+
+.gami .wrap {
+  display: grid;
+  gap: 32px;
+  padding-block: 56px 72px;
+}
+
+.gami-head {
+  display: grid;
+  gap: 12px;
+  max-width: 720px;
+}
+
+.gami-head .gami-eyebrow {
+  margin: 0;
+  color: var(--cyan);
+}
+
+.gami-head h2 {
+  color: var(--white);
+  font-family: var(--font-studio);
+  font-weight: 900;
+  font-size: clamp(2.8rem, 7vw, 5rem);
+  line-height: 0.95;
+  text-transform: uppercase;
+}
+
+.gami-head p {
+  max-width: 60ch;
+  color: var(--white-dim);
+  font-size: 1.08rem;
+}
+
+/* empty list: "first projects coming soon" */
+.gami-empty {
+  display: grid;
+  justify-items: center;
+  gap: 14px;
+  padding: 48px 24px;
+  border: 3px dashed rgba(20, 230, 242, 0.5);
+  border-radius: 18px;
+  background: var(--night);
+  text-align: center;
+}
+
+.gami-badges-big i {
+  width: 64px;
+  height: 64px;
+}
+
+.gami-empty h3 {
+  color: var(--white);
+  font-family: var(--font-studio);
+  font-weight: 900;
+  font-size: 2rem;
+  text-transform: uppercase;
+}
+
+.gami-empty p {
+  max-width: 52ch;
+  color: var(--white-dim);
+}
+
+/* project cards (once projects are added) */
+.gami-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr));
+  gap: 24px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.gami-card {
+  overflow: hidden;
+  border: 2px solid rgba(246, 247, 251, 0.15);
+  border-radius: 16px;
+  background: var(--night);
+}
+
+.gami-card img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+}
+
+.gami-card-body {
+  display: grid;
+  gap: 8px;
+  padding: 18px 20px 22px;
+}
+
+.gami-card-meta {
+  color: var(--cyan);
+}
+
+.gami-card h3 {
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 1.25rem;
+}
+
+.gami-card h3 a {
+  text-decoration-color: var(--cyan);
+}
+
+.gami-card p {
+  color: var(--white-dim);
+}
+
+.gami-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 4px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.gami-tags li {
+  padding: 2px 10px;
+  border: 1px solid rgba(20, 230, 242, 0.5);
+  border-radius: 999px;
+  color: var(--cyan);
+  font-size: 0.8rem;
+}
+
+.gami .next-game {
+  margin-block: 0;
+  border: 3px solid rgba(246, 247, 251, 0.25);
+  background: var(--night);
+  color: var(--white);
+}
+
+.gami .next-game b {
+  font-family: var(--font-studio);
+  font-weight: 900;
+  text-transform: uppercase;
 }
 
 
@@ -1603,6 +2055,34 @@ p {
   }
 }
 
+/* Studio home: tablet */
+@media (max-width: 900px) {
+  .home-hero .wrap {
+    grid-template-columns: 1fr;
+    gap: 8px;
+    padding-block: 24px 48px;
+  }
+
+  .home-logo {
+    width: min(200px, 52%);
+  }
+}
+
+@media (max-width: 720px) {
+  .home-cards {
+    grid-template-columns: 1fr;
+  }
+
+  .gami-button {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .gami-button-go {
+    grid-column: 1 / -1;
+    justify-self: start;
+  }
+}
+
 /* Donut Town: tablet */
 @media (max-width: 900px) {
   .dt-about,
@@ -1671,14 +2151,38 @@ p {
     font-size: 0.82rem;
   }
 
-  /* nav: logo + game tabs only */
+  /* nav: logo + game tabs only; tabs scroll sideways if they don't fit */
+  .game-tabs {
+    min-width: 0;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .game-tabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  .gami-badges i {
+    width: 36px;
+    height: 36px;
+  }
+
   .brand-name {
     display: none;
   }
 
   .game-tab {
-    padding: 5px 10px;
-    font-size: 0.66rem;
+    padding: 5px 8px;
+    font-size: 0.6rem;
+    letter-spacing: 0.02em;
+  }
+
+  .game-tabs {
+    gap: 2px;
+  }
+
+  .nav .wrap {
+    gap: 10px;
   }
 
   .next-game {

@@ -12,6 +12,7 @@
      6. Gameplay callouts
      7. Loot, bestiary, bosses
      8. Contact copy buttons
+     8a. Studio home + Gamification panels
      8b. Donut Town (second game) + its game player
      8c. Game switcher (slides between MAGICION and Donut Town)
      9. Start
@@ -23,7 +24,7 @@
   /* ---------------------------------------------------------------
      1. Setup & language
      --------------------------------------------------------------- */
-  const { SITE, GAME, DONUT_TOWN } = window.HD_CONTENT;
+  const { SITE, GAME, DONUT_TOWN, HOME, GAMIFICATION } = window.HD_CONTENT;
   const TRANSLATIONS = window.HD_TRANSLATIONS;
 
   // Enabled languages from SITE.languages (only those that have translations)
@@ -41,7 +42,7 @@
   const state = {
     language: pickStartLanguage(),
     activeCallout: 0,
-    game: "magicion", // game panel on screen, set by showGame() (section 8c)
+    game: "home", // panel on screen, set by showGame() (section 8c)
   };
 
   /* Order: #en / #id in the URL, then the visitor's last choice, then SITE.defaultLanguage */
@@ -437,6 +438,89 @@
     }).join("");
   }
 
+  /* ---------------------------------------------------------------
+     8a. Studio home (first panel) and Gamification panel
+     --------------------------------------------------------------- */
+  const GAME_TITLES = {
+    "magicion": () => GAME.title,
+    "donut-town": () => DONUT_TOWN.title,
+  };
+
+  function renderHome() {
+    if (!HOME) return;
+    const text = local(HOME);
+    $("#home-eyebrow").textContent = text.eyebrow;
+    $("#home-title").textContent = text.title;
+    $("#home-intro").textContent = text.intro;
+    $("#home-games-title").textContent = text.gamesTitle;
+
+    // Two main buttons: one big card per game
+    $("#home-cards").innerHTML = HOME.games.map((card) => {
+      const c = local(card);
+      const title = GAME_TITLES[card.game] ? GAME_TITLES[card.game]() : card.game;
+      return `
+        <a class="home-card home-card-${escapeHtml(card.game)}" href="#${escapeHtml(card.game)}">
+          <img src="${escapeHtml(card.image)}" alt="" width="1920" height="1080" loading="lazy">
+          <span class="home-card-body">
+            <span class="home-card-status">${escapeHtml(c.status)}</span>
+            <b class="home-card-title">${escapeHtml(title)}</b>
+            <span class="home-card-pitch">${escapeHtml(c.pitch)}</span>
+            <span class="home-card-button">${escapeHtml(c.button)} <span aria-hidden="true">→</span></span>
+          </span>
+        </a>`;
+    }).join("");
+
+    // Special button: Gamification
+    const g = local(HOME.gamification);
+    $("#home-gami").innerHTML = `
+      <span class="gami-badges" aria-hidden="true"><i></i><i></i><i></i></span>
+      <span class="gami-button-text">
+        <span class="gami-button-label">${escapeHtml(g.label)}</span>
+        <b>${escapeHtml(g.title)}</b>
+        <span>${escapeHtml(g.text)}</span>
+      </span>
+      <span class="gami-button-go">${escapeHtml(g.button)} <span aria-hidden="true">→</span></span>`;
+  }
+
+  function renderGamification() {
+    if (!GAMIFICATION) return;
+    const text = local(GAMIFICATION);
+    $("#gami-eyebrow").textContent = text.eyebrow;
+    $("#gami-title").textContent = text.title;
+    $("#gami-intro").textContent = text.intro;
+
+    const projects = GAMIFICATION.projects || [];
+    if (!projects.length) {
+      $("#gami-list").innerHTML = `
+        <div class="gami-empty">
+          <span class="gami-badges gami-badges-big" aria-hidden="true"><i></i><i></i><i></i></span>
+          <h3>${escapeHtml(text.emptyTitle)}</h3>
+          <p>${escapeHtml(text.emptyText)}</p>
+          <a class="btn" href="#contact">${escapeHtml(text.emptyButton)}</a>
+        </div>`;
+      return;
+    }
+
+    $("#gami-list").innerHTML = `<ul class="gami-grid">${projects.map((project) => {
+      const p = local(project);
+      const meta = [project.client, project.year].filter(Boolean).map(escapeHtml).join(" · ");
+      const image = project.image ? `<img src="${escapeHtml(project.image)}" alt="" width="1600" height="900" loading="lazy">` : "";
+      const title = project.link
+        ? `<a href="${escapeHtml(project.link)}" target="_blank" rel="noopener">${escapeHtml(project.title)}</a>`
+        : escapeHtml(project.title);
+      return `
+        <li class="gami-card">
+          ${image}
+          <div class="gami-card-body">
+            ${meta ? `<span class="pixel gami-card-meta">${meta}</span>` : ""}
+            <h3>${title}</h3>
+            <p>${escapeHtml(p.summary || "")}</p>
+            ${(project.tags || []).length ? `<ul class="gami-tags">${project.tags.map((tag) => `<li>${escapeHtml(tag)}</li>`).join("")}</ul>` : ""}
+          </div>
+        </li>`;
+    }).join("")}</ul>`;
+  }
+
   /* Donut Town game player. With DONUT_TOWN.playUrl set it shows the game
      in an iframe (16:9, or 9:16 on phones) with a fullscreen button.
      Empty playUrl: a "coming soon" screen instead (renderDonutTownSoon). */
@@ -510,6 +594,7 @@
 
   // Card info for the "our other game" links
   const GAME_CARDS = {
+    "home": () => ({ title: SITE.studioName, art: "assets/og-image.png", label: t("switcher.home") }),
     "magicion": () => ({ title: GAME.title, art: GAME.images.keyArt }),
     "donut-town": () => ({ title: DONUT_TOWN.title, art: DONUT_TOWN.keyArt.src }),
   };
@@ -554,6 +639,10 @@
       const on = tab.dataset.gameTab === game;
       tab.classList.toggle("active", on);
       tab.setAttribute("aria-selected", on ? "true" : "false");
+      // on very narrow phones the tab row scrolls: keep the active tab visible
+      if (on && tab.parentElement.scrollWidth > tab.parentElement.clientWidth) {
+        tab.parentElement.scrollLeft = tab.offsetLeft - tab.parentElement.offsetLeft - 8;
+      }
     });
     document.querySelectorAll(".nav li[data-game]").forEach((item) => {
       item.hidden = item.dataset.game !== game;
@@ -595,7 +684,7 @@
       link.innerHTML = `
         <img src="${escapeHtml(card.art)}" alt="" width="1920" height="1080" loading="lazy">
         <span class="next-game-text">
-          <span class="next-game-label">${t("switcher.other")}</span>
+          <span class="next-game-label">${card.label || t("switcher.other")}</span>
           <b>${escapeHtml(card.title)}</b>
         </span>
         <span class="next-game-arrow" aria-hidden="true">${arrow}</span>`;
@@ -658,6 +747,8 @@
     renderLoot();
     renderBestiary();
     renderBosses();
+    renderHome();
+    renderGamification();
     renderDonutTown();
     renderDonutTownSoon();
     renderNextGameCards();

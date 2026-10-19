@@ -132,6 +132,7 @@ window.HD_TRANSLATIONS = {
     switcher: {
       label: "Game kami",
       other: "Game kami yang lain",
+      home: "Kembali ke studio",
     },
     footer: {
       note: "dibuat sambil ngemil, beneran.",
@@ -256,6 +257,7 @@ window.HD_TRANSLATIONS = {
     switcher: {
       label: "Our games",
       other: "Our other game",
+      home: "Back to the studio",
     },
     footer: {
       note: "made while snacking. really.",

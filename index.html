@@ -50,7 +50,7 @@
   <!-- ============ NAVIGATION ============ -->
   <nav class="nav" data-i18n-aria="nav.label">
     <div class="wrap">
-      <a class="brand" href="#top">
+      <a class="brand" href="#home">
         <img src="assets/logo.png" alt="" width="451" height="842">
         <span class="brand-name">Holy Doughnut</span>
       </a>
@@ -58,6 +58,7 @@
       <div class="game-tabs" role="tablist" data-i18n-aria="switcher.label">
         <a class="game-tab" role="tab" href="#magicion" data-game-tab="magicion">MAGICION</a>
         <a class="game-tab" role="tab" href="#donut-town" data-game-tab="donut-town">Donut Town</a>
+        <a class="game-tab" role="tab" href="#gamification" data-game-tab="gamification">Gamification</a>
       </div>
       <div class="nav-right">
         <!-- data-game: link only shows while that game is on screen -->
@@ -82,6 +83,33 @@
        Switching is handled in js/main.js (section 8c). -->
   <main class="games" id="games">
   <div class="games-track" id="games-track">
+
+  <!-- ==================== PANEL 0: STUDIO HOME (data: HOME in js/content.js) ==================== -->
+  <div class="game-panel home" id="home" data-game="home">
+    <section class="home-hero">
+      <div class="wrap">
+        <div class="home-altar">
+          <div class="home-rays" aria-hidden="true"></div>
+          <img class="home-logo" src="assets/logo.png" alt="Holy Doughnut Studio logo" width="451" height="842">
+        </div>
+        <div class="home-copy">
+          <p class="pixel home-eyebrow" id="home-eyebrow"></p>
+          <h1 id="home-title"></h1>
+          <p class="home-intro" id="home-intro"></p>
+        </div>
+      </div>
+    </section>
+
+    <section class="home-games">
+      <div class="wrap">
+        <h2 id="home-games-title"></h2>
+        <!-- two main buttons: one big card per game -->
+        <div class="home-cards" id="home-cards"></div>
+        <!-- special button: Gamification -->
+        <a class="gami-button" id="home-gami" href="#gamification"></a>
+      </div>
+    </section>
+  </div>
 
   <!-- ==================== PANEL 1: MAGICION ==================== -->
   <div class="game-panel" id="magicion" data-game="magicion">
@@ -260,6 +288,20 @@
         </div>
       </div>
     </section>
+
+  <!-- ==================== PANEL 3: GAMIFICATION (data: GAMIFICATION in js/content.js) ==================== -->
+  <section class="game-panel gami" id="gamification" data-game="gamification">
+    <div class="wrap">
+      <header class="gami-head">
+        <p class="pixel gami-eyebrow" id="gami-eyebrow"></p>
+        <h2 id="gami-title"></h2>
+        <p id="gami-intro"></p>
+      </header>
+      <!-- project cards, or a "coming soon" message while the list is empty -->
+      <div id="gami-list"></div>
+      <a class="next-game" data-next-game="home" href="#home"></a>
+    </div>
+  </section>
 
   </div>
   </main>

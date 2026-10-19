@@ -299,4 +299,64 @@ window.HD_CONTENT = {
       },
     ],
   },
+  /* ---------------------------------------------------------------
+     HOME: the studio front page (first panel). Two big game buttons
+     and one special button to the Gamification panel.
+     --------------------------------------------------------------- */
+  HOME: {
+    en: {
+      eyebrow: "Indie game studio from Indonesia",
+      title: "We make games that are weird and sweet",
+      intro: "Holy Doughnut Studio is a small team baking games with big ideas. Pick a game below, or see what we build beyond games.",
+      gamesTitle: "Our games",
+    },
+    // One card per game. game = the id of its panel ("magicion", "donut-town").
+    games: [
+      {
+        game: "magicion",
+        image: "assets/magicion/key-art.webp",
+        en: { pitch: "An action roguelite of cards, spells and elemental reactions.", status: "Play in your browser", button: "Explore MAGICION" },
+      },
+      {
+        game: "donut-town",
+        image: "assets/donut-town/key-art.webp",
+        en: { pitch: "A life sim about one small town and one whole life.", status: "In development", button: "Visit Donut Town" },
+      },
+    ],
+    gamification: {
+      en: {
+        label: "Beyond games",
+        title: "Gamification projects",
+        text: "Points, quests, badges and leaderboards for classrooms, teams and communities.",
+        button: "See projects",
+      },
+    },
+  },
+
+  /* ---------------------------------------------------------------
+     GAMIFICATION: list of gamification projects (panel "Gamification").
+     While the list is empty the panel shows a "first projects coming
+     soon" message. To add a project, copy this into projects: [ ... ]
+
+       {
+         title: "Project name",
+         client: "Client or partner",          // optional
+         year: 2026,                           // optional
+         image: "assets/gamification/<name>.webp",  // optional, 16:9
+         link: "https://...",                  // optional
+         tags: ["Education", "Badges"],
+         en: { summary: "One or two sentences about what it does." },
+       },
+     --------------------------------------------------------------- */
+  GAMIFICATION: {
+    en: {
+      eyebrow: "Holy Doughnut Studio · Beyond games",
+      title: "Gamification",
+      intro: "We use what we know from making games to make other things more fun: points, quests, badges, levels and leaderboards for learning, work and communities.",
+      emptyTitle: "First projects coming soon",
+      emptyText: "We're working on our first gamification projects. Have a class, an app or a community that could use some game magic? Let's talk.",
+      emptyButton: "Get in touch",
+    },
+    projects: [],
+  },
 };
