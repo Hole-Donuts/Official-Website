@@ -28,7 +28,7 @@
   --hand:'Caveat','Segoe Print','Comic Sans MS',cursive;
 }
 html,body{height:100%}
-body{background:var(--hud);color:var(--ink);font-family:var(--sans);overflow:hidden}
+body{background:var(--hud);color:var(--ink);font-family:var(--sans);overflow-x:hidden;overflow-y:auto}
 #app{display:grid;grid-template-rows:auto minmax(200px,1fr) auto;height:100%}
 button{font:inherit;color:inherit}
 
@@ -209,8 +209,50 @@ th{font:500 10px var(--mono);color:var(--mute);letter-spacing:.08em;text-transfo
   .tiers,.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
   .stats{gap:14px;margin-left:0}
   .info .keys{display:none}
-  .actions{grid-template-columns:repeat(2,minmax(0,1fr))}
-  .act{padding-right:34px}
+  .actions{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+  /* compact controls so all five options fit on a phone screen */
+  .hud{padding-block:8px;gap:6px 14px}
+  .hud .eyebrow{display:none}
+  .hud h1{font-size:16px}
+  .stat .k{font-size:9.5px}
+  .stat .v{font-size:16px}
+  .pip{width:12px;height:12px}
+  .lang button{padding:6px 9px}
+  #btnSop{padding:7px 12px;font-size:13px}
+  #app{grid-template-rows:auto minmax(150px,1fr) auto}
+  .panel{padding-block:10px;gap:8px}
+  .info{min-height:0;gap:10px}
+  .info .t{font-size:14px}
+  .info .d{display:none}
+  .act{padding:8px 10px;gap:8px;min-height:46px}
+  .act kbd{display:none}
+  .act .chk{top:4px;bottom:auto;right:6px}
+  .act b{font-size:13px;line-height:1.25}
+  .act small{font-size:11px}
+  .ico,.ico svg{width:28px;height:22px}
+  .act .chip{width:16px;height:26px}
+  .act:last-child:nth-child(odd){grid-column:1/-1}
+}
+/* short landscape phones: one row of options */
+@media (max-height:520px) and (min-width:560px){
+  .actions{grid-template-columns:repeat(auto-fit,minmax(0,1fr))}
+  .act:last-child:nth-child(odd){grid-column:auto}
+  .act small,.info .d{display:none}
+  .info .keys{display:none}
+  #app{grid-template-rows:auto minmax(120px,1fr) auto}
+  .hud{padding-block:6px;gap:4px 16px;flex-wrap:nowrap}
+  .hud .eyebrow{display:none}
+  .hud h1{font-size:15px;margin:0}
+  .stats{gap:14px;flex-wrap:nowrap}
+  .stat .k{font-size:9px}
+  .stat .v{font-size:15px}
+  .pip{width:11px;height:11px}
+  .lang button{padding:5px 8px}
+  #btnSop{padding:6px 10px;font-size:12px}
+  .panel{padding-block:8px;gap:6px}
+  .info{min-height:0}
+  .act{min-height:44px;padding-block:6px}
+  .toast{font-size:12.5px;padding:7px 10px}
 }
 @media (max-width:440px){.tiers{grid-template-columns:minmax(0,1fr)}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
