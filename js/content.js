@@ -360,6 +360,16 @@ window.HD_CONTENT = {
     },
     projects: [
       {
+        title: "Meja Kasir",
+        author: "Ihsan Mahendra",
+        client: "Retail SOP training",
+        year: 2026,
+        image: "assets/gamification/meja-kasir.webp",
+        link: "meja-kasir/",
+        tags: ["Cashier SOP", "Retail training", "Browser game"],
+        en: { summary: "A first-person cashier desk game for the checkout SOP. Greet, check the basket, scan and weigh, check ID for cigarettes, spot fake notes and fake QRIS proof, give the right change and a receipt. One mistake ends the shift, and every shift brings new customers. Plays in English and Bahasa Indonesia." },
+      },
+      {
         title: "Pos Jaga Lobi",
         author: "Ihsan Mahendra",
         client: "ISO 27001 awareness",
