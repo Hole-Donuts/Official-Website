@@ -305,9 +305,9 @@ window.HD_CONTENT = {
      --------------------------------------------------------------- */
   HOME: {
     en: {
-      eyebrow: "Indie game studio from Indonesia",
-      title: "We make games that are weird and sweet",
-      intro: "Holy Doughnut Studio is a small team baking games with big ideas. Pick a game below, or see what we build beyond games.",
+      eyebrow: "Holy Doughnut Studio",
+      title: "We make fun games",
+      intro: "Holy Doughnut Studio is a small team with big ideas. Pick a game below, or see what we build beyond games.",
       gamesTitle: "Our games",
     },
     // One card per game. game = the id of its panel ("magicion", "donut-town").

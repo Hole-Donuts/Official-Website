@@ -17,7 +17,7 @@ window.HD_TRANSLATIONS = {
   id: {
     meta: {
       title: "Holy Doughnut Studio",
-      description: "Holy Doughnut Studio, studio game indie dari Indonesia. Pembuat MAGICION dan Donut Town.",
+      description: "Holy Doughnut Studio adalah studio kecil yang membuat game dan proyek gamifikasi.",
       logoAlt: "Logo Holy Doughnut Studio",
     },
     nav: {
@@ -96,7 +96,7 @@ window.HD_TRANSLATIONS = {
     contact: {
       eyebrow: "Holy Doughnut Studio",
       title: "Pesan selusin?",
-      text: "Kami studio kecil yang sedang menggarap MAGICION dan Donut Town. Kirim pesan kalau mau dikabari saat game kami rilis, mau meliput, ngobrol soal publishing, atau sekadar menyapa. Biasanya kami balas dalam 2 hari kerja.",
+      text: "Kami studio kecil yang membuat game dan proyek gamifikasi. Kirim pesan kalau mau dikabari rilis berikutnya, mau meliput karya kami, mengajak kerja sama, atau sekadar menyapa. Biasanya kami balas dalam 2 hari kerja.",
       receiptNo: "Nota #0044",
       itemNews: "1x Kabar rilis",
       itemPress: "1x Liputan media",
@@ -142,7 +142,7 @@ window.HD_TRANSLATIONS = {
   en: {
     meta: {
       title: "Holy Doughnut Studio",
-      description: "Holy Doughnut Studio, an indie game studio from Indonesia. Makers of MAGICION and Donut Town.",
+      description: "Holy Doughnut Studio is a small studio making games and gamification projects.",
       logoAlt: "Holy Doughnut Studio logo",
     },
     nav: {
@@ -221,7 +221,7 @@ window.HD_TRANSLATIONS = {
     contact: {
       eyebrow: "Holy Doughnut Studio",
       title: "Order a dozen?",
-      text: "We're a small studio making MAGICION and Donut Town. Send us a message if you want to hear when our games launch, cover them, talk publishing, or just say hi. We usually reply within 2 working days.",
+      text: "We're a small studio making games and gamification projects. Send us a message if you want to hear about our next release, cover our work, work on a project together, or just say hi. We usually reply within 2 working days.",
       receiptNo: "Receipt #0044",
       itemNews: "1x Launch news",
       itemPress: "1x Press & creators",
