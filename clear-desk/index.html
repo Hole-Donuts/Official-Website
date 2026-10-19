@@ -984,11 +984,11 @@ function attempt(it, dest) {
   if (!S.running || it.gone) return;
   const c = CLS[it.cls];
   const zb = document.querySelector(`.zbtn[data-dest="${dest}"]`);
+  if (dest === 'laci' && S.locked) {
+    showToast('info', tr(T.drawerStill), tr(T.drawerStillTx), '');
+    return;
+  }
   if (c.ok.includes(dest)) {
-    if (dest === 'laci' && S.locked) {
-      showToast('info', tr(T.drawerStill), tr(T.drawerStillTx), '');
-      return;
-    }
     it.gone = true; it.dest = dest;
     S.placed[dest]++; S.done++;
     it.el.classList.remove('sel');
@@ -1013,7 +1013,7 @@ function violation(title, text, code) {
   S.minor.push({ title, text, code });
   showToast('bad', tr(T.notSop) + tr(title), tr(text), tr(CTRL[code]));
   renderHUD();
-  if (S.viol >= S.sc.max) setTimeout(() => audit('violations'), 900);
+  if (S.viol >= S.sc.max) audit('violations', 900);
 }
 
 function pulse(el, cls) { el.classList.remove(cls); void el.offsetWidth; el.classList.add(cls); }
@@ -1057,17 +1057,23 @@ function monitorAct(act) {
 }
 
 /* ---- audit ---- */
-function audit(reason) {
+// Ends the round at once (no more moves, no timer); the report can show after a short delay.
+function audit(reason, delay = 0) {
   if (S.over) return;
   S.running = false; S.over = true; S.reason = reason;
   clearInterval(tick);
   cleanupDrag();
   select(null);
   $('#monMenu').hidden = true;
-  renderResult();
-  $('#brief').hidden = true;
-  $('#result').hidden = false;
-  $('#againBtn').focus();
+  const round = S;
+  setTimeout(() => {
+    if (S !== round) return;
+    renderResult();
+    S.reported = true;
+    $('#brief').hidden = true;
+    $('#result').hidden = false;
+    $('#againBtn').focus();
+  }, delay);
 }
 
 function majorFindings() {
@@ -1143,7 +1149,7 @@ function setLang(l) {
   if (!S) return;
   S.items.forEach(it => { if (!it.gone && it.el) renderItem(it); });
   renderRound();
-  if (S.over) renderResult();
+  if (S.reported) renderResult();
 }
 function initialLang() {
   const h = location.hash.replace('#', '');
@@ -1205,7 +1211,7 @@ function bindItem(el, it) {
   el.addEventListener('lostpointercapture', endDrag);
   el.addEventListener('click', () => {
     if (el.dataset.noclick || !S.running || it.gone) return;
-    select(S.sel === it ? null : it);
+    select(it);
   });
 }
 
@@ -1237,8 +1243,8 @@ $('#lockBtn').addEventListener('click', () => {
 $('#monitor').addEventListener('click', openMonitorMenu);
 $('#monMenu').addEventListener('click', e => { const b = e.target.closest('button'); if (b) monitorAct(b.dataset.act); });
 $('#leaveBtn').addEventListener('click', () => { if (S.running) audit('leave'); });
-$('#poster').addEventListener('click', openSOP);
-$('#startBtn').addEventListener('click', () => { if (S.over) { $('#brief').hidden = true; $('#result').hidden = false; return; } S.paused = false; start(); });
+$('#poster').addEventListener('click', () => { if (!S.over) openSOP(); });
+$('#startBtn').addEventListener('click', () => { if (S.over) { $('#brief').hidden = true; $('#result').hidden = !S.reported; return; } S.paused = false; start(); });
 $('#againBtn').addEventListener('click', newRound);
 $('#sopBtn').addEventListener('click', () => { $('#result').hidden = true; openSOP(); });
 document.addEventListener('pointerdown', e => {
