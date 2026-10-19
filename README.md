@@ -6,7 +6,7 @@ Official website of **MAGICION**, an action roguelite of cards, spells and eleme
 
 ## Contact
 
-- Email: holydoughnut@siteprofree.email
+- Email: holydoughnutofficial@gmail.com
 - Discord: https://discord.gg/nP9xS3Ca9
 
 ---
