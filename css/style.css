@@ -388,6 +388,22 @@ p {
   min-width: 0;
 }
 
+/* Full-screen fallback (phones without the Fullscreen API): the slide
+   transform would trap the fixed-position player, so drop it while the
+   game fills the screen. */
+html.magicion-lock .games {
+  overflow: visible;
+}
+
+html.magicion-lock .games-track {
+  transform: none !important;
+  transition: none;
+}
+
+html.magicion-lock .game-panel:not(#magicion) {
+  display: none;
+}
+
 /* #links land below the sticky nav */
 [id] {
   scroll-margin-top: 96px;
