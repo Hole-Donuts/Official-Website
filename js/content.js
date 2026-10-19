@@ -30,7 +30,7 @@ window.HD_CONTENT = {
     // https://holydoughnut.goatcounter.com. Leave empty "" to turn stats off.
     goatcounter: "holydoughnut",
     contact: {
-      email: "holydoughnut@siteprofree.email",
+      email: "holydoughnutofficial@gmail.com",
       discordUrl: "https://discord.gg/nP9xS3Ca9",
     },
   },
