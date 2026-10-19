@@ -503,7 +503,7 @@
 
     $("#gami-list").innerHTML = `<ul class="gami-grid">${projects.map((project) => {
       const p = local(project);
-      const meta = [project.client, project.year].filter(Boolean).map(escapeHtml).join(" · ");
+      const meta = [project.author && `By ${project.author}`, project.client, project.year].filter(Boolean).map(escapeHtml).join(" · ");
       const image = project.image ? `<img src="${escapeHtml(project.image)}" alt="" width="1600" height="900" loading="lazy">` : "";
       const title = project.link
         ? `<a href="${escapeHtml(project.link)}" target="_blank" rel="noopener">${escapeHtml(project.title)}</a>`

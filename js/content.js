@@ -344,6 +344,7 @@ window.HD_CONTENT = {
          year: 2026,                           // optional
          image: "assets/gamification/<name>.webp",  // optional, 16:9
          link: "https://...",                  // optional
+         author: "Your name",                  // optional, shown as "By ..."
          tags: ["Education", "Badges"],
          en: { summary: "One or two sentences about what it does." },
        },
@@ -357,6 +358,17 @@ window.HD_CONTENT = {
       emptyText: "We're working on our first gamification projects. Have a class, an app or a community that could use some game magic? Let's talk.",
       emptyButton: "Get in touch",
     },
-    projects: [],
+    projects: [
+      {
+        title: "Clear Desk 17.00",
+        author: "Ihsan Mahendra",
+        client: "ISO 27001 awareness",
+        year: 2026,
+        image: "assets/gamification/clear-desk.webp",
+        link: "clear-desk/",
+        tags: ["ISO 27001", "Security awareness", "Browser game"],
+        en: { summary: "A first-person desk game for the clear desk & clear screen SOP. Read each item's label, file, shred, bin or pack it before the clock runs out, then pass the audit. Every round is a new situation. Plays in English and Bahasa Indonesia." },
+      },
+    ],
   },
 };
