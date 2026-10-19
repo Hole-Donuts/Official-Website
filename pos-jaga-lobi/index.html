@@ -100,8 +100,8 @@ button{font:inherit;color:inherit}
 .idle{color:var(--mute);font:13px var(--mono);padding:16px 0;grid-column:1/-1}
 
 /* Modals */
-.modal{position:fixed;inset:0;background:rgba(6,9,12,.74);display:grid;place-items:center;z-index:20;padding-block:16px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
-.sheet{background:var(--panel);border:1px solid var(--line);border-radius:10px;width:min(1000px,100%);max-height:100%;overflow:auto;padding:22px;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+.modal{position:fixed;inset:0;background:rgba(6,9,12,.74);display:grid;place-items:start center;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;z-index:20;padding-block:16px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.sheet{background:var(--panel);border:1px solid var(--line);border-radius:10px;width:min(1000px,100%);min-width:0;box-sizing:border-box;margin-block:auto;padding:22px;box-shadow:0 20px 60px rgba(0,0,0,.5)}
 .sheet h2{font:700 25px/1.15 var(--display);margin:6px 0 6px;text-wrap:balance}
 .sheet h3{font:600 15px var(--sans);margin:0 0 6px}
 .sheet p{line-height:1.55;max-width:70ch}
