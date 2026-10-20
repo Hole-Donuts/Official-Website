@@ -360,6 +360,16 @@ window.HD_CONTENT = {
     },
     projects: [
       {
+        title: "Simulasi Audit Lapangan",
+        author: "Ihsan Mahendra",
+        client: "Internal audit training",
+        year: 2026,
+        image: "assets/gamification/audit-lapangan.webp",
+        link: "audit-lapangan/",
+        tags: ["Field audit", "Workplace safety", "Browser game"],
+        en: { summary: "A first-person field audit game. Wear the PPE on the door sign, go in with the area PIC, inspect fire extinguishers, emergency exits, panels and more against the standard, photograph each finding, confirm it on site and rate the area by risk. Three mistakes and QA stops the audit, and every round brings new areas and new faults. Plays in English and Bahasa Indonesia." },
+      },
+      {
         title: "Internal Audit Simulation",
         author: "Ihsan Mahendra",
         client: "Internal audit training",

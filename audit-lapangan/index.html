@@ -1,0 +1,914 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Simulasi Audit Lapangan: a first-person field internal audit training game by Ihsan Mahendra · Holy Doughnut Studio. Enter each area with the right PPE and an escort, inspect fire extinguishers, exits, panels and more, photograph findings, confirm them on site and rate the area. English and Bahasa Indonesia.">
+<meta name="author" content="Ihsan Mahendra">
+<link rel="icon" type="image/png" sizes="32x32" href="../assets/favicon-32.png">
+<link rel="apple-touch-icon" href="../assets/apple-touch-icon.png">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Simulasi Audit Lapangan</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo+Narrow:wght@500;700&family=Source+Sans+3:wght@400;600;700&family=IBM+Plex+Mono:wght@400;600&family=Caveat:wght@700&display=swap">
+<style>
+/* Layout: first-person field auditor. The area in front of you on top, your clipboard below, the SOP on the side. */
+:root{
+  --wall:#dfe2d8; --wall-2:#c4c9bd; --floor:#9fa49a; --floor-2:#8b9087;
+  --paper:#fbfaf4; --paper-2:#f1eee2; --paper-ink:#1f2638; --paper-mute:#5d6475; --paper-line:#d8d3c2;
+  --board:#7c5a3a; --board-2:#694a2e;
+  --ink:#1d2433; --mute:#535b6b; --surface:#f4f6f2; --line:#c3cabf;
+  --accent:#2a4a8b; --accent-ink:#ffffff; --hi:#f3d54a;
+  --ok:#2f7a4c; --ok-bg:#e3f1e7; --bad:#b0281f; --bad-bg:#f8e3e0;
+  --shadow:0 1px 0 rgba(0,0,0,.08),0 6px 14px rgba(40,25,10,.22);
+  --f-display:"Archivo Narrow","Arial Narrow",system-ui,sans-serif;
+  --f-body:"Source Sans 3",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-doc:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+  --f-hand:"Caveat","Comic Sans MS",cursive;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --wall:#2a302b; --wall-2:#222823; --floor:#3a3f39; --floor-2:#323731;
+  --paper:#e8e4d6; --paper-2:#dcd7c6; --paper-ink:#1f2638; --paper-mute:#4f5566; --paper-line:#c4bea9;
+  --board:#4a3523; --board-2:#3c2b1c;
+  --ink:#e6eae4; --mute:#a3ab9f; --surface:#161b18; --line:#3a443e;
+  --accent:#8fb0f0; --accent-ink:#0f1a30; --hi:#e8c93c;
+  --ok:#7fd29d; --ok-bg:#1d3326; --bad:#ff8e84; --bad-bg:#3d1f1c;
+  --shadow:0 1px 0 rgba(0,0,0,.3),0 8px 18px rgba(0,0,0,.5); color-scheme:dark;
+}}
+:root[data-theme="dark"]{
+  --wall:#2a302b; --wall-2:#222823; --floor:#3a3f39; --floor-2:#323731;
+  --paper:#e8e4d6; --paper-2:#dcd7c6; --paper-ink:#1f2638; --paper-mute:#4f5566; --paper-line:#c4bea9;
+  --board:#4a3523; --board-2:#3c2b1c;
+  --ink:#e6eae4; --mute:#a3ab9f; --surface:#161b18; --line:#3a443e;
+  --accent:#8fb0f0; --accent-ink:#0f1a30; --hi:#e8c93c;
+  --ok:#7fd29d; --ok-bg:#1d3326; --bad:#ff8e84; --bad-bg:#3d1f1c;
+  --shadow:0 1px 0 rgba(0,0,0,.3),0 8px 18px rgba(0,0,0,.5); color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{min-height:100%}
+body{background:var(--surface);color:var(--ink);font:16px/1.45 var(--f-body);padding:0 16px 24px}
+button{font:inherit;cursor:pointer}
+button:focus-visible,.chip:focus-visible,.spot:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+
+.hud{display:flex;flex-wrap:wrap;align-items:center;gap:10px 18px;padding-block:12px;max-width:1180px;margin:0 auto}
+.hud h1{font:700 1.35rem/1 var(--f-display);letter-spacing:.01em;margin:0;text-wrap:balance}
+.hud .sp{flex:1}
+.stat{display:flex;align-items:center;gap:8px;font-size:.85rem;color:var(--mute)}
+.stat b{color:var(--ink);font-variant-numeric:tabular-nums}
+.lbl{font-size:.7rem;letter-spacing:.09em;text-transform:uppercase;font-weight:700;color:var(--mute)}
+.qa{display:flex;gap:5px}
+.qa i{width:14px;height:14px;border-radius:50%;border:2px solid var(--bad);display:block}
+.qa i.on{background:var(--bad)}
+.btn{border:1px solid var(--line);background:transparent;color:var(--ink);padding:6px 12px;border-radius:6px;font-size:.88rem}
+.btn:hover{border-color:var(--accent);color:var(--accent)}
+.btn[aria-pressed="true"]{background:var(--hi);color:#1d2433;border-color:var(--hi)}
+.lang{display:inline-flex;border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.lang button{border:0;background:transparent;color:var(--mute);padding:6px 10px;font-size:.82rem;font-weight:700}
+.lang button[aria-pressed="true"]{background:var(--ink);color:var(--surface)}
+
+.room{max-width:1180px;margin:0 auto;display:grid;grid-template-columns:minmax(0,1fr) 290px;gap:16px}
+@media (max-width:900px){.room{grid-template-columns:minmax(0,1fr)}}
+.view{align-self:start;border-radius:10px;overflow:hidden;border:1px solid var(--line);min-width:0}
+
+/* ---- The area in front of you ---- */
+.scene{position:relative;height:360px;background:linear-gradient(var(--wall) 0 72%,var(--wall-2) 72% 73%,var(--floor) 73%);overflow:hidden}
+.scene::after{content:"";position:absolute;left:0;right:0;bottom:0;height:27%;background:repeating-linear-gradient(90deg,transparent 0 78px,var(--floor-2) 78px 80px);opacity:.6;pointer-events:none}
+.plate{position:absolute;right:14px;top:12px;background:var(--accent);color:var(--accent-ink);font:700 .78rem/1 var(--f-display);letter-spacing:.06em;text-transform:uppercase;padding:6px 9px;border-radius:4px;box-shadow:var(--shadow);z-index:2}
+.bubble{position:absolute;left:12px;top:12px;max-width:min(440px,calc(100% - 170px));background:var(--paper);color:var(--paper-ink);padding:9px 12px;border-radius:12px 12px 12px 2px;box-shadow:var(--shadow);font-size:.92rem;z-index:3}
+.bubble small{display:block;font:600 .66rem var(--f-doc);color:var(--paper-mute);margin-bottom:2px;text-transform:uppercase;letter-spacing:.06em}
+.person{position:absolute;right:8px;bottom:0;width:140px;transition:transform .45s ease,opacity .45s ease;z-index:1}
+.person.out{transform:translateX(140%);opacity:0}
+.badge{position:absolute;left:50%;bottom:22px;transform:translateX(-50%);background:var(--paper);color:var(--paper-ink);font:600 .58rem/1.2 var(--f-doc);padding:3px 6px;border-radius:3px;white-space:nowrap;border-top:4px solid var(--accent);text-align:center;display:grid;gap:1px}
+.badge b{font-size:.64rem}
+.badge.guard{border-top-color:#333}
+/* door view (step 1) */
+.door{position:absolute;left:50%;bottom:27%;width:160px;height:180px;transform:translateX(-50%)}
+.door svg{width:100%;height:100%;display:block}
+.apd-sign{position:absolute;left:calc(50% - 230px);bottom:calc(27% + 20px);width:120px;background:#fff;color:#1d2433;border-radius:4px;box-shadow:var(--shadow);overflow:hidden;font:600 .66rem/1.25 var(--f-body)}
+.apd-sign b{display:block;background:#1d5fae;color:#fff;font:700 .7rem var(--f-display);letter-spacing:.06em;text-align:center;padding:4px 2px}
+.apd-sign ul{list-style:none;margin:0;padding:5px 6px;display:grid;gap:3px}
+.apd-sign li{display:flex;gap:5px;align-items:center}
+.apd-sign li i{font-style:normal;width:16px;height:16px;border-radius:50%;background:#1d5fae;color:#fff;display:inline-grid;place-items:center;font-size:.6rem;flex:0 0 16px}
+/* inspection points (step 2+) */
+.spots{position:absolute;left:8px;right:150px;bottom:8px;height:220px;display:flex;justify-content:space-around;align-items:flex-end;gap:4px;z-index:2}
+.spot{all:unset;cursor:pointer;flex:1 1 0;max-width:118px;min-width:0;height:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:3px;position:relative;border-radius:8px;padding:2px}
+.spot svg{width:100%;flex:1 1 auto;min-height:0}
+.spot .tag{font:600 .62rem/1.15 var(--f-doc);background:var(--paper);color:var(--paper-ink);padding:2px 5px;border-radius:3px;text-align:center;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.spot:hover{background:color-mix(in srgb,var(--hi) 18%,transparent)}
+.spot[aria-pressed="true"]{background:color-mix(in srgb,var(--hi) 30%,transparent);outline:3px solid var(--hi)}
+.spot .st{position:absolute;bottom:26px;right:2px;z-index:1;min-width:22px;height:22px;border-radius:11px;padding:0 5px;display:grid;place-items:center;font:700 .72rem var(--f-doc);background:var(--paper);color:var(--paper-ink);box-shadow:var(--shadow)}
+.spot .st.ok{background:var(--ok);color:#fff}.spot .st.bad{background:var(--bad);color:#fff}
+.spot.disabled{cursor:default}
+.spot.disabled:hover{background:transparent}
+@media (max-width:640px){
+  .scene{height:380px}
+  .person{width:96px}
+  .spots{right:0;left:0;height:200px}
+  .scene.walk .person,.scene.conf .person,.scene.close .person{display:none}
+  .bubble{max-width:calc(100% - 24px);top:44px}
+  .door{transform:translateX(-50%);width:150px;height:180px}
+  .apd-sign{left:10px;bottom:calc(27% + 10px);width:108px}
+}
+
+.desk{background:repeating-linear-gradient(92deg,var(--board) 0 38px,var(--board-2) 38px 40px,var(--board) 40px 96px);padding:18px 16px 16px;border-top:6px solid var(--board-2)}
+.papers{display:flex;flex-wrap:wrap;gap:14px;align-items:flex-start}
+.paper{background:var(--paper);color:var(--paper-ink);border-radius:3px;box-shadow:var(--shadow);padding:12px 14px;flex:1 1 250px;min-width:0;font-family:var(--f-doc);font-size:.8rem;position:relative}
+.paper.wide{flex-basis:340px}
+.paper h3{font:700 .95rem/1.2 var(--f-display);letter-spacing:.04em;text-transform:uppercase;margin:0 0 8px;padding-bottom:6px;border-bottom:2px solid var(--paper-ink)}
+.paper .row{display:grid;grid-template-columns:112px minmax(0,1fr);gap:6px;padding:3px 0;border-bottom:1px dashed var(--paper-line)}
+.paper .row span:first-child{color:var(--paper-mute)}
+.paper .row span:last-child{overflow-wrap:anywhere}
+.paper.tilt-l{transform:rotate(-.5deg)}.paper.tilt-r{transform:rotate(.6deg)}
+.paper ul{margin:0;padding:0;list-style:none}
+.paper li{padding:4px 0;border-bottom:1px dashed var(--paper-line);display:flex;gap:8px;align-items:baseline}
+.paper p{margin:6px 0 0}
+.std{margin-top:8px;padding:6px 8px;background:var(--paper-2);border-left:4px solid var(--accent);font-size:.74rem}
+.std b{display:block;font-family:var(--f-body);font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;margin-bottom:2px}
+.std ul li{border:0;padding:1px 0}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.chip{border:1px solid var(--paper-mute);background:transparent;color:var(--paper-ink);border-radius:99px;padding:4px 11px;font:600 .74rem var(--f-body)}
+.chip[aria-pressed="true"]{background:var(--paper-ink);color:var(--paper);border-color:var(--paper-ink)}
+.chip.okc[aria-pressed="true"]{background:var(--ok);border-color:var(--ok);color:#fff}
+.chip.badc[aria-pressed="true"]{background:var(--bad);border-color:var(--bad);color:#fff}
+.chip.cam[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.cl button{all:unset;cursor:pointer;display:flex;gap:8px;width:100%;align-items:baseline}
+.cl button:focus-visible{outline:2px solid var(--accent)}
+.cl .mk{width:22px;flex:0 0 22px;text-align:center;font:700 1.15rem/1 var(--f-hand)}
+.cl .mk.ok{color:var(--ok)}.cl .mk.bad{color:var(--bad)}
+.cl li.cur{background:color-mix(in srgb,var(--hi) 30%,transparent)}
+.cl small{margin-left:auto;color:var(--paper-mute);white-space:nowrap}
+.stamp{position:absolute;right:10px;top:8px;font:700 .78rem var(--f-display);letter-spacing:.1em;border:2px solid currentColor;padding:1px 6px;transform:rotate(-8deg);text-transform:uppercase;color:var(--accent)}
+.sig{font:700 1.35rem/1 var(--f-hand);color:var(--accent)}
+.sig.none{font:italic .8rem var(--f-doc);color:var(--paper-mute)}
+.empty-note{font-family:var(--f-body);font-size:.9rem;color:var(--paper-mute)}
+
+.bar{margin-top:16px;display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.act{border:0;border-radius:7px;padding:11px 16px;font-weight:700;font-size:.93rem;background:var(--paper);color:var(--paper-ink);box-shadow:var(--shadow);text-align:left;flex:1 1 200px}
+.act:hover:not(:disabled){outline:2px solid var(--hi)}
+.act:disabled{opacity:.5;cursor:not-allowed}
+.act small{display:block;font-weight:400;font-size:.76rem;color:var(--paper-mute)}
+.verdict{flex:1 1 100%;border-radius:8px;padding:12px 14px;background:var(--ok-bg);color:var(--ink);border-left:6px solid var(--ok)}
+.verdict.bad{background:var(--bad-bg);border-left-color:var(--bad)}
+.verdict h4{margin:0 0 4px;font:700 1rem var(--f-display);letter-spacing:.03em;text-transform:uppercase;color:var(--ok)}
+.verdict.bad h4{color:var(--bad)}
+.verdict p{margin:4px 0;max-width:72ch}
+.verdict ul{margin:6px 0 0;padding-left:18px}
+.next{border:0;border-radius:7px;padding:11px 18px;font-weight:700;background:var(--accent);color:var(--accent-ink)}
+
+.sop{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 16px;align-self:start;min-width:0}
+.sop h2{font:700 1.05rem var(--f-display);margin:0 0 4px;letter-spacing:.02em}
+.sop p{margin:0 0 10px;font-size:.84rem;color:var(--mute)}
+.sop ol{margin:0;padding:0;list-style:none;display:grid;gap:8px;counter-reset:s}
+.sop li{counter-increment:s;display:grid;grid-template-columns:26px minmax(0,1fr);gap:8px;font-size:.86rem;padding:7px 8px;border-radius:6px}
+.sop li::before{content:counter(s);font:700 .85rem/24px var(--f-display);text-align:center;width:24px;height:24px;border-radius:50%;border:1.5px solid var(--line);color:var(--mute)}
+.sop li.cur{background:color-mix(in srgb,var(--hi) 28%,transparent)}
+.sop li.cur::before{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+.sop li.done::before{content:"✓";color:var(--ok);border-color:var(--ok)}
+.sop li span{color:var(--mute)}
+.sop li span b{display:block;color:var(--ink)}
+.queue{display:flex;gap:6px;margin-top:14px;flex-wrap:wrap}
+.queue i{font-style:normal;font:600 .72rem var(--f-doc);padding:3px 7px;border-radius:4px;border:1px solid var(--line);color:var(--mute)}
+.queue i.ok{border-color:var(--ok);color:var(--ok)}
+.queue i.bad{border-color:var(--bad);color:var(--bad)}
+.queue i.now{border-color:var(--ink);color:var(--ink);background:color-mix(in srgb,var(--hi) 30%,transparent)}
+
+.hint{background:var(--paper);color:var(--paper-ink);border-radius:6px;padding:10px 12px 10px 44px;margin-bottom:14px;position:relative;font-size:.9rem;box-shadow:var(--shadow);border:2px dashed var(--hi)}
+.hint::before{content:"?";position:absolute;left:10px;top:10px;width:24px;height:24px;border-radius:50%;background:var(--hi);color:#1d2433;font:700 .95rem/24px var(--f-display);text-align:center}
+.hint>b{display:block;font-family:var(--f-display);letter-spacing:.03em;text-transform:uppercase;font-size:.8rem;margin-bottom:2px}
+.hint ol{margin:4px 0 0;padding-left:18px}
+.hint p{margin:2px 0;max-width:80ch}
+.hint-acts{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.hint-acts button{border:1px solid var(--paper-ink);background:var(--paper-ink);color:var(--paper);border-radius:6px;padding:5px 10px;font-weight:600;font-size:.8rem}
+
+.end{position:fixed;inset:0;background:rgba(10,14,12,.6);display:flex;align-items:center;justify-content:center;padding:16px;z-index:5}
+.end .card{background:var(--paper);color:var(--paper-ink);max-width:620px;width:100%;max-height:calc(100% - 32px);overflow:auto;border-radius:6px;padding:22px;box-shadow:var(--shadow);font-family:var(--f-body)}
+.end h2{font:700 1.8rem/1.1 var(--f-display);margin:0 0 6px;text-wrap:balance}
+.end .big{font:700 1.1rem var(--f-doc);margin:0 0 12px}
+.end ol{padding-left:20px;font-size:.88rem;margin:10px 0 16px}
+.end li{margin-bottom:6px}
+.end .x{color:var(--bad);font-weight:700}.end .v{color:var(--ok);font-weight:700}
+.end .next{background:var(--paper-ink);color:var(--paper)}
+
+.tour{position:fixed;inset:0;z-index:10}
+.tour .dim{position:fixed;inset:0;background:rgba(8,12,10,.62)}
+.tour .spotl{position:fixed;border-radius:10px;box-shadow:0 0 0 4px var(--hi),0 0 0 9999px rgba(8,12,10,.62);pointer-events:none;transition:all .25s ease}
+.tour .tip{position:fixed;width:min(380px,calc(100vw - 32px));max-height:calc(100% - 32px);overflow:auto;background:var(--paper);color:var(--paper-ink);border-radius:8px;padding:16px 18px;box-shadow:0 12px 30px rgba(0,0,0,.4);border-top:6px solid var(--hi)}
+.tour .tip.center{left:50%;top:50%;transform:translate(-50%,-50%);width:min(460px,calc(100vw - 32px))}
+.tour .tip h3{font:700 1.25rem/1.15 var(--f-display);margin:0 0 6px;text-wrap:balance}
+.tour .tip p{margin:0 0 8px;font-size:.93rem}
+.tour .nav{display:flex;align-items:center;gap:8px;margin-top:10px}
+.tour .nav .count{flex:1;font:600 .75rem var(--f-doc);color:var(--paper-mute)}
+.tour .nav button{border:1px solid var(--paper-mute);background:transparent;color:var(--paper-ink);border-radius:6px;padding:7px 12px;font-weight:600}
+.tour .nav button.pri{background:var(--paper-ink);color:var(--paper);border-color:var(--paper-ink)}
+.tour .tip ol,.gbody ol{margin:0 0 8px;padding-left:20px;font-size:.9rem}
+.tour .tip li,.gbody li{margin-bottom:3px}
+.mx{border-collapse:collapse;width:100%;font-size:.82rem;margin:6px 0 10px}
+.mx th,.mx td{border:1px solid var(--paper-line);padding:5px 7px;text-align:left;vertical-align:top}
+.mx th{background:var(--paper-2);font-weight:700}
+.mx ul{margin:0;padding-left:16px}
+.gwrap{position:fixed;inset:0;z-index:9;background:rgba(8,12,10,.62);display:flex;align-items:center;justify-content:center;padding:16px}
+.gcard{background:var(--paper);color:var(--paper-ink);width:100%;max-width:760px;max-height:calc(100% - 32px);display:flex;flex-direction:column;border-radius:8px;box-shadow:0 12px 30px rgba(0,0,0,.4);border-top:6px solid var(--accent);overflow:hidden}
+.ghead{display:flex;align-items:center;gap:10px;padding:14px 18px 6px}
+.ghead h2{flex:1;margin:0;font:700 1.35rem/1.1 var(--f-display)}
+.gx{border:1px solid var(--paper-mute);background:transparent;color:var(--paper-ink);border-radius:6px;padding:5px 10px;font-weight:600}
+.gtabs{display:flex;gap:4px;padding:6px 18px 0;overflow-x:auto;border-bottom:1px solid var(--paper-line)}
+.gtabs button{border:0;background:transparent;color:var(--paper-mute);padding:8px 10px;font-weight:700;font-size:.84rem;white-space:nowrap;border-bottom:3px solid transparent}
+.gtabs button[aria-selected="true"]{color:var(--paper-ink);border-bottom-color:var(--hi)}
+.gbody{padding:12px 18px 20px;overflow:auto;font-size:.92rem}
+.gbody h3{font:700 .95rem var(--f-display);letter-spacing:.04em;text-transform:uppercase;margin:14px 0 6px}
+.gbody h3:first-child{margin-top:4px}
+.gbody p{margin:0 0 8px;max-width:70ch}
+.gbody dl{display:grid;grid-template-columns:max-content minmax(0,1fr);gap:4px 12px;margin:0 0 8px;font-size:.88rem}
+.gbody dt{font-weight:700}.gbody dd{margin:0}
+@media (max-width:520px){.gbody dl{grid-template-columns:minmax(0,1fr)}.gbody dd{margin-bottom:6px}}
+@media (prefers-reduced-motion:reduce){.person,.tour .spotl{transition:none}}
+</style>
+</head>
+<body>
+<header class="hud">
+  <h1 id="t-h1">Simulasi Audit Lapangan</h1>
+  <div class="stat"><span class="lbl" id="t-area">Area</span><b id="hud-n">1/4</b></div>
+  <div class="stat"><span class="lbl" id="t-date">Tanggal</span><b id="hud-date"></b></div>
+  <div class="stat" id="qa-stat"><span class="lbl" id="t-qa">Catatan QA</span><div class="qa" id="hud-qa"></div></div>
+  <div class="sp"></div>
+  <button class="btn" id="tour-btn" type="button">Tutorial</button>
+  <button class="btn" id="guide-btn" type="button">Panduan</button>
+  <button class="btn" id="hint-btn" type="button" aria-pressed="true">Petunjuk</button>
+  <button class="btn" id="restart" type="button">Ulang dengan skenario baru</button>
+  <div class="lang" role="group" aria-label="Bahasa / Language"><button type="button" data-lang="id" aria-pressed="true" lang="id">ID</button><button type="button" data-lang="en" aria-pressed="false" lang="en">EN</button></div>
+</header>
+
+<main class="room">
+  <section class="view" aria-live="polite">
+    <div class="scene" id="scene"></div>
+    <div class="desk">
+      <div class="hint" id="hint"></div>
+      <div class="papers" id="papers"></div>
+      <div class="bar" id="bar"></div>
+    </div>
+  </section>
+  <aside class="sop">
+    <h2 id="t-sopH"></h2>
+    <p id="t-sopP"></p>
+    <ol id="steps"></ol>
+    <div class="queue" id="queue"></div>
+  </aside>
+</main>
+<div id="end"></div>
+<div id="tour"></div>
+<div id="guide"></div>
+
+<script>
+(function(){
+const rnd=n=>Math.floor(Math.random()*n), pick=a=>a[rnd(a.length)], chance=p=>Math.random()<p;
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=rnd(i+1);[a[i],a[j]]=[a[j],a[i]]}return a};
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const N_AREA=4, MAX_QA=3;
+const store={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
+let LANG=(location.hash==='#en'||location.hash==='#id')?location.hash.slice(1):(store.get('al-lang')==='en'?'en':'id');
+const tx=p=>Array.isArray(p)?p[LANG==='en'?1:0]:p;   // every bilingual value is an [id, en] pair
+
+/* ======================= WORLD DATA ======================= */
+const NAMES=[['Rina Hapsari','f'],['Budi Santoso','m'],['Dewi Lestari','f'],['Agus Prasetyo','m'],['Sri Wahyuni','f'],['Fajar Nugroho','m'],['Maya Kartika','f'],['Hendra Wijaya','m'],['Putri Ayu','f'],['Rudi Hartono','m'],['Lina Marlina','f'],['Yusuf Ramadhan','m'],['Nadia Safitri','f'],['Dimas Saputra','m']];
+const SKIN=['#f1c9a5','#d9a47a','#b97c55','#8d5a3b'], SHIRT=['#3b6ea8','#7a4d8c','#2f7d6b','#b0563a','#55606e','#9a7b2f'], HAIR=['#1b1512','#3a2618','#5b3a22'];
+
+const APD={
+ helm:{n:['Helm','Hard hat'],i:'⛑'}, rompi:{n:['Rompi reflektif','Hi-vis vest'],i:'▲'}, sepatu:{n:['Sepatu safety','Safety shoes'],i:'▙'},
+ kacamata:{n:['Kacamata safety','Safety glasses'],i:'◎'}, telinga:{n:['Pelindung telinga','Ear protection'],i:'◖'}, masker:{n:['Masker','Face mask'],i:'▭'},
+ rambut:{n:['Penutup rambut','Hair net'],i:'◠'}, sarung:{n:['Sarung tangan','Gloves'],i:'✋'}
+};
+const APD_KEYS=Object.keys(APD);
+
+const AREAS={
+ gudang:{n:['Gudang','Warehouse'],pic:['Kepala Gudang','Warehouse Head'],items:['apar','exit','rak','panel','p3k'],apd:['helm','sepatu','rompi']},
+ dapur:{n:['Dapur Kantin','Canteen Kitchen'],pic:['Supervisor Kantin','Canteen Supervisor'],items:['apar','gas','kabel','p3k','exit'],apd:['rambut','masker']},
+ server:{n:['Ruang Server','Server Room'],pic:['Kepala TI','IT Head'],items:['apar','server','panel','smoke','kabel'],apd:[]},
+ produksi:{n:['Area Produksi','Production Floor'],pic:['Supervisor Produksi','Production Supervisor'],items:['apar','kimia','exit','panel','p3k'],apd:['helm','kacamata','telinga','sepatu']},
+ kantor:{n:['Kantor Lantai 3','3rd Floor Office'],pic:['Koordinator Umum','General Affairs Lead'],items:['apar','exit','kabel','smoke','p3k'],apd:[]},
+ genset:{n:['Ruang Genset','Generator Room'],pic:['Teknisi Utilitas','Utilities Technician'],items:['apar','panel','kimia','smoke','exit'],apd:['telinga','sepatu']}
+};
+const AREA_KEYS=Object.keys(AREAS);
+
+/* Months relative to today. ago(t,3) = three months before today, ago(t,-4) = four months after. */
+const ago=(t,n)=>{let y=t.y,m=t.m-n;while(m<1){m+=12;y--}while(m>12){m-=12;y++}return {y,m}};
+const my=d=>L().MON[d.m-1]+' '+d.y;
+
+/* Every inspection point: risk class, possible faults, what you see on its card, the standard, and why a fault matters.
+   r(p,f) returns the card rows as [label, value] pairs of [id, en]; values may also be plain strings. */
+const ITEMS={
+ apar:{risk:'hi',n:['APAR','Fire extinguisher'],faults:['never','never','tag','gauge','seal','blocked','refill'],
+  make:(f,t,a)=>({co2:a==='server',insp:f==='never'?null:f==='tag'?ago(t,7+rnd(6)):ago(t,rnd(4)),refill:f==='refill'?ago(t,1+rnd(5)):ago(t,-(3+rnd(9)))}),
+  r:(p,f)=>[
+   [['Jenis','Type'],p.co2?['CO₂ 5 kg','CO₂ 5 kg']:['Serbuk kimia 6 kg','Dry powder 6 kg']],
+   [['Kartu pemeriksaan terakhir','Last inspection tag'],p.insp?my(p.insp):['Kosong, belum pernah diisi','Blank, never filled in']],
+   [['Jarum tekanan','Pressure gauge'],f==='gauge'?['Di zona merah','In the red zone']:['Di zona hijau','In the green zone']],
+   [['Pin & segel','Pin & seal'],f==='seal'?['Segel putus, pin hilang','Seal broken, pin missing']:['Utuh','Intact']],
+   [['Akses','Access'],f==='blocked'?['Terhalang tumpukan kardus','Blocked by stacked boxes']:['Bebas, mudah dijangkau','Clear and easy to reach']],
+   [['Jadwal isi ulang','Refill due'],p.insp?my(p.refill):['Tidak tercatat','Not recorded']]],
+  std:[['Kartu pemeriksaan paling lama 6 bulan lalu','Inspection tag no older than 6 months'],['Jarum di zona hijau','Gauge in the green zone'],['Pin & segel utuh','Pin and seal intact'],['Tidak terhalang','Not blocked'],['Jadwal isi ulang belum lewat','Refill date not yet passed']],
+  why:{never:['APAR tidak pernah diperiksa sejak dipasang. Tidak ada jaminan APAR berfungsi saat terjadi kebakaran.','The extinguisher has never been inspected since it was installed. Nothing guarantees it works in a fire.'],
+   tag:['Pemeriksaan terakhir sudah lebih dari 6 bulan lalu.','The last inspection was more than 6 months ago.'],
+   gauge:['Jarum di zona merah: tekanan tidak cukup untuk memadamkan api.','The gauge is in the red: not enough pressure to put out a fire.'],
+   seal:['Segel putus dan pin hilang: APAR mungkin sudah pernah dipakai atau bocor.','Broken seal and missing pin: it may have been used or be leaking.'],
+   blocked:['APAR terhalang: saat darurat, waktu terbuang untuk menjangkaunya.','The extinguisher is blocked: precious seconds are lost reaching it.'],
+   refill:['Jadwal isi ulang sudah lewat: bahan pemadam bisa menggumpal dan tidak keluar.','The refill date has passed: the agent can cake and fail to discharge.']}},
+ p3k:{risk:'md',n:['Kotak P3K','First aid box'],faults:['empty','exp','log'],
+  make:(f,t)=>({log:f==='log'?ago(t,3+rnd(4)):ago(t,rnd(2)),exp:f==='exp'?ago(t,1+rnd(6)):ago(t,-(6+rnd(12)))}),
+  r:(p,f)=>[
+   [['Isi vs daftar isi','Contents vs list'],f==='empty'?['Plester dan kasa habis','Plasters and gauze used up']:['Lengkap','Complete']],
+   [['Kedaluwarsa terdekat','Earliest expiry'],my(p.exp)],
+   [['Pemeriksaan terakhir','Last check'],my(p.log)]],
+  std:[['Isi lengkap sesuai daftar','Contents complete per the list'],['Tidak ada isi yang kedaluwarsa','Nothing expired'],['Diperiksa setiap bulan (paling lama 1 bulan lalu)','Checked monthly (no older than 1 month)']],
+  why:{empty:['Isi P3K tidak lengkap: luka ringan tidak bisa ditangani segera.','The first aid box is incomplete: minor injuries cannot be treated right away.'],
+   exp:['Ada isi yang sudah kedaluwarsa.','Some contents have expired.'],
+   log:['P3K tidak diperiksa tiap bulan, jadi kekurangan isi tidak ketahuan.','The box is not checked monthly, so missing items go unnoticed.']}},
+ exit:{risk:'hi',n:['Pintu darurat','Emergency exit'],faults:['blocked','blocked','locked','dark'],
+  make:()=>({}),
+  r:(p,f)=>[
+   [['Jalur ke pintu','Path to the door'],f==='blocked'?['Terhalang palet dan troli','Blocked by pallets and a trolley']:['Bebas, lebar ±1,2 m','Clear, about 1.2 m wide']],
+   [['Pintu','Door'],f==='locked'?['Digembok dari dalam','Padlocked from inside']:['Bisa dibuka dari dalam tanpa kunci','Opens from inside without a key']],
+   [['Lampu tanda EXIT','EXIT sign light'],f==='dark'?['Mati','Off']:['Menyala','Lit']]],
+  std:[['Jalur bebas hambatan','Path free of obstacles'],['Pintu bisa dibuka tanpa kunci','Door opens without a key'],['Lampu EXIT menyala','EXIT sign lit']],
+  why:{blocked:['Jalur evakuasi terhalang: saat kebakaran orang bisa terjebak.','The escape route is blocked: people can be trapped in a fire.'],
+   locked:['Pintu darurat digembok: tidak bisa dipakai saat evakuasi.','The emergency exit is padlocked: it cannot be used in an evacuation.'],
+   dark:['Lampu EXIT mati: pintu sulit ditemukan saat gelap atau berasap.','The EXIT sign is off: the door is hard to find in darkness or smoke.']}},
+ panel:{risk:'hi',n:['Panel listrik','Electrical panel'],faults:['open','stacked','nosign'],
+  make:()=>({}),
+  r:(p,f)=>[
+   [['Pintu panel','Panel door'],f==='open'?['Terbuka, kabel terlihat','Open, wiring exposed']:['Tertutup dan terkunci','Closed and locked']],
+   [['Area depan panel','Space in front'],f==='stacked'?['Ada tumpukan barang 30 cm di depan','Goods stacked 30 cm in front']:['Bebas 1 meter','1 metre clear']],
+   [['Rambu bahaya listrik','Electrical hazard sign'],f==='nosign'?['Tidak ada','None']:['Terpasang','In place']]],
+  std:[['Pintu tertutup dan terkunci','Door closed and locked'],['Area depan bebas minimal 1 m','At least 1 m clear in front'],['Ada rambu bahaya listrik','Hazard sign in place']],
+  why:{open:['Panel terbuka: risiko tersengat listrik dan korsleting.','Open panel: risk of electric shock and short circuits.'],
+   stacked:['Barang di depan panel menghambat pemadaman saat korsleting dan bisa ikut terbakar.','Goods in front of the panel slow down a response to a fault and can catch fire.'],
+   nosign:['Tanpa rambu, orang tidak tahu ada bahaya listrik.','Without a sign, people are not warned of the electrical hazard.']}},
+ kabel:{risk:'hi',n:['Stopkontak','Power outlets'],faults:['chain','tape'],
+  make:()=>({}),
+  r:(p,f)=>[
+   [['Sambungan','Connection'],f==='chain'?['3 terminal disambung berantai','3 power strips daisy-chained']:['1 terminal langsung ke stopkontak dinding','1 power strip into the wall socket']],
+   [['Kondisi kabel','Cable condition'],f==='tape'?['Terkelupas, dililit lakban','Insulation torn, wrapped in tape']:['Isolasi utuh','Insulation intact']],
+   [['Label SNI','SNI mark'],['Ada','Present']]],
+  std:[['Terminal tidak disambung berantai','No daisy-chained power strips'],['Isolasi kabel utuh','Cable insulation intact'],['Berlabel SNI','SNI marked']],
+  why:{chain:['Terminal berantai membebani satu stopkontak: penyebab umum kebakaran kantor.','Daisy-chained strips overload one socket: a common cause of office fires.'],
+   tape:['Kabel terkelupas yang hanya dililit lakban bisa memicu sengatan dan api.','Torn cable patched with tape can cause shocks and fire.']}},
+ rak:{risk:'md',n:['Rak barang','Storage rack'],faults:['over','top','bent'],
+  make:f=>{const max=pick([300,500,800]);return {max,load:f==='over'?max+100+rnd(5)*50:max-100-rnd(3)*50}},
+  r:(p,f)=>[
+   [['Beban maks (label)','Max load (label)'],[`${p.max} kg per tingkat`,`${p.max} kg per level`]],
+   [['Beban tingkat terberat','Heaviest level load'],[`±${p.load} kg`,`about ${p.load} kg`]],
+   [['Barang berat','Heavy goods'],f==='top'?['Di tingkat paling atas','On the top level']:['Di tingkat bawah','On the bottom level']],
+   [['Tiang penyangga','Uprights'],f==='bent'?['Bengkok, baut lepas','Bent, bolts loose']:['Lurus, baut lengkap','Straight, all bolts in']]],
+  std:[['Beban tidak melebihi label','Load within the label'],['Barang berat di tingkat bawah','Heavy goods on the bottom level'],['Rak tidak rusak','Rack undamaged']],
+  why:{over:['Beban melebihi kapasitas: rak bisa roboh.','Load above capacity: the rack can collapse.'],
+   top:['Barang berat di atas membuat rak mudah terguling dan bisa jatuh menimpa orang.','Heavy goods on top make the rack top-heavy and can fall on someone.'],
+   bent:['Tiang bengkok dan baut lepas melemahkan rak.','Bent uprights and loose bolts weaken the rack.']}},
+ smoke:{risk:'hi',n:['Detektor asap','Smoke detector'],faults:['off','covered','test'],
+  make:(f,t)=>({test:f==='test'?ago(t,13+rnd(8)):ago(t,1+rnd(9))}),
+  r:(p,f)=>[
+   [['Lampu indikator','Indicator light'],f==='off'?['Mati','Off']:['Berkedip hijau','Blinking green']],
+   [['Penutup','Cover'],f==='covered'?['Dibungkus plastik sisa renovasi','Wrapped in plastic left from renovation']:['Terbuka','Uncovered']],
+   [['Uji fungsi terakhir','Last function test'],my(p.test)]],
+  std:[['Lampu indikator menyala','Indicator light on'],['Tidak tertutup apa pun','Nothing covering it'],['Diuji paling lama 12 bulan lalu','Tested within the last 12 months']],
+  why:{off:['Detektor mati: kebakaran tidak terdeteksi dini.','The detector is dead: a fire would not be detected early.'],
+   covered:['Detektor terbungkus plastik tidak bisa mendeteksi asap.','A detector wrapped in plastic cannot sense smoke.'],
+   test:['Uji fungsi lebih dari 12 bulan lalu: tidak ada jaminan detektor bekerja.','Last tested more than 12 months ago: nothing shows it still works.']}},
+ gas:{risk:'hi',n:['Tabung gas LPG','LPG cylinder'],faults:['hose','leak','lying'],
+  make:()=>({}),
+  r:(p,f)=>[
+   [['Selang & regulator','Hose & regulator'],f==='hose'?['Selang retak, tanpa klem','Hose cracked, no clamp']:['Berlabel SNI, terpasang klem','SNI marked, clamped']],
+   [['Tes air sabun','Soapy water test'],f==='leak'?['Muncul gelembung di sambungan','Bubbles at the joint']:['Tidak ada gelembung','No bubbles']],
+   [['Tabung cadangan','Spare cylinder'],f==='lying'?['Direbahkan di bawah kompor','Lying on its side under the stove']:['Berdiri tegak di area berventilasi','Upright in a ventilated spot']]],
+  std:[['Selang utuh dan berklem','Hose intact and clamped'],['Tidak ada kebocoran','No leaks'],['Tabung berdiri tegak di tempat berventilasi','Cylinders upright in a ventilated spot']],
+  why:{hose:['Selang retak tanpa klem bisa lepas dan membocorkan gas.','A cracked, unclamped hose can come loose and leak gas.'],
+   leak:['Ada kebocoran gas: risiko ledakan.','A gas leak: risk of explosion.'],
+   lying:['Tabung yang direbahkan dekat api berbahaya jika bocor.','A cylinder lying near the flame is dangerous if it leaks.']}},
+ kimia:{risk:'md',n:['Bahan kimia','Chemicals'],faults:['nolabel','nosds','spill'],
+  make:()=>({}),
+  r:(p,f)=>[
+   [['Label wadah','Container label'],f==='nolabel'?['Satu jeriken tanpa label','One jerrycan with no label']:['Nama bahan & simbol bahaya','Substance name & hazard symbol']],
+   [['SDS (lembar data keselamatan)','SDS (safety data sheet)'],f==='nosds'?['Tidak ada di lokasi','Not on site']:['Tersedia di rak','On the shelf']],
+   [['Penyimpanan','Storage'],f==='spill'?['Langsung di lantai, ada bekas tumpahan','Straight on the floor, old spill marks']:['Di atas bak penampung tumpahan','On a spill tray']]],
+  std:[['Setiap wadah berlabel','Every container labelled'],['SDS tersedia di lokasi','SDS available on site'],['Disimpan di atas bak penampung','Stored on a spill tray']],
+  why:{nolabel:['Wadah tanpa label: orang bisa salah pakai atau salah menangani tumpahan.','An unlabelled container: people can misuse it or handle a spill wrongly.'],
+   nosds:['Tanpa SDS, pertolongan pertama dan penanganan tumpahan tidak bisa dilakukan dengan benar.','Without the SDS, first aid and spill response cannot be done properly.'],
+   spill:['Tumpahan tanpa bak penampung mencemari lantai dan saluran air.','Spills without a tray contaminate the floor and drains.']}},
+ server:{risk:'md',n:['Rak server','Server rack'],faults:['hot','nolog','prop'],
+  make:f=>({temp:f==='hot'?29+rnd(4):20+rnd(5)}),
+  r:(p,f)=>[
+   [['Suhu ruangan','Room temperature'],p.temp+' °C'],
+   [['Log akses pintu','Door access log'],f==='nolog'?['Kosong 2 minggu terakhir','Blank for the last 2 weeks']:['Terisi dan diparaf','Filled in and initialled']],
+   [['Pintu ruang','Room door'],f==='prop'?['Diganjal kursi, terbuka','Propped open with a chair']:['Tertutup, akses kartu','Closed, card access']]],
+  std:[['Suhu 18–27 °C','Temperature 18–27 °C'],['Log akses terisi','Access log filled in'],['Pintu selalu tertutup','Door always closed']],
+  why:{hot:['Suhu di atas 27 °C: server bisa rusak atau mati mendadak.','Above 27 °C: servers can fail or shut down.'],
+   nolog:['Log akses kosong: tidak diketahui siapa saja yang masuk.','A blank access log: nobody knows who went in.'],
+   prop:['Pintu diganjal terbuka: orang tanpa izin bisa masuk.','The door is propped open: anyone can walk in.']}}
+};
+
+/* ======================= TEXT: BAHASA INDONESIA ======================= */
+const ID={
+ title:'Simulasi Audit Lapangan', loc:'id-ID',
+ MON:['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'],
+ DAY:['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'],
+ lbl:{area:'Area',date:'Tanggal',qa:'Catatan QA',qaAria:'Pelanggaran prosedur',tour:'Tutorial',guide:'Panduan',hint:'Petunjuk',restart:'Ulang dengan skenario baru',
+  sopH:'SOP Audit Lapangan',sopP:'Setiap area diperiksa dengan 4 langkah ini secara berurutan. Tiga pelanggaran prosedur membuat audit dihentikan QA.'},
+ steps:[['Masuk area','Pakai APD sesuai rambu, masuk didampingi PIC, jangan menunda audit mendadak.'],['Observasi','Periksa setiap titik di checklist, bandingkan dengan standar, foto setiap temuan.'],['Konfirmasi','Tunjukkan bukti ke PIC, minta tanda tangan berita acara, jaga integritas.'],['Simpulan','Nilai risiko temuan dan beri rating area.']],
+ stepNames:['Masuk area','Observasi','Konfirmasi','Simpulan'],
+ risk:{hi:'Tinggi',md:'Sedang'},
+ rates:['Memadai','Perlu perbaikan','Tidak memadai'],
+ guard:'Satpam',
+ ui:{
+  brief:{
+   say:{normal:(n,j,a)=>`Selamat pagi. Saya ${n}, ${j}. Silakan, ${a} siap diperiksa.`,
+    short:(n,j,a)=>`Selamat pagi. Saya ${n}, ${j}. Cuma sebentar kok, APD-nya nggak usah dipakai. Langsung masuk saja.`,
+    postpone:(n,j,a)=>`Wah, audit hari ini? Saya ${n}, ${j}. Area lagi berantakan. Bisa besok saja? Biar kami rapikan dulu.`,
+    absent:()=>`PIC area sedang rapat. Silakan masuk sendiri saja, pintunya tidak dikunci.`,
+    arrived:(n,j)=>`Maaf membuat menunggu. Saya ${n}, ${j}. Mari saya temani.`},
+   st:'Surat Tugas',stNo:'Nomor',stTo:'Kepada',stToV:'Kamu (Auditor Internal)',stArea:'Area',stType:'Jenis',stTypeV:'Audit lapangan K3 & aset, tanpa pemberitahuan',stDate:'Tanggal',stHead:'Kepala SPI',
+   rack:'Rak APD Auditor',rackNote:'Klik untuk memakai atau melepas APD. Cocokkan dengan rambu di pintu.',sign:'WAJIB APD',signNone:'Tidak ada APD khusus',
+   acts:[['go','Masuk dan mulai walk-through','Bersama PIC area'],['escort','Tunggu pendamping','Minta PIC atau penggantinya datang'],['postpone','Tunda audit','Kembali di hari lain']]},
+  walk:{say:n=>`Silakan diperiksa. Ada ${n} titik di checklist area ini.`,
+   cl:'Checklist Observasi',pick:'Klik titik di area atau di checklist untuk memeriksanya.',insp:'Lembar Inspeksi',std:'Standar',
+   ok:'Sesuai',bad:'Temuan',cam:'📷 Foto bukti',camOn:'📷 Foto tersimpan',photo:'Foto',left:n=>`${n} titik belum dinilai`,
+   save:'Simpan lembar observasi',ready:'Semua titik sudah dinilai',notReady:'Nilai semua titik dulu'},
+  conf:{
+   say:{none:'Sudah selesai? Temuannya apa saja?',
+    fix:it=>`Oh, ${it} itu ya? Saya beresin sekarang. Nah, sudah beres kan? Nggak usah dicatat ya.`,
+    refuse:'Saya nggak mau tanda tangan. Itu bukan tanggung jawab saya.',
+    gift:'Terima kasih sudah jauh-jauh ke sini. Ini ada nasi kotak dan voucher belanja Rp 300.000, buat Anda.'},
+   ba:'Berita Acara Observasi',baF:'Temuan',baNone:'Tidak ada temuan.',baPic:'Tanda tangan PIC',baPending:'belum',baPhoto:'foto',
+   desk:'Ditawarkan PIC',giftTxt:'Nasi kotak dan voucher belanja Rp 300.000 dalam amplop.',
+   acts:{none:[['sign','Tunjukkan foto, minta PIC tanda tangan','Temuan disepakati di lokasi'],['email','Kirim berita acara lewat email minggu depan','Biar cepat selesai'],['fixfirst','Minta PIC perbaiki dulu, baru dicatat','Supaya laporan bersih']],
+    fix:[['drop','Hapus temuan karena sudah beres','Masalahnya sudah tidak ada'],['keep','Tetap catat, tulis "sudah diperbaiki di tempat"','Kondisi saat ditemukan tetap temuan'],['wait','Tunggu, lalu ubah jadi Sesuai','Nilai kondisi akhir saja']],
+    refuse:[['drop','Hapus temuan yang ditolak','Supaya PIC mau tanda tangan'],['hold','Tahan laporan sampai PIC mau tanda tangan','Jangan terbitkan tanpa paraf'],['note','Catat penolakan PIC, temuan tetap','Bukti foto sudah cukup']],
+    gift:[['accept','Terima','Cuma makan siang, tidak memengaruhi'],['refuse','Tolak dengan sopan dan laporkan','Ke Unit Pengendalian Gratifikasi'],['later','Terima setelah laporan terbit','Supaya tidak memengaruhi audit']]}},
+  close:{say:'Jadi, hasilnya bagaimana?',sum:'Ringkasan Observasi',riskT:'Tabel Risiko',riskHi:'Tinggi: bisa langsung memicu kebakaran, ledakan, sengatan listrik, atau menghambat evakuasi',riskMd:'Sedang: lainnya',
+   items:'Titik',guide:'Panduan Rating',rows:[['Tidak ada temuan','Memadai'],['Hanya temuan risiko Sedang','Perlu perbaikan'],['Ada temuan risiko Tinggi','Tidak memadai']],count:n=>`Jumlah temuan: <b>${n}</b>`,
+   acts:[['r0','Memadai','Kondisi area baik'],['r1','Perlu perbaikan','Ada kelemahan terbatas'],['r2','Tidak memadai','Ada risiko serius']]},
+  vOk:'Sesuai prosedur',vBad:'Tidak sesuai prosedur · +1 catatan QA',next:'Lanjut',call:'Ke area berikutnya',results:'Lihat hasil',
+  endWin:'Audit lapangan selesai sesuai prosedur',endLose:'Audit dihentikan QA',endBig:(ok,n,qa)=>`${ok}/${n} area bersih · ${qa} catatan QA`,
+  endPWin:'Semua area sudah diperiksa. Laporan dikirim ke manajemen, dan setiap PIC menyusun rencana tindak lanjut dengan tenggat waktu.',
+  endPLose:'Tiga pelanggaran prosedur. Hasil audit lapangan ini tidak bisa dipakai dan harus diulang oleh auditor lain.',
+  again:'Main lagi dengan skenario baru',hintShow:'Tunjukkan di layar',hintFull:'Panduan lengkap langkah ini',
+  tNext:'Lanjut',tBack:'Kembali',tSkip:'Lewati',tStart:'Mulai audit',gHead:'Panduan Audit Lapangan',gClose:'Tutup',gCloseAria:'Tutup panduan'
+ },
+ hints:{
+  brief:['Langkah 1 · Masuk area','<ol><li>Lihat rambu <b>WAJIB APD</b> di samping pintu, lalu pakai semua APD itu dari rak (klik untuk memakai).</li><li>Audit lapangan wajib <b>didampingi PIC</b> area. Kalau PIC tidak ada, tunggu pendamping.</li><li>Audit lapangan dilakukan <b>tanpa pemberitahuan</b>. Permintaan "besok saja" bukan alasan untuk menunda.</li></ol>'],
+  walk:['Langkah 2 · Observasi','<p>Klik setiap titik di area. Bandingkan setiap baris di Lembar Inspeksi dengan <b>Standar</b> di bawahnya. Semua sesuai? Pilih <b>Sesuai</b>. Ada satu yang tidak? Pilih <b>Temuan</b> dan <b>ambil foto bukti</b>. Temuan tanpa foto tidak bisa dipertanggungjawabkan.</p>'],
+  conf:['Langkah 3 · Konfirmasi','<p>Temuan lapangan ditunjukkan ke PIC <b>saat itu juga</b> dan ditandatangani di berita acara. Temuan yang diperbaiki di tempat tetap dicatat. PIC menolak tanda tangan? Catat penolakannya, temuan tetap. Tolak semua hadiah.</p>'],
+  close:['Langkah 4 · Simpulan','<p>Lihat temuan di Ringkasan Observasi, cari kelas risikonya di Tabel Risiko, lalu pilih rating dari Panduan Rating. Rating mengikuti temuan yang kamu catat.</p>']
+ },
+ tour:[
+  {t:null,h:'Selamat datang, Auditor',b:'<p>Kamu <b>auditor internal</b> yang turun langsung ke lapangan. Hari ini kamu memeriksa 4 area perusahaan tanpa pemberitahuan, satu per satu.</p><p>Di setiap area, <b>PIC</b> (penanggung jawab area) menemanimu. Tugasmu: periksa area itu sesuai prosedur audit lapangan.</p>'},
+  {t:null,h:'Bagaimana audit lapangan bekerja',b:'<p>Audit dokumen memeriksa kertas. Audit lapangan memeriksa <b>kondisi nyata</b>: apakah APAR siap pakai, pintu darurat bisa dibuka, panel listrik aman.</p><ol><li><b>Masuk area</b> dengan APD dan pendamping.</li><li><b>Observasi</b> setiap titik dan bandingkan dengan standar.</li><li><b>Dokumentasi</b> dengan foto.</li><li><b>Konfirmasi</b> temuan dengan PIC di lokasi.</li><li><b>Simpulan</b> berdasarkan risiko.</li></ol>'},
+  {t:'#scene',h:'Area di depanmu',b:'<p>Ini pandanganmu. Di langkah 1 kamu berdiri di depan pintu area. Setelah masuk, setiap titik pemeriksaan bisa diklik.</p>'},
+  {t:'#papers',h:'Papan klipmu',b:'<p>Surat tugas, rak APD, checklist, dan lembar inspeksi muncul di sini. Putuskan berdasarkan <b>apa yang kamu lihat</b>, bukan kata PIC.</p>'},
+  {t:'#bar',h:'Pilih tindakan',b:'<p>Setiap tindakan langsung dinilai: sesuai prosedur atau tidak, beserta alasannya.</p>'},
+  {t:'.sop',h:'4 langkah SOP',b:'<p>Langkah yang sedang berjalan disorot kuning. Di bawahnya daftar area hari ini.</p>'},
+  {t:'#qa-stat',h:'Maksimal 2 kesalahan',b:'<p>Setiap tindakan yang melanggar prosedur menambah satu <b>Catatan QA</b>. Tiga catatan dan audit dihentikan: kamu kalah. Selesaikan keempat area dengan kurang dari 3 catatan untuk menang.</p>'},
+  {t:'#hint',h:'Petunjuk',b:'<p>Kotak ini menjelaskan apa yang harus dicek sekarang. Matikan lewat tombol <b>Petunjuk</b> kalau sudah paham. Standar lengkap ada di <b>Panduan</b>.</p>'}
+ ],
+ msg:{
+  brief_ok:a=>`<p>APD sesuai rambu dan kamu masuk didampingi PIC. Walk-through dimulai.</p>${a.short?'<p>PIC bilang APD tidak perlu, tapi rambu area berlaku untuk semua orang, termasuk auditor.</p>':''}`,
+  brief_stay:()=>'<p>Audit lapangan sengaja dilakukan tanpa pemberitahuan supaya kondisi yang dilihat adalah kondisi sehari-hari. Menunda memberi waktu untuk menutupi masalah. Kamu tetap masuk bersama PIC.</p>',
+  apd_miss:a=>`<p>Kamu masuk tanpa ${apdList(a.miss)}. Rambu WAJIB APD berlaku untuk semua orang, termasuk auditor dan tamu${a.short?', walaupun PIC bilang tidak perlu':''}. Auditor yang melanggar aturan K3 kehilangan kredibilitas untuk menilai K3 orang lain.</p>`,
+  alone:()=>'<p>Audit lapangan harus didampingi PIC area. Tanpa pendamping, temuan tidak bisa langsung dikonfirmasi, kamu bisa masuk ke bagian berbahaya tanpa tahu risikonya, dan auditee bisa membantah temuanmu.</p>',
+  escort_ok:()=>'<p>Benar. Kamu meminta PIC atau penggantinya datang. Setelah pendamping tiba, kamu bisa masuk.</p>',
+  escort_false:()=>'<p>PIC sudah ada di depanmu. Menunggu pendamping lain hanya membuang waktu.</p>',
+  post_bad:()=>'<p>Audit lapangan tanpa pemberitahuan tidak boleh ditunda hanya karena area "berantakan". Justru itu kondisi yang harus dilihat. Area ini batal diperiksa.</p>',
+  post_false:()=>'<p>Tidak ada alasan sah untuk menunda: surat tugas berlaku hari ini. Area ini batal diperiksa.</p>',
+  walk_ok:a=>`<p>Lembar observasi benar. ${a.n?`${a.n} temuan tercatat lengkap dengan foto bukti.`:'Semua titik memenuhi standar.'}</p>`,
+  walk_bad:a=>`<p>Ada yang salah di lembar observasi:</p><ul>${a.wrong.map(w=>`<li><b>${tx(ITEMS[w.t].n)}</b>: ${w.truth?`seharusnya <b>Temuan</b>. ${tx(ITEMS[w.t].why[w.f])}`:'seharusnya <b>Sesuai</b>. Semua baris memenuhi standar. Temuan tanpa dasar merugikan auditee.'}</li>`).join('')}${a.nophoto.map(t=>`<li><b>${tx(ITEMS[t].n)}</b>: temuan tanpa foto bukti. Kondisi lapangan bisa berubah setelah kamu pergi, jadi temuan harus didukung foto.</li>`).join('')}</ul>`,
+  sign_ok:()=>'<p>Temuan ditunjukkan dengan foto dan disepakati PIC di lokasi. Berita acara ditandatangani kedua pihak.</p>',
+  sign_email:()=>'<p>Temuan lapangan harus dikonfirmasi saat itu juga. Seminggu kemudian kondisinya bisa sudah berubah dan PIC bisa membantah.</p>',
+  sign_fix:()=>'<p>Temuan dicatat sesuai kondisi saat ditemukan. Perbaikan dicatat sebagai tindak lanjut, bukan alasan untuk tidak mencatat.</p>',
+  fix_ok:()=>'<p>Benar. Kondisi saat ditemukan tetap temuan karena menunjukkan pengendalian sehari-hari tidak berjalan. Perbaikan di tempat dicatat sebagai tindak lanjut.</p>',
+  fix_bad:()=>'<p>Diperbaiki saat auditor datang tidak berarti pengendaliannya berjalan. Temuan tetap dicatat dengan keterangan "sudah diperbaiki di tempat".</p>',
+  ref_ok:()=>'<p>Benar. Penolakan PIC dicatat di berita acara. Temuan tetap karena didukung foto bukti, lalu dibahas di exit meeting.</p>',
+  ref_drop:()=>'<p>Temuan yang didukung bukti tidak dihapus hanya karena PIC menolak. Catat penolakannya.</p>',
+  ref_hold:()=>'<p>Laporan tidak boleh tersandera tanda tangan auditee. Catat penolakannya dan lanjutkan.</p>',
+  gift_ok:()=>'<p>Hadiah dari pihak yang diaudit adalah gratifikasi, sekecil apa pun dan kapan pun diterima. Tolak dengan sopan dan laporkan.</p>',
+  gift_bad:()=>'<p>Menerima hadiah dari auditee, sebelum atau sesudah laporan, merusak objektivitas. Seharusnya ditolak dan dilaporkan.</p>',
+  close_ok:a=>`<p>Rating <b>${L().rates[a.r]}</b> sesuai dengan temuan yang kamu catat. Exit meeting: PIC menyepakati temuan dan menyusun rencana perbaikan. Temuan risiko Tinggi diberi tenggat paling lama 7 hari.</p>`,
+  close_bad:a=>`<p>Dengan temuan yang kamu catat, ratingnya seharusnya <b>${L().rates[a.right]}</b>. ${a.right===2?'Satu temuan risiko Tinggi saja sudah cukup membuat area Tidak memadai, karena bisa langsung membahayakan orang.':a.right===1?'Semua temuanmu berisiko Sedang.':'Tidak ada temuan yang tercatat.'}</p>`
+ }
+};
+
+/* ======================= TEXT: ENGLISH ======================= */
+const EN={
+ title:'Field Audit Simulation', loc:'en-GB',
+ MON:['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],
+ DAY:['Sun','Mon','Tue','Wed','Thu','Fri','Sat'],
+ lbl:{area:'Area',date:'Date',qa:'QA notes',qaAria:'Procedure violations',tour:'Tutorial',guide:'Guide',hint:'Hints',restart:'Restart with a new scenario',
+  sopH:'Field Audit SOP',sopP:'Every area goes through these 4 steps in order. Three procedure violations and QA stops the audit.'},
+ steps:[['Enter the area','Wear the PPE on the sign, enter with the area PIC, never postpone a surprise audit.'],['Observe','Inspect every point on the checklist against the standard and photograph every finding.'],['Confirm','Show the evidence to the PIC, get the record signed, keep your integrity.'],['Conclude','Weigh the risk of the findings and rate the area.']],
+ stepNames:['Enter','Observe','Confirm','Conclude'],
+ risk:{hi:'High',md:'Medium'},
+ rates:['Satisfactory','Needs improvement','Unsatisfactory'],
+ guard:'Security guard',
+ ui:{
+  brief:{
+   say:{normal:(n,j,a)=>`Good morning. I'm ${n}, ${j}. Go ahead, the ${a} is ready for you.`,
+    short:(n,j,a)=>`Good morning. I'm ${n}, ${j}. It'll only take a minute, no need for the PPE. Just go in.`,
+    postpone:(n,j,a)=>`An audit today? I'm ${n}, ${j}. The place is a mess. Could you come back tomorrow? Let us tidy up first.`,
+    absent:()=>`The area PIC is in a meeting. Just go in on your own, the door isn't locked.`,
+    arrived:(n,j)=>`Sorry to keep you waiting. I'm ${n}, ${j}. I'll walk you through.`},
+   st:'Assignment Letter',stNo:'Number',stTo:'To',stToV:'You (Internal Auditor)',stArea:'Area',stType:'Type',stTypeV:'Unannounced field audit: safety & assets',stDate:'Date',stHead:'Head of Internal Audit',
+   rack:"Auditor's PPE Rack",rackNote:'Click to put on or take off PPE. Match it to the sign by the door.',sign:'PPE REQUIRED',signNone:'No special PPE',
+   acts:[['go','Go in and start the walk-through','With the area PIC'],['escort','Wait for an escort','Ask for the PIC or a stand-in'],['postpone','Postpone the audit','Come back another day']]},
+  walk:{say:n=>`Go ahead. There are ${n} points on this area's checklist.`,
+   cl:'Observation Checklist',pick:'Click a point in the area or on the checklist to inspect it.',insp:'Inspection Sheet',std:'Standard',
+   ok:'Compliant',bad:'Finding',cam:'📷 Photo evidence',camOn:'📷 Photo saved',photo:'Photo',left:n=>`${n} point${n===1?'':'s'} not rated yet`,
+   save:'Save observation sheet',ready:'Every point is rated',notReady:'Rate every point first'},
+  conf:{
+   say:{none:'All done? So what did you find?',
+    fix:it=>`Oh, the ${it}? I'll sort it out right now. There, all fixed. No need to write it down, right?`,
+    refuse:"I'm not signing that. It's not my responsibility.",
+    gift:"Thanks for coming all this way. Here's a boxed lunch and a Rp 300,000 shopping voucher for you."},
+   ba:'Observation Record',baF:'Findings',baNone:'No findings.',baPic:'PIC signature',baPending:'pending',baPhoto:'photo',
+   desk:'Offered by the PIC',giftTxt:'A boxed lunch and a Rp 300,000 shopping voucher in an envelope.',
+   acts:{none:[['sign','Show the photos and get the PIC to sign','Findings agreed on site'],['email','Email the record next week','Quicker for now'],['fixfirst','Have the PIC fix it first, then record it','Keeps the report clean']],
+    fix:[['drop','Drop the finding, it is fixed','The problem is gone'],['keep','Keep it, note "fixed on the spot"','The condition found is still a finding'],['wait','Wait, then change it to Compliant','Judge the final state only']],
+    refuse:[['drop','Drop the disputed finding','So the PIC will sign'],['hold','Hold the report until the PIC signs','Never issue without a signature'],['note','Record the refusal, keep the finding','The photo evidence is enough']],
+    gift:[['accept','Accept','Just lunch, it changes nothing'],['refuse','Politely refuse and report it','To the Ethics Officer'],['later','Accept after the report is out','So it cannot influence the audit']]}},
+  close:{say:'So, what is the verdict?',sum:'Observation Summary',riskT:'Risk Table',riskHi:'High: can directly cause a fire, explosion or electric shock, or block an evacuation',riskMd:'Medium: everything else',
+   items:'Points',guide:'Rating Guide',rows:[['No findings','Satisfactory'],['Only Medium-risk findings','Needs improvement'],['Any High-risk finding','Unsatisfactory']],count:n=>`Findings: <b>${n}</b>`,
+   acts:[['r0','Satisfactory','The area is in good shape'],['r1','Needs improvement','A limited weakness'],['r2','Unsatisfactory','A serious risk']]},
+  vOk:'Followed procedure',vBad:'Broke procedure · +1 QA note',next:'Continue',call:'Next area',results:'See results',
+  endWin:'Field audit completed by the book',endLose:'QA stopped the audit',endBig:(ok,n,qa)=>`${ok}/${n} clean areas · ${qa} QA note${qa===1?'':'s'}`,
+  endPWin:'Every area has been inspected. The report goes to management, and each PIC prepares a follow-up plan with deadlines.',
+  endPLose:'Three procedure violations. This field audit cannot be relied on and must be redone by another auditor.',
+  again:'Play again with a new scenario',hintShow:'Show me on screen',hintFull:'Full guide for this step',
+  tNext:'Next',tBack:'Back',tSkip:'Skip',tStart:'Start the audit',gHead:'Field Audit Guide',gClose:'Close',gCloseAria:'Close the guide'
+ },
+ hints:{
+  brief:['Step 1 · Enter the area','<ol><li>Read the <b>PPE REQUIRED</b> sign by the door and put on every item from the rack (click to wear it).</li><li>A field audit must be <b>escorted by the area PIC</b>. If the PIC is not there, wait for an escort.</li><li>Field audits are <b>unannounced</b>. "Come back tomorrow" is not a reason to postpone.</li></ol>'],
+  walk:['Step 2 · Observe','<p>Click every point in the area. Compare each line of the Inspection Sheet with the <b>Standard</b> below it. All fine? Choose <b>Compliant</b>. Anything off? Choose <b>Finding</b> and <b>take a photo</b>. A finding without a photo cannot be backed up.</p>'],
+  conf:['Step 3 · Confirm','<p>Field findings are shown to the PIC <b>on the spot</b> and signed on the observation record. A finding fixed on the spot is still recorded. The PIC refuses to sign? Record the refusal and keep the finding. Refuse every gift.</p>'],
+  close:['Step 4 · Conclude','<p>Check the findings in the Observation Summary, look up their risk class in the Risk Table, then pick the rating from the Rating Guide. The rating follows the findings you recorded.</p>']
+ },
+ tour:[
+  {t:null,h:'Welcome, Auditor',b:"<p>You are an <b>internal auditor</b> out in the field. Today you inspect 4 areas of the company without warning, one after another.</p><p>In each area the <b>PIC</b> (the person in charge) escorts you. Your job: inspect that area following the field audit procedure.</p>"},
+  {t:null,h:'How a field audit works',b:'<p>A document audit checks paper. A field audit checks <b>real conditions</b>: is the extinguisher ready, does the emergency exit open, is the electrical panel safe.</p><ol><li><b>Enter the area</b> with PPE and an escort.</li><li><b>Observe</b> each point against the standard.</li><li><b>Document</b> it with photos.</li><li><b>Confirm</b> findings with the PIC on site.</li><li><b>Conclude</b> based on risk.</li></ol>'},
+  {t:'#scene',h:'The area in front of you',b:"<p>This is your view. In step 1 you stand at the area's door. Once inside, every inspection point can be clicked.</p>"},
+  {t:'#papers',h:'Your clipboard',b:"<p>The assignment letter, PPE rack, checklist and inspection sheets show up here. Decide on <b>what you see</b>, not on what the PIC tells you.</p>"},
+  {t:'#bar',h:'Choose an action',b:'<p>Each action is judged right away: did it follow procedure, and why.</p>'},
+  {t:'.sop',h:'4 SOP steps',b:"<p>The current step is highlighted in yellow. Below it is today's list of areas.</p>"},
+  {t:'#qa-stat',h:'At most 2 mistakes',b:'<p>Every action that breaks procedure adds one <b>QA note</b>. Three notes and the audit is stopped: you lose. Finish all four areas with fewer than 3 notes to win.</p>'},
+  {t:'#hint',h:'Hints',b:'<p>This box explains what to check right now. Turn it off with the <b>Hints</b> button once you are comfortable. The full standards are in the <b>Guide</b>.</p>'}
+ ],
+ msg:{
+  brief_ok:a=>`<p>PPE matches the sign and you go in with the PIC. The walk-through begins.</p>${a.short?'<p>The PIC said PPE was not needed, but the area sign applies to everyone, auditors included.</p>':''}`,
+  brief_stay:()=>'<p>Field audits are unannounced on purpose so you see everyday conditions. Postponing gives time to cover problems up. You go in with the PIC anyway.</p>',
+  apd_miss:a=>`<p>You went in without ${apdList(a.miss)}. The PPE REQUIRED sign applies to everyone, auditors and visitors included${a.short?', even when the PIC says it is not needed':''}. An auditor who breaks safety rules loses the standing to judge anyone else's.</p>`,
+  alone:()=>'<p>A field audit must be escorted by the area PIC. Without one, findings cannot be confirmed on the spot, you may walk into hazards you do not know about, and the auditee can dispute your findings.</p>',
+  escort_ok:()=>'<p>Right. You ask for the PIC or a stand-in. Once your escort arrives, you can go in.</p>',
+  escort_false:()=>'<p>The PIC is standing right in front of you. Waiting for another escort only wastes time.</p>',
+  post_bad:()=>'<p>An unannounced field audit is not postponed just because the area is "a mess". That is exactly the condition you need to see. This area is not audited.</p>',
+  post_false:()=>'<p>There is no valid reason to postpone: the assignment letter is for today. This area is not audited.</p>',
+  walk_ok:a=>`<p>The observation sheet is right. ${a.n?`${a.n} finding${a.n===1?'':'s'} recorded, each with photo evidence.`:'Every point meets the standard.'}</p>`,
+  walk_bad:a=>`<p>Something is wrong on the observation sheet:</p><ul>${a.wrong.map(w=>`<li><b>${tx(ITEMS[w.t].n)}</b>: ${w.truth?`should be a <b>Finding</b>. ${tx(ITEMS[w.t].why[w.f])}`:'should be <b>Compliant</b>. Every line meets the standard. A finding without grounds is unfair to the auditee.'}</li>`).join('')}${a.nophoto.map(t=>`<li><b>${tx(ITEMS[t].n)}</b>: a finding with no photo. Conditions can change after you leave, so a finding needs photo evidence.</li>`).join('')}</ul>`,
+  sign_ok:()=>'<p>The findings are shown with photos and agreed with the PIC on site. Both sides sign the observation record.</p>',
+  sign_email:()=>'<p>Field findings must be confirmed on the spot. A week later the condition may have changed and the PIC can dispute it.</p>',
+  sign_fix:()=>'<p>A finding is recorded as it was found. The fix goes on record as follow-up, not as a reason to leave it out.</p>',
+  fix_ok:()=>'<p>Right. The condition as found is still a finding because it shows the everyday control failed. The on-the-spot fix is recorded as follow-up.</p>',
+  fix_bad:()=>"<p>Fixing it while the auditor watches does not mean the control works. The finding stays on record, noted as \"fixed on the spot\".</p>",
+  ref_ok:()=>"<p>Right. The PIC's refusal goes on the record. The finding stays because the photo backs it, and it is discussed at the closing meeting.</p>",
+  ref_drop:()=>'<p>A finding backed by evidence is not dropped because the PIC refuses to sign. Record the refusal.</p>',
+  ref_hold:()=>"<p>A report cannot be held hostage to the auditee's signature. Record the refusal and move on.</p>",
+  gift_ok:()=>'<p>A gift from the audited party is a conflict of interest, however small and whenever it is accepted. Politely refuse and report it.</p>',
+  gift_bad:()=>'<p>Accepting a gift from an auditee, before or after the report, compromises objectivity. It should be refused and reported.</p>',
+  close_ok:a=>`<p>The rating <b>${L().rates[a.r]}</b> matches the findings you recorded. Closing meeting: the PIC agrees the findings and plans the fixes. High-risk findings get a deadline of 7 days at most.</p>`,
+  close_bad:a=>`<p>Based on the findings you recorded, the rating should be <b>${L().rates[a.right]}</b>. ${a.right===2?'A single High-risk finding makes an area Unsatisfactory, because it can hurt someone directly.':a.right===1?'All your findings are Medium risk.':'You recorded no findings.'}</p>`
+ }
+};
+const L=()=>LANG==='en'?EN:ID;
+const apdList=keys=>keys.map(k=>tx(APD[k].n).toLowerCase()).join(', ');
+
+/* ======================= GUIDE (built partly from ITEMS so it never drifts) ======================= */
+function itemTable(){
+  const h=LANG==='en'?['Point','Risk','Standard']:['Titik','Risiko','Standar'];
+  return `<table class="mx"><tr><th>${h[0]}</th><th>${h[1]}</th><th>${h[2]}</th></tr>${Object.values(ITEMS).map(it=>`<tr><td>${tx(it.n)}</td><td>${L().risk[it.risk]}</td><td><ul>${it.std.map(s=>`<li>${tx(s)}</li>`).join('')}</ul></td></tr>`).join('')}</table>`;
+}
+function apdTable(){
+  const h=LANG==='en'?['Area','Required PPE (base)']:['Area','APD wajib (dasar)'];
+  return `<table class="mx"><tr><th>${h[0]}</th><th>${h[1]}</th></tr>${Object.values(AREAS).map(a=>`<tr><td>${tx(a.n)}</td><td>${a.apd.length?a.apd.map(k=>tx(APD[k].n)).join(', '):tx(['Tidak ada','None'])}</td></tr>`).join('')}</table>`;
+}
+ID.guide=()=>[
+ ['Alur audit lapangan',`<h3>Apa itu audit lapangan?</h3><p>Audit lapangan (<i>field audit</i> atau inspeksi) adalah bagian audit internal yang memeriksa <b>kondisi fisik</b> langsung di lokasi: peralatan keselamatan, jalur evakuasi, instalasi listrik, penyimpanan barang dan bahan kimia. Dokumen bisa bilang "APAR diperiksa rutin", tapi hanya kunjungan ke lapangan yang membuktikannya.</p>
+  <h3>Alur lengkap</h3><ol><li><b>Perencanaan.</b> SPI memilih area berisiko dan menyiapkan checklist.</li><li><b>Penugasan.</b> Kepala SPI menerbitkan surat tugas. Audit lapangan biasanya <b>tanpa pemberitahuan</b>.</li><li><b>Masuk area.</b> Auditor memakai APD sesuai rambu dan didampingi PIC.</li><li><b>Observasi &amp; dokumentasi.</b> Setiap titik dibandingkan dengan standar, temuan difoto.</li><li><b>Konfirmasi.</b> Temuan ditunjukkan ke PIC dan ditandatangani di berita acara.</li><li><b>Simpulan &amp; exit meeting.</b> Temuan dinilai risikonya, area diberi rating.</li><li><b>Tindak lanjut.</b> PIC memperbaiki sesuai tenggat; SPI memeriksa ulang.</li></ol><p>Game ini melatih langkah 3 sampai 6.</p>
+  <h3>Siapa saja yang terlibat</h3><dl><dt>Auditor (kamu)</dt><dd>Memeriksa kondisi nyata dan menyimpulkan berdasarkan bukti.</dd><dt>PIC area</dt><dd>Penanggung jawab area. Mendampingi, menjelaskan, dan menandatangani berita acara.</dd><dt>Kepala SPI</dt><dd>Menugaskan auditor.</dd><dt>QA</dt><dd>Memeriksa apakah auditor mengikuti prosedur. 3 catatan QA berarti audit dihentikan.</dd></dl>`],
+ ['1 · Masuk area',`<h3>APD sesuai rambu</h3><p>Auditor tunduk pada aturan K3 area yang diperiksa, sama seperti karyawan dan tamu. Rambu WAJIB APD di setiap pintu bisa berbeda dari hari ke hari, jadi selalu baca rambunya.</p>${apdTable()}<h3>Didampingi PIC</h3><p>PIC tahu bahaya di areanya, bisa langsung menjelaskan kondisi, dan menjadi saksi temuan. Kalau PIC tidak ada, minta pendamping pengganti. Jangan masuk sendiri.</p><h3>Tanpa pemberitahuan</h3><p>Tujuan audit lapangan adalah melihat kondisi sehari-hari. Permintaan menunda supaya "dirapikan dulu" ditolak dengan sopan. Penundaan hanya untuk alasan sah, misalnya keadaan darurat di area.</p>`],
+ ['2 · Observasi',`<h3>Cara kerja</h3><ol><li>Periksa <b>setiap</b> titik di checklist. Jangan melewatkan titik karena PIC bilang "sudah dicek".</li><li>Bandingkan setiap baris dengan standar. Satu baris tidak sesuai sudah cukup menjadi temuan.</li><li>Foto setiap temuan. Foto adalah bukti kondisi saat itu.</li><li>Jangan mencatat temuan tanpa dasar. Temuan yang salah merugikan auditee.</li></ol><h3>Standar setiap titik</h3>${itemTable()}`],
+ ['3 · Konfirmasi',`<h3>Berita acara observasi</h3><p>Temuan ditunjukkan ke PIC dengan fotonya, lalu ditandatangani kedua pihak <b>di lokasi</b>. Ini mencegah bantahan di kemudian hari.</p><table class="mx"><tr><th>Situasi</th><th>Sikap benar</th></tr><tr><td>PIC langsung memperbaiki dan minta tidak dicatat</td><td>Tetap catat, beri keterangan "sudah diperbaiki di tempat"</td></tr><tr><td>PIC menolak tanda tangan</td><td>Catat penolakan di berita acara, temuan tetap</td></tr><tr><td>PIC menawarkan makanan, voucher, atau hadiah</td><td>Tolak dengan sopan dan laporkan ke Unit Pengendalian Gratifikasi</td></tr></table>`],
+ ['4 · Simpulan',`<h3>Kelas risiko</h3><dl><dt>Tinggi</dt><dd>Bisa langsung memicu kebakaran, ledakan, sengatan listrik, atau menghambat evakuasi: APAR, pintu darurat, panel listrik, stopkontak, detektor asap, tabung gas.</dd><dt>Sedang</dt><dd>Lainnya: P3K, rak barang, bahan kimia, rak server.</dd></dl><h3>Rating area</h3><table class="mx"><tr><th>Temuan</th><th>Rating</th><th>Tenggat tindak lanjut</th></tr><tr><td>Tidak ada</td><td>Memadai</td><td>—</td></tr><tr><td>Hanya risiko Sedang</td><td>Perlu perbaikan</td><td>30 hari</td></tr><tr><td>Ada risiko Tinggi</td><td>Tidak memadai</td><td>7 hari</td></tr></table><h3>Isi temuan di laporan</h3><dl><dt>Kondisi</dt><dd>Apa yang dilihat (dengan foto).</dd><dt>Kriteria</dt><dd>Standar yang berlaku.</dd><dt>Akibat</dt><dd>Risikonya.</dd><dt>Rekomendasi</dt><dd>Perbaikan dan tenggatnya.</dd></dl>`]
+];
+EN.guide=()=>[
+ ['Field audit flow',`<h3>What is a field audit?</h3><p>A field audit (or inspection) is the part of internal audit that checks <b>physical conditions</b> on site: safety equipment, escape routes, electrical installations, storage of goods and chemicals. A document can say "extinguishers are checked regularly", but only a visit proves it.</p>
+  <h3>The full flow</h3><ol><li><b>Planning.</b> Internal Audit picks risky areas and prepares a checklist.</li><li><b>Assignment.</b> The Head of Internal Audit issues an assignment letter. Field audits are usually <b>unannounced</b>.</li><li><b>Entering the area.</b> The auditor wears the PPE on the sign and is escorted by the PIC.</li><li><b>Observation &amp; documentation.</b> Every point is compared with the standard and findings are photographed.</li><li><b>Confirmation.</b> Findings are shown to the PIC and signed on an observation record.</li><li><b>Conclusion &amp; closing meeting.</b> Findings are weighed by risk and the area is rated.</li><li><b>Follow-up.</b> The PIC fixes the issues by the deadline; Internal Audit checks again.</li></ol><p>This game trains steps 3 to 6.</p>
+  <h3>Who is involved</h3><dl><dt>Auditor (you)</dt><dd>Checks real conditions and concludes on evidence.</dd><dt>Area PIC</dt><dd>The person in charge of the area. Escorts you, explains, and signs the record.</dd><dt>Head of Internal Audit</dt><dd>Assigns auditors.</dd><dt>QA</dt><dd>Checks that auditors follow procedure. 3 QA notes stop the audit.</dd></dl>`],
+ ['1 · Entering',`<h3>PPE per the sign</h3><p>Auditors follow the safety rules of the area they inspect, like employees and visitors. The PPE REQUIRED sign at each door can change from day to day, so always read it.</p>${apdTable()}<h3>Escorted by the PIC</h3><p>The PIC knows the hazards of the area, can explain conditions on the spot and witnesses the findings. If the PIC is away, ask for a stand-in. Never go in alone.</p><h3>Unannounced</h3><p>A field audit aims to see everyday conditions. A request to postpone "so we can tidy up" is politely declined. Postpone only for a valid reason, such as an emergency in the area.</p>`],
+ ['2 · Observing',`<h3>How to work</h3><ol><li>Inspect <b>every</b> point on the checklist. Don't skip one because the PIC says "it's been checked".</li><li>Compare each line with the standard. One line out of standard is enough for a finding.</li><li>Photograph every finding. The photo is evidence of the condition at that moment.</li><li>Don't record findings without grounds. A wrong finding is unfair to the auditee.</li></ol><h3>Standard for each point</h3>${itemTable()}`],
+ ['3 · Confirming',`<h3>Observation record</h3><p>Findings are shown to the PIC with their photos and signed by both sides <b>on site</b>. This prevents disputes later.</p><table class="mx"><tr><th>Situation</th><th>Right response</th></tr><tr><td>The PIC fixes it on the spot and asks you not to record it</td><td>Record it anyway, noted "fixed on the spot"</td></tr><tr><td>The PIC refuses to sign</td><td>Record the refusal on the record; the finding stays</td></tr><tr><td>The PIC offers food, vouchers or gifts</td><td>Politely refuse and report it to the Ethics Officer</td></tr></table>`],
+ ['4 · Concluding',`<h3>Risk classes</h3><dl><dt>High</dt><dd>Can directly cause a fire, explosion or electric shock, or block an evacuation: extinguishers, emergency exits, electrical panels, power outlets, smoke detectors, gas cylinders.</dd><dt>Medium</dt><dd>Everything else: first aid boxes, storage racks, chemicals, server racks.</dd></dl><h3>Area rating</h3><table class="mx"><tr><th>Findings</th><th>Rating</th><th>Follow-up deadline</th></tr><tr><td>None</td><td>Satisfactory</td><td>—</td></tr><tr><td>Medium risk only</td><td>Needs improvement</td><td>30 days</td></tr><tr><td>Any High risk</td><td>Unsatisfactory</td><td>7 days</td></tr></table><h3>What a finding contains</h3><dl><dt>Condition</dt><dd>What you saw (with a photo).</dd><dt>Criteria</dt><dd>The standard that applies.</dd><dt>Effect</dt><dd>The risk.</dd><dt>Recommendation</dt><dd>The fix and its deadline.</dd></dl>`]
+];
+
+/* ======================= SCENARIO ======================= */
+function makeArea(k,t,taken){
+  const A=AREAS[k];
+  let nm; do{nm=pick(NAMES)}while(taken.has(nm[0])); taken.add(nm[0]);
+  const items=A.items.map(type=>{const it=ITEMS[type], f=chance(.35)?pick(it.faults):null; return {t:type,f,p:it.make(f,t,k)};});
+  // most areas should have something to find; the extinguisher is the usual suspect
+  if(items.every(i=>!i.f)&&chance(.7)){ const i=chance(.5)?0:1+rnd(items.length-1), it=ITEMS[items[i].t]; items[i].f=pick(it.faults); items[i].p=it.make(items[i].f,t,k); }
+  const apd=A.apd.slice(); if(chance(.3)){ const extra=APD_KEYS.filter(x=>!apd.includes(x)); apd.push(pick(extra)); }
+  const scen=pick(['normal','normal','normal','short','postpone','absent']);
+  return {k,pic:{name:nm[0],look:{skin:pick(SKIN),shirt:pick(SHIRT),hair:pick(HAIR),hijab:nm[1]==='f'&&chance(.5),glasses:chance(.3)}},
+    guard:{skin:pick(SKIN),shirt:'#2b2f38',hair:pick(HAIR),hijab:false,glasses:false},
+    items:shuffle(items), apd, scen, ev:pick(['none','none','fix','refuse','gift','gift']), stN:String(rnd(80)+10).padStart(3,'0')};
+}
+function newRun(){
+  let today; do{ today={y:2026,m:pick([8,9,10]),d:1+rnd(28)}; }while([0,6].includes(new Date(today.y,today.m-1,today.d).getDay()));  // audits happen on working days
+  const taken=new Set();
+  const areas=shuffle(AREA_KEYS).slice(0,N_AREA).map(k=>makeArea(k,today,taken));
+  return {v:1,today,areas,idx:0,phase:'brief',qa:0,apd:[],escort:false,sel:-1,marks:[],photos:[],recorded:[],fb:null,log:[],results:[],over:null};
+}
+let S;
+const $=id=>document.getElementById(id);
+const area=()=>S.areas[S.idx];
+const aN=k=>tx(AREAS[k].n);
+const STEP_OF={brief:0,walk:1,conf:2,close:3};
+let HINT_ON=store.get('al-hints')!=='off';
+
+/* ======================= DRAWING ======================= */
+function personSVG(l,guard){
+  const back=l.hijab?`<path d="M50 94c0-38 22-60 50-60s50 22 50 60v30c0 16-12 26-26 28H76c-14-2-26-12-26-28z" fill="${l.shirt}"/><path d="M50 94c0-38 22-60 50-60s50 22 50 60v30c0 16-12 26-26 28H76c-14-2-26-12-26-28z" fill="rgba(0,0,0,.18)"/>`:'';
+  const face=l.hijab?`<ellipse cx="100" cy="100" rx="31" ry="38" fill="${l.skin}"/>`:`<ellipse cx="100" cy="96" rx="38" ry="44" fill="${l.skin}"/>`;
+  const hair=l.hijab?'':guard?`<path d="M58 70h84v-8c0-14-18-24-42-24s-42 10-42 24z" fill="#1f2430"/><rect x="54" y="66" width="92" height="8" rx="3" fill="#1f2430"/><circle cx="100" cy="54" r="6" fill="#d8b23a"/>`:`<path d="M60 84c0-28 18-44 40-44s40 16 40 44c-8-14-22-20-40-20s-32 6-40 20z" fill="${l.hair}"/>`;
+  const glasses=l.glasses?`<g fill="none" stroke="#222" stroke-width="2.5"><circle cx="88" cy="94" r="9"/><circle cx="112" cy="94" r="9"/><path d="M97 94h6"/></g>`:'';
+  return `<svg viewBox="0 0 200 200" width="100%" aria-hidden="true"><path d="M30 200c4-44 30-62 70-62s66 18 70 62z" fill="${l.shirt}"/><path d="M86 132h28v16c-6 6-22 6-28 0z" fill="${l.skin}"/>${back}${face}${hair}<circle cx="88" cy="94" r="3.2" fill="#222"/><circle cx="112" cy="94" r="3.2" fill="#222"/>${glasses}<path d="M90 116q10 7 20 0" fill="none" stroke="#6b3a2a" stroke-width="3" stroke-linecap="round"/></svg>`;
+}
+const BOXES=(x,y)=>`<g stroke="#7a5631" stroke-width="1.5"><rect x="${x}" y="${y}" width="34" height="26" fill="#c19160"/><rect x="${x+20}" y="${y+8}" width="30" height="18" fill="#b5844f"/><path d="M${x} ${y+8}h34" fill="none"/></g>`;
+/* Inspection points, drawn in a 100×140 box with the floor at y≈138. Some faults are visible, the rest only on the card. */
+const DRAW={
+ apar:(f)=>`<path d="M42 14h16l-8 -12z" fill="#c8281e"/><rect x="38" y="42" width="24" height="62" rx="9" fill="#c8281e"/><rect x="42" y="32" width="16" height="12" rx="3" fill="#333"/><path d="M58 36q16 6 10 34" stroke="#222" stroke-width="3" fill="none"/><circle cx="50" cy="38" r="5" fill="#fff" stroke="#222"/><path d="M50 38l${f==='gauge'?'-3 -2':'3 -3'}" stroke="${f==='gauge'?'#c8281e':'#2f7a4c'}" stroke-width="2"/><rect x="42" y="66" width="16" height="16" fill="#fff"/>${f==='seal'?'':'<rect x="47" y="29" width="6" height="4" fill="#e8c93c"/>'}<rect x="62" y="48" width="10" height="14" fill="${f==='never'?'#ffffff':'#f4e7b0'}" stroke="#888" stroke-width=".8"/><rect x="34" y="104" width="32" height="4" fill="#555"/>${f==='blocked'?BOXES(20,106):''}`,
+ p3k:(f)=>`<rect x="24" y="36" width="52" height="40" rx="3" fill="#fbfbf7" stroke="#2f7a4c" stroke-width="2"/><path d="M45 44h10v10h10v10H55v10H45V64H35V54h10z" fill="#2f7a4c"/><rect x="46" y="31" width="8" height="5" fill="#777"/>`,
+ exit:(f)=>`<rect x="30" y="2" width="40" height="14" rx="2" fill="${f==='dark'?'#4a4f4a':'#1f8a4c'}"/><text x="50" y="12.5" text-anchor="middle" font-size="9" font-weight="700" font-family="sans-serif" fill="${f==='dark'?'#777':'#fff'}">EXIT</text><rect x="22" y="22" width="56" height="116" fill="#8a929b"/><rect x="26" y="26" width="48" height="112" fill="#b9c0c7"/><rect x="30" y="72" width="40" height="5" rx="2" fill="#555"/>${f==='locked'?'<path d="M44 82h12v10H44z" fill="#d9a520"/><path d="M46 82v-5a4 4 0 0 1 8 0v5" fill="none" stroke="#555" stroke-width="2"/><path d="M30 76l40 2" stroke="#555" stroke-width="2" stroke-dasharray="3 2"/>':''}${f==='blocked'?'<g><rect x="8" y="118" width="60" height="8" fill="#a77b4a"/><rect x="8" y="128" width="60" height="8" fill="#a77b4a"/><rect x="58" y="96" width="34" height="34" fill="#6d7680"/><circle cx="64" cy="134" r="4" fill="#222"/><circle cx="86" cy="134" r="4" fill="#222"/></g>':''}`,
+ panel:(f)=>`<rect x="22" y="20" width="56" height="80" rx="2" fill="#9aa1a8" stroke="#6c737a" stroke-width="2"/>${f==='nosign'?'':'<path d="M50 28l10 17H40z" fill="#f3d54a" stroke="#222" stroke-width="1"/><path d="M51 32l-4 7h4l-2 5" stroke="#222" stroke-width="1.4" fill="none"/>'}${f==='open'?'<path d="M78 20l16 6v80l-16-6z" fill="#b8bec4" stroke="#6c737a"/><g stroke-width="2.5" fill="none"><path d="M30 56h40" stroke="#c8281e"/><path d="M30 66h40" stroke="#1d5fae"/><path d="M30 76h40" stroke="#222"/><path d="M30 86h40" stroke="#d9a520"/></g>':'<rect x="68" y="58" width="5" height="10" rx="1" fill="#333"/>'}${f==='stacked'?BOXES(18,112):''}`,
+ kabel:(f)=>`<rect x="38" y="86" width="24" height="20" rx="3" fill="#eee" stroke="#999"/><circle cx="45" cy="96" r="2" fill="#555"/><circle cx="55" cy="96" r="2" fill="#555"/><path d="M50 106v16" stroke="#222" stroke-width="3"/>${f==='chain'?'<rect x="20" y="122" width="26" height="8" rx="2" fill="#f2f2f2" stroke="#888"/><path d="M46 126h6" stroke="#222" stroke-width="3"/><rect x="52" y="122" width="22" height="8" rx="2" fill="#f2f2f2" stroke="#888"/><path d="M74 126h4" stroke="#222" stroke-width="3"/><rect x="78" y="122" width="18" height="8" rx="2" fill="#f2f2f2" stroke="#888"/>':'<rect x="34" y="122" width="34" height="8" rx="2" fill="#f2f2f2" stroke="#888"/>'}${f==='tape'?'<rect x="47" y="110" width="6" height="7" fill="#111"/>':''}`,
+ rak:(f)=>`<g stroke="#4f5a66" stroke-width="3">${f==='bent'?'<path d="M14 138q6 -60 -2 -118"/>':'<path d="M12 138V20"/>'}<path d="M88 138V20"/><path d="M12 50h76M12 ${f==='over'?'96q38 8 76 0':'94h76'}M12 136h76"/></g>${f==='top'?'<rect x="20" y="22" width="30" height="28" fill="#5a4630"/><rect x="52" y="26" width="30" height="24" fill="#5a4630"/>':'<rect x="22" y="34" width="22" height="16" fill="#d7b48a"/>'}<rect x="20" y="${f==='over'?66:76}" width="${f==='over'?66:40}" height="${f==='over'?28:18}" fill="#c19160"/>${f==='top'?'<rect x="24" y="118" width="24" height="18" fill="#d7b48a"/>':'<rect x="20" y="108" width="34" height="28" fill="#5a4630"/><rect x="56" y="112" width="28" height="24" fill="#5a4630"/>'}`,
+ smoke:(f)=>`<rect x="0" y="0" width="100" height="4" fill="#bbb"/><path d="M34 4h32v6a16 6 0 0 1-32 0z" fill="#f3f3f0" stroke="#aaa"/><circle cx="50" cy="12" r="2.2" fill="${f==='off'?'#666':'#2fd36b'}"/>${f==='covered'?'<path d="M28 3c-4 10 0 18 22 20s26-10 22-20" fill="rgba(200,220,235,.55)" stroke="#9ab" stroke-width="1"/>':''}`,
+ gas:(f)=>`<rect x="56" y="70" width="40" height="8" fill="#555"/><rect x="62" y="64" width="10" height="6" fill="#333"/><rect x="80" y="64" width="10" height="6" fill="#333"/><path d="M58 78v60M94 78v60" stroke="#666" stroke-width="3"/>${f==='lying'?'<rect x="10" y="118" width="46" height="18" rx="9" fill="#2a8fd6"/><rect x="2" y="122" width="8" height="10" fill="#555"/>':'<rect x="14" y="92" width="26" height="46" rx="10" fill="#2a8fd6"/><rect x="21" y="84" width="12" height="9" fill="#555"/>'}<path d="M${f==='lying'?'6 122':'27 84'}q20 -30 40 -10" stroke="${f==='hose'?'#a33':'#c46a2b'}" stroke-width="3" fill="none" ${f==='hose'?'stroke-dasharray="6 2"':''}/>${f==='leak'?'<g fill="none" stroke="#6ab" stroke-width="1.2"><circle cx="30" cy="80" r="3"/><circle cx="35" cy="75" r="2"/><circle cx="25" cy="74" r="2.5"/></g>':''}`,
+ kimia:(f)=>`${f==='nosds'?'':'<rect x="70" y="36" width="20" height="26" fill="#f4e7b0" stroke="#999"/><text x="80" y="52" text-anchor="middle" font-size="7" font-weight="700" font-family="sans-serif" fill="#333">SDS</text>'}${f==='spill'?'<ellipse cx="44" cy="136" rx="40" ry="5" fill="#6b5a2f" opacity=".55"/>':'<rect x="8" y="128" width="80" height="10" fill="#7a828a"/>'}<rect x="12" y="78" width="30" height="${f==='spill'?60:50}" rx="4" fill="#1d5fae"/><rect x="50" y="88" width="30" height="${f==='spill'?50:40}" rx="4" fill="#e0e0d8"/><path d="M27 92l7 7-7 7-7-7z" fill="#f08a24" stroke="#222"/>${f==='nolabel'?'':'<path d="M65 100l6 6-6 6-6-6z" fill="#f08a24" stroke="#222"/>'}`,
+ server:(f)=>`<rect x="4" y="30" width="22" height="16" rx="2" fill="#222"/><text x="15" y="41.5" text-anchor="middle" font-size="7" font-family="monospace" fill="${f==='hot'?'#ff6b5e':'#7fe08f'}">${'T'}</text><rect x="32" y="14" width="44" height="124" rx="2" fill="#1f2430"/>${[0,1,2,3,4,5,6,7].map(i=>`<rect x="36" y="${20+i*14}" width="36" height="10" fill="#2c3240"/><circle cx="66" cy="${25+i*14}" r="1.6" fill="${i%3?'#2fd36b':'#e8c93c'}"/>`).join('')}${f==='prop'?'<g stroke="#555" stroke-width="3" fill="none"><path d="M80 110h16v-28M80 110v28M96 110v28"/></g>':''}`
+};
+function itemSVG(it){
+  let s=DRAW[it.t](it.f);
+  if(it.t==='server') s=s.replace('>T<',`>${it.p.temp}°<`);
+  return `<svg viewBox="0 0 100 140" preserveAspectRatio="xMidYMax meet" aria-hidden="true">${s}</svg>`;
+}
+function doorSVG(a){
+  return `<svg viewBox="0 0 190 220" aria-hidden="true"><rect x="10" y="20" width="170" height="200" fill="#77808a"/><rect x="18" y="28" width="76" height="192" fill="#aeb6be"/><rect x="96" y="28" width="76" height="192" fill="#aeb6be"/><rect x="30" y="60" width="52" height="40" fill="#cfe1ee" opacity=".8"/><rect x="108" y="60" width="52" height="40" fill="#cfe1ee" opacity=".8"/><rect x="84" y="124" width="6" height="22" rx="2" fill="#444"/><rect x="100" y="124" width="6" height="22" rx="2" fill="#444"/><rect x="40" y="2" width="110" height="16" rx="2" fill="#1f2638"/><text x="95" y="13.5" text-anchor="middle" font-size="9.5" font-weight="700" font-family="sans-serif" fill="#fff">${esc(aN(a.k).toUpperCase())}</text></svg>`;
+}
+
+/* ======================= TOUR & GUIDE ENGINE ======================= */
+let tour=null, guideTab=-1;
+function openTour(){
+  const all=L().tour; const idx=all.map((x,i)=>i).filter(i=>!all[i].t||document.querySelector(all[i].t)); if(!idx.length) return;
+  closeGuide(); store.set('al-tour','seen'); tour={idx,i:0}; drawTour();
+}
+function closeTour(){ tour=null; $('tour').innerHTML=''; }
+function drawTour(){
+  const T=L().ui, st=L().tour[tour.idx[tour.i]], last=tour.i===tour.idx.length-1;
+  if(st.t==='#hint'&&!HINT_ON){HINT_ON=true;applyHint();}
+  const el=st.t?document.querySelector(st.t):null;
+  if(el) el.scrollIntoView({block:'center',behavior:'instant'});
+  const nav=`<div class="nav"><span class="count">${tour.i+1} / ${tour.idx.length}</span>${tour.i>0?`<button type="button" data-tour="prev">${T.tBack}</button>`:`<button type="button" data-tour="skip">${T.tSkip}</button>`}<button type="button" class="pri" data-tour="next">${last?T.tStart:T.tNext}</button></div>`;
+  $('tour').innerHTML=`<div class="tour" role="dialog" aria-modal="true" aria-labelledby="tour-h">${el?'<div class="spotl"></div>':'<div class="dim"></div>'}<div class="tip ${el?'':'center'}" tabindex="-1"><h3 id="tour-h">${st.h}</h3>${st.b}${nav}</div></div>`;
+  placeTour(); $('tour').querySelector('.tip').focus({preventScroll:true});
+}
+function placeTour(){
+  if(!tour) return; const st=L().tour[tour.idx[tour.i]]; if(!st.t) return;
+  const el=document.querySelector(st.t); if(!el) return; const r=el.getBoundingClientRect();
+  const sp=$('tour').querySelector('.spotl'), tip=$('tour').querySelector('.tip'); if(!sp||!tip) return;
+  const pad=6; Object.assign(sp.style,{left:(r.left-pad)+'px',top:(r.top-pad)+'px',width:(r.width+pad*2)+'px',height:(r.height+pad*2)+'px'});
+  const th=tip.offsetHeight, tw=tip.offsetWidth, vh=innerHeight, vw=innerWidth;
+  let top=r.bottom+14+th<vh?r.bottom+14:r.top-14-th>0?r.top-14-th:vh-th-16; top=Math.max(16,top);
+  tip.style.top=top+'px'; tip.style.left=Math.min(Math.max(16,(r.left+r.right)/2-tw/2),vw-tw-16)+'px';
+}
+function openGuide(i){
+  guideTab=i; const T=L().ui, G=L().guide();
+  const tabs=G.map(([t],j)=>`<button type="button" role="tab" aria-selected="${j===i}" data-gtab="${j}">${t}</button>`).join('');
+  $('guide').innerHTML=`<div class="gwrap" data-gclose="1"><div class="gcard" role="dialog" aria-modal="true" aria-labelledby="g-h"><div class="ghead"><h2 id="g-h">${T.gHead}</h2><button type="button" class="gx" data-gclose="1" aria-label="${T.gCloseAria}">${T.gClose}</button></div><div class="gtabs" role="tablist">${tabs}</div><div class="gbody" tabindex="-1">${G[i][1]}</div></div></div>`;
+  $('guide').querySelector('.gbody').focus({preventScroll:true});
+}
+function closeGuide(){ guideTab=-1; $('guide').innerHTML=''; }
+function applyHint(){$('hint').hidden=!HINT_ON;$('hint-btn').setAttribute('aria-pressed',String(HINT_ON));store.set('al-hints',HINT_ON?'on':'off')}
+
+/* ======================= RENDER ======================= */
+function applyStatic(){
+  const X=L(), B=X.lbl;
+  document.documentElement.lang=LANG; document.title=X.title;
+  $('t-h1').textContent=X.title; $('t-area').textContent=B.area; $('t-date').textContent=B.date; $('t-qa').textContent=B.qa; $('hud-qa').setAttribute('aria-label',B.qaAria);
+  $('tour-btn').textContent=B.tour; $('guide-btn').textContent=B.guide; $('hint-btn').textContent=B.hint; $('restart').textContent=B.restart;
+  $('t-sopH').textContent=B.sopH; $('t-sopP').textContent=B.sopP;
+  $('steps').innerHTML=X.steps.map(([b,t])=>`<li><span><b>${b}</b>${t}</span></li>`).join('');
+  document.querySelectorAll('[data-lang]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.lang===LANG)));
+}
+function paper(title,body,cls='',key){return `<article class="paper ${cls}"${key?` data-k="${key}"`:''}><h3>${title}</h3>${body}</article>`}
+function row(k,v){return `<div class="row"><span>${k}</span><span>${v}</span></div>`}
+function act(id,label,sub,dis){return `<button class="act" type="button" data-act="${id}" ${dis?'disabled':''}>${label}<small>${sub}</small></button>`}
+const acts=list=>list.map(([id,l,s])=>act(id,l,s)).join('');
+
+function renderHud(){
+  const X=L(), t=S.today, dt=new Date(t.y,t.m-1,t.d);
+  $('hud-n').textContent=Math.min(S.idx+1,N_AREA)+'/'+N_AREA;
+  $('hud-date').textContent=`${X.DAY[dt.getDay()]}, ${t.d} ${X.MON[t.m-1]} ${t.y}`;
+  $('hud-qa').innerHTML=Array.from({length:MAX_QA},(_,i)=>`<i class="${i<S.qa?'on':''}"></i>`).join('');
+  const cur=STEP_OF[S.phase]??-1;
+  [...$('steps').children].forEach((li,i)=>{li.className=i===cur?'cur':i<cur?'done':''});
+  $('queue').innerHTML=S.areas.map((a,i)=>{const r=S.results[i];return `<i class="${i===S.idx&&!S.over?'now':r===true?'ok':r===false?'bad':''}">${esc(aN(a.k))}</i>`}).join('');
+}
+function picPresent(a){return !(a.scen==='absent'&&!S.escort)}
+function speaker(a){ return picPresent(a)?`${esc(a.pic.name)} · ${esc(tx(AREAS[a.k].pic))}`:L().guard; }
+function bubble(a,text){return `<div class="bubble" id="bubble"><small>${speaker(a)}</small>${text}</div>`}
+function personHTML(a){
+  if(picPresent(a)) return `<div class="person" id="person">${personSVG(a.pic.look)}<div class="badge"><b>${esc(a.pic.name)}</b><span>${esc(tx(AREAS[a.k].pic))}</span></div></div>`;
+  return `<div class="person" id="person">${personSVG(a.guard,true)}<div class="badge guard"><b>${L().guard}</b><span>Security</span></div></div>`;
+}
+
+function render(){
+  renderHud();
+  const X=L(), T=X.ui, a=area(), A=AREAS[a.k], pic=a.pic.name, job=tx(A.pic), an=aN(a.k);
+  let scene='', papers='', bar='';
+  const plate=`<div class="plate">${esc(an)}</div>`;
+  if(S.phase==='brief'){
+    const P=T.brief, sc=a.scen;
+    const line=!picPresent(a)?P.say.absent():a.scen==='absent'?P.say.arrived(pic,job):P.say[sc](pic,job,an);
+    const sign=`<div class="apd-sign" data-k="sign"><b>${P.sign}</b><ul>${a.apd.length?a.apd.map(k=>`<li><i>${APD[k].i}</i>${esc(tx(APD[k].n))}</li>`).join(''):`<li>${P.signNone}</li>`}</ul></div>`;
+    scene=`<div class="door">${doorSVG(a)}</div>${sign}${personHTML(a)}${bubble(a,esc(line))}`;
+    const t=S.today;
+    papers+=paper(P.st,row(P.stNo,`ST-${a.stN}/SPI/${['I','II','III','IV','V','VI','VII','VIII','IX','X','XI','XII'][t.m-1]}/${t.y}`)+row(P.stTo,P.stToV)+row(P.stArea,esc(an))+row(P.stType,P.stTypeV)+row(P.stDate,`${t.d} ${X.MON[t.m-1]} ${t.y}`)+row(P.stHead,'<span class="sig">H. Siregar</span>'),'tilt-l');
+    const chips=APD_KEYS.map(k=>`<button type="button" class="chip" data-apd="${k}" aria-pressed="${S.apd.includes(k)}">${APD[k].i} ${esc(tx(APD[k].n))}</button>`).join('');
+    papers+=paper(P.rack,`<p class="empty-note" style="margin:0">${P.rackNote}</p><div class="chips">${chips}</div>`,'tilt-r wide');
+    bar=acts(P.acts);
+  }
+  if(S.phase==='walk'){
+    const P=T.walk;
+    const spots=a.items.map((it,i)=>{const m=S.marks[i]; const st=m?`<span class="st ${m}">${m==='ok'?'✓':'!'}${m==='bad'&&S.photos[i]?' 📷':''}</span>`:'';
+      return `<button type="button" class="spot" data-spot="${i}" aria-pressed="${S.sel===i}" aria-label="${esc(tx(ITEMS[it.t].n))}">${st}${itemSVG(it)}<span class="tag">${esc(tx(ITEMS[it.t].n))}</span></button>`}).join('');
+    scene=`<div class="spots">${spots}</div>${personHTML(a)}${bubble(a,esc(P.say(a.items.length)))}`;
+    const cl=a.items.map((it,i)=>{const m=S.marks[i];return `<li class="${S.sel===i?'cur':''}"><button type="button" data-spot="${i}"><span class="mk ${m||''}">${m==='ok'?'✓':m==='bad'?'ⓧ':'□'}</span><span>${esc(tx(ITEMS[it.t].n))}</span>${m==='bad'&&S.photos[i]?`<small>📷 ${P.photo}</small>`:''}</button></li>`}).join('');
+    papers+=paper(P.cl,`<ul class="cl">${cl}</ul>`,'tilt-l');
+    if(S.sel>=0){
+      const i=S.sel, it=a.items[i], D=ITEMS[it.t];
+      const rows=D.r(it.p,it.f).map(([k,v])=>row(esc(tx(k)),esc(tx(v)))).join('');
+      papers+=paper(`${P.insp} · ${esc(tx(D.n))}`,rows+`<div class="std"><b>${P.std}</b><ul>${D.std.map(s=>`<li>• ${esc(tx(s))}</li>`).join('')}</ul></div>`+
+        `<div class="chips"><button type="button" class="chip okc" data-mark="${i}:ok" aria-pressed="${S.marks[i]==='ok'}">${P.ok}</button><button type="button" class="chip badc" data-mark="${i}:bad" aria-pressed="${S.marks[i]==='bad'}">${P.bad}</button><button type="button" class="chip cam" data-photo="${i}" aria-pressed="${!!S.photos[i]}">${S.photos[i]?P.camOn:P.cam}</button></div>`,'tilt-r wide','insp');
+    } else papers+=paper(P.insp,`<p class="empty-note">${P.pick}</p>`,'tilt-r wide','insp');
+    const left=a.items.filter((_,i)=>!S.marks[i]).length;
+    bar=act('save',P.save,left?P.left(left):P.ready,!!left);
+  }
+  if(S.phase==='conf'){
+    const P=T.conf, ev=a.ev, recs=S.recorded;
+    const fixIt=recs.length?tx(ITEMS[a.items[recs[0]].t].n).toLowerCase():'';
+    const line=ev==='fix'?P.say.fix(fixIt):P.say[ev];
+    scene=`<div class="spots">${a.items.map((it,i)=>`<div class="spot disabled">${S.marks[i]?`<span class="st ${S.marks[i]}">${S.marks[i]==='ok'?'✓':'!'}</span>`:''}${itemSVG(it)}<span class="tag">${esc(tx(ITEMS[it.t].n))}</span></div>`).join('')}</div>${personHTML(a)}${bubble(a,esc(line))}`;
+    const list=recs.length?`<ul>${recs.map(i=>`<li><span class="mk bad" style="color:var(--bad);font:700 1.1rem var(--f-hand)">ⓧ</span><span>${esc(tx(ITEMS[a.items[i].t].n))}${S.photos[i]?` · 📷 ${P.baPhoto}`:''}</span></li>`).join('')}</ul>`:`<p class="empty-note">${P.baNone}</p>`;
+    papers+=paper(P.ba,row(X.lbl.area,esc(an))+row('PIC',esc(pic))+`<p><b>${P.baF}</b></p>${list}`+row(P.baPic,`<span class="sig none">${P.baPending}</span>`),'tilt-l wide');
+    if(ev==='gift') papers+=paper(P.desk,`<p style="margin:0">${P.giftTxt}</p>`,'tilt-r');
+    bar=acts(P.acts[ev]);
+  }
+  if(S.phase==='close'){
+    const P=T.close;
+    scene=`<div class="spots">${a.items.map((it,i)=>`<div class="spot disabled"><span class="st ${S.marks[i]}">${S.marks[i]==='ok'?'✓':'!'}</span>${itemSVG(it)}<span class="tag">${esc(tx(ITEMS[it.t].n))}</span></div>`).join('')}</div>${personHTML(a)}${bubble(a,esc(P.say))}`;
+    const list=a.items.map((it,i)=>`<li><span style="font:700 1.1rem var(--f-hand);color:${S.marks[i]==='bad'?'var(--bad)':'var(--ok)'};min-width:22px">${S.marks[i]==='bad'?'ⓧ':'✓'}</span><span>${esc(tx(ITEMS[it.t].n))}</span></li>`).join('');
+    papers+=paper(P.sum,`<ul data-k="sum">${list}</ul><p>${P.count(S.recorded.length)}</p>`,'tilt-l');
+    const byRisk=r=>Object.keys(ITEMS).filter(k=>ITEMS[k].risk===r).map(k=>esc(tx(ITEMS[k].n))).join(', ');
+    papers+=paper(P.riskT,`<p style="margin:0"><b>${P.riskHi}</b></p><p>${P.items}: ${byRisk('hi')}</p><p><b>${P.riskMd}</b></p><p>${P.items}: ${byRisk('md')}</p>`,'');
+    papers+=paper(P.guide,P.rows.map(([x,y])=>row(x,y)).join(''),'tilt-r');
+    bar=acts(P.acts);
+  }
+  $('scene').className='scene '+S.phase; $('scene').innerHTML=plate+scene;
+  const H=X.hints[S.phase];
+  $('hint').hidden=!HINT_ON;
+  if(H) $('hint').innerHTML=`<b>${H[0]}</b>${H[1]}<div class="hint-acts"><button type="button" data-hint="guide">${T.hintFull}</button></div>`;
+  $('papers').innerHTML=papers;
+  $('bar').innerHTML=S.fb?verdictHTML():bar;
+  if(S.over) renderEnd(); else $('end').innerHTML='';
+}
+const msgHTML=(key,args)=>L().msg[key](args||{});
+function verdictHTML(){
+  const f=S.fb, T=L().ui;
+  return `<div class="verdict ${f.ok?'':'bad'}"><h4>${f.ok?T.vOk:T.vBad}</h4>${msgHTML(f.key,f.args)}</div><button class="next" type="button" data-act="next">${T[f.label||'next']}</button>`;
+}
+
+/* ======================= RULES ======================= */
+function fb(ok,key,args,then,label){
+  S.fb={ok,key,args,then,label};
+  if(!ok){ S.qa++; S.results[S.idx]=false; }
+  S.log.push({a:S.idx,step:STEP_OF[S.phase],ok,key,args});
+}
+function finishArea(){ if(S.results[S.idx]!==false) S.results[S.idx]=true; return 'leave'; }
+const lastLbl=()=>S.idx+1<N_AREA?'call':'results';
+function afterWalk(a){
+  if(a.ev==='gift') return 'conf';
+  return S.recorded.length?'conf':'close';
+}
+
+function decide(act){
+  const a=area();
+  if(S.phase==='brief'){
+    const needEscort=!picPresent(a);
+    if(act==='escort'){
+      if(needEscort){ S.escort=true; return fb(true,'escort_ok',{},'brief'); }
+      return fb(false,'escort_false',{},'brief');
+    }
+    if(act==='postpone') return fb(false,a.scen==='postpone'?'post_bad':'post_false',{},finishArea(),lastLbl());
+    // act === 'go'
+    if(needEscort){ S.escort=true; return fb(false,'alone',{},'walk'); }
+    const miss=a.apd.filter(k=>!S.apd.includes(k));
+    if(miss.length) return fb(false,'apd_miss',{miss:miss,short:a.scen==='short'},'walk');
+    return fb(true,a.scen==='postpone'?'brief_stay':'brief_ok',{short:a.scen==='short'},'walk');
+  }
+  if(S.phase==='walk'){
+    S.recorded=a.items.map((_,i)=>i).filter(i=>S.marks[i]==='bad');
+    const wrong=a.items.map((it,i)=>({t:it.t,f:it.f,truth:!!it.f,m:S.marks[i]})).filter(x=>(x.m==='bad')!==x.truth);
+    const nophoto=a.items.map((it,i)=>i).filter(i=>S.marks[i]==='bad'&&!S.photos[i]).map(i=>a.items[i].t);
+    const then=afterWalk(a);
+    if(!wrong.length&&!nophoto.length) return fb(true,'walk_ok',{n:S.recorded.length},then);
+    return fb(false,'walk_bad',{wrong,nophoto},then);
+  }
+  if(S.phase==='conf'){
+    const ev=a.ev;
+    if(ev==='gift') return act==='refuse'?fb(true,'gift_ok',{},'close'):fb(false,'gift_bad',{},'close');
+    if(ev==='fix') return act==='keep'?fb(true,'fix_ok',{},'close'):fb(false,'fix_bad',{},'close');
+    if(ev==='refuse') return act==='note'?fb(true,'ref_ok',{},'close'):fb(false,act==='drop'?'ref_drop':'ref_hold',{},'close');
+    return act==='sign'?fb(true,'sign_ok',{},'close'):fb(false,act==='email'?'sign_email':'sign_fix',{},'close');
+  }
+  if(S.phase==='close'){
+    const recs=S.recorded, right=!recs.length?0:recs.some(i=>ITEMS[a.items[i].t].risk==='hi')?2:1, r=+act.slice(1), end=finishArea();
+    return r===right?fb(true,'close_ok',{r},end,lastLbl()):fb(false,'close_bad',{right},end,lastLbl());
+  }
+}
+
+function next(){
+  const then=S.fb.then; S.fb=null;
+  if(S.qa>=MAX_QA){ S.over='lose'; render(); return; }
+  if(then==='leave'){
+    if(S.idx+1>=N_AREA){ S.over='win'; render(); return; }
+    const p=$('person'); if(p) p.classList.add('out');
+    $('bar').innerHTML='';
+    setTimeout(()=>{ S.idx++; S.phase='brief'; S.apd=[]; S.escort=false; S.sel=-1; S.marks=[]; S.photos=[]; S.recorded=[]; render(); },matchMedia('(prefers-reduced-motion: reduce)').matches?0:420);
+    return;
+  }
+  // events that only make sense when something was recorded fall back to a plain confirmation
+  if(then==='conf'){ const a=area(); if((a.ev==='fix'||a.ev==='refuse')&&!S.recorded.length) a.ev='none'; }
+  S.phase=then; render();
+}
+
+function renderEnd(){
+  const X=L(), T=X.ui, win=S.over==='win', okN=S.results.filter(r=>r===true).length;
+  const strip=h=>h.replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim();
+  const items=S.log.map(l=>`<li><span class="${l.ok?'v':'x'}">${l.ok?'✓':'✗'} ${X.stepNames[l.step]}</span> · ${esc(aN(S.areas[l.a].k))}. ${esc(strip(msgHTML(l.key,l.args)))}</li>`).join('');
+  $('end').innerHTML=`<div class="end" role="dialog" aria-modal="true" aria-labelledby="end-h"><div class="card"><h2 id="end-h">${win?T.endWin:T.endLose}</h2><p class="big">${T.endBig(okN,N_AREA,S.qa)}</p><p>${win?T.endPWin:T.endPLose}</p><ol>${items}</ol><button class="next" type="button" data-act="restart">${T.again}</button></div></div>`;
+}
+
+function setLang(l){
+  if(l===LANG) return; LANG=l; store.set('al-lang',l);
+  applyStatic(); render(); applyHint();
+  if(tour) drawTour();
+  if(guideTab>=0) openGuide(guideTab);
+}
+
+/* ======================= EVENTS ======================= */
+document.addEventListener('click',e=>{
+  const lb=e.target.closest('[data-lang]'); if(lb){ setLang(lb.dataset.lang); return; }
+  const g=e.target.closest('[data-gtab],[data-gclose]');
+  if(g){ if(g.dataset.gtab!==undefined){ openGuide(+g.dataset.gtab); return; } if(e.target===g){ closeGuide(); return; } }
+  const h=e.target.closest('[data-hint]'); if(h){ openGuide((STEP_OF[S.phase]??-1)+1); return; }
+  const b=e.target.closest('[data-tour]');
+  if(b&&tour){ const t=b.dataset.tour;
+    if(t==='skip') return closeTour(); if(t==='prev'){tour.i--;return drawTour()}
+    if(tour.i===tour.idx.length-1) return closeTour(); tour.i++; return drawTour(); }
+  const t=e.target.closest('[data-act],[data-mark],[data-spot],[data-photo],[data-apd]'); if(!t) return;
+  if(t.dataset.act==='restart'){ S=newRun(); render(); return; }
+  if(t.dataset.act==='next'){ next(); return; }
+  if(S.fb||S.over) return;
+  if(t.dataset.apd){ const k=t.dataset.apd; S.apd=S.apd.includes(k)?S.apd.filter(x=>x!==k):S.apd.concat(k); render(); return; }
+  if(t.dataset.spot!==undefined){ S.sel=+t.dataset.spot; render(); return; }
+  if(t.dataset.mark){ const [i,k]=t.dataset.mark.split(':'); S.marks[+i]=k; render(); return; }
+  if(t.dataset.photo!==undefined){ const i=+t.dataset.photo; S.photos[i]=!S.photos[i]; render(); return; }
+  if(t.dataset.act){ decide(t.dataset.act); render(); }
+});
+document.addEventListener('keydown',e=>{ if(e.key!=='Escape') return; if(tour) closeTour(); else if(guideTab>=0) closeGuide(); });
+addEventListener('resize',placeTour); addEventListener('scroll',placeTour,{passive:true});
+$('restart').addEventListener('click',()=>{S=newRun();render()});
+$('tour-btn').addEventListener('click',openTour);
+$('guide-btn').addEventListener('click',()=>openGuide(0));
+$('hint-btn').addEventListener('click',()=>{HINT_ON=!HINT_ON;applyHint()});
+
+/* Straight into the game: no menu. The tour is one click away in the HUD. */
+S=newRun(); applyStatic(); render(); applyHint();
+})();
+</script>
+</body>
+</html>
