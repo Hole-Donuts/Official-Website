@@ -360,7 +360,7 @@ window.HD_CONTENT = {
     },
     projects: [
       {
-        title: "Simulasi Audit Lapangan",
+        title: "Field Audit Simulation",
         author: "Ihsan Mahendra",
         client: "Internal audit training",
         year: 2026,
@@ -380,7 +380,7 @@ window.HD_CONTENT = {
         en: { summary: "A first-person internal auditor's desk game. Check the assignment letter and your independence, match the documents, test samples against four criteria, refuse gifts and pressure, then give the right opinion. Three mistakes and QA stops the audit, and every round brings new auditees. Plays in English and Bahasa Indonesia." },
       },
       {
-        title: "Meja Kasir",
+        title: "Cashier Desk",
         author: "Ihsan Mahendra",
         client: "Retail SOP training",
         year: 2026,
@@ -390,7 +390,7 @@ window.HD_CONTENT = {
         en: { summary: "A first-person cashier desk game for the checkout SOP. Greet, check the basket, scan and weigh, check ID for cigarettes, spot fake notes and fake QRIS proof, give the right change and a receipt. One mistake ends the shift, and every shift brings new customers. Plays in English and Bahasa Indonesia." },
       },
       {
-        title: "Pos Jaga Lobi",
+        title: "Lobby Guard Post",
         author: "Ihsan Mahendra",
         client: "ISO 27001 awareness",
         year: 2026,
