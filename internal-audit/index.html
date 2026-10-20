@@ -1,0 +1,900 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Internal Audit Simulation: a first-person internal audit training game by Ihsan Mahendra · Holy Doughnut Studio. Check the assignment letter and independence, documents, samples against criteria, integrity and the audit opinion. English and Bahasa Indonesia.">
+<meta name="author" content="Ihsan Mahendra">
+<link rel="icon" type="image/png" sizes="32x32" href="../assets/favicon-32.png">
+<link rel="apple-touch-icon" href="../assets/apple-touch-icon.png">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Internal Audit Simulation</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo+Narrow:wght@500;700&family=Source+Sans+3:wght@400;600;700&family=IBM+Plex+Mono:wght@400;600&family=Caveat:wght@700&display=swap">
+<style>
+/* Layout: first-person auditor's desk. Wall + auditee on top, desk with papers below, SOP binder on the side. */
+:root{
+  --wall:#d9dfd6; --wall-2:#c9d1c5; --desk:#a8794e; --desk-2:#8e6340;
+  --paper:#fbfaf4; --paper-2:#f1eee2; --paper-ink:#1f2638; --paper-mute:#5d6475; --paper-line:#d8d3c2;
+  --ink:#1d2433; --mute:#535b6b; --surface:#f4f6f2; --line:#c3cabf;
+  --accent:#2a4a8b; --accent-ink:#ffffff; --hi:#f3d54a;
+  --ok:#2f7a4c; --ok-bg:#e3f1e7; --bad:#b0281f; --bad-bg:#f8e3e0;
+  --shadow:0 1px 0 rgba(0,0,0,.08),0 6px 14px rgba(40,25,10,.22);
+  --f-display:"Archivo Narrow","Arial Narrow",system-ui,sans-serif;
+  --f-body:"Source Sans 3",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-doc:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+  --f-hand:"Caveat","Comic Sans MS",cursive;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --wall:#1d2320; --wall-2:#252d29; --desk:#5b3e27; --desk-2:#47301e;
+  --paper:#e8e4d6; --paper-2:#dcd7c6; --paper-ink:#1f2638; --paper-mute:#4f5566; --paper-line:#c4bea9;
+  --ink:#e6eae4; --mute:#a3ab9f; --surface:#161b18; --line:#3a443e;
+  --accent:#8fb0f0; --accent-ink:#0f1a30; --hi:#e8c93c;
+  --ok:#7fd29d; --ok-bg:#1d3326; --bad:#ff8e84; --bad-bg:#3d1f1c;
+  --shadow:0 1px 0 rgba(0,0,0,.3),0 8px 18px rgba(0,0,0,.5); color-scheme:dark;
+}}
+:root[data-theme="dark"]{
+  --wall:#1d2320; --wall-2:#252d29; --desk:#5b3e27; --desk-2:#47301e;
+  --paper:#e8e4d6; --paper-2:#dcd7c6; --paper-ink:#1f2638; --paper-mute:#4f5566; --paper-line:#c4bea9;
+  --ink:#e6eae4; --mute:#a3ab9f; --surface:#161b18; --line:#3a443e;
+  --accent:#8fb0f0; --accent-ink:#0f1a30; --hi:#e8c93c;
+  --ok:#7fd29d; --ok-bg:#1d3326; --bad:#ff8e84; --bad-bg:#3d1f1c;
+  --shadow:0 1px 0 rgba(0,0,0,.3),0 8px 18px rgba(0,0,0,.5); color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{min-height:100%}
+body{background:var(--surface);color:var(--ink);font:16px/1.45 var(--f-body);padding:0 16px 24px}
+button{font:inherit;cursor:pointer}
+button:focus-visible,.chip:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+
+.hud{display:flex;flex-wrap:wrap;align-items:center;gap:10px 18px;padding-block:12px;max-width:1180px;margin:0 auto}
+.hud h1{font:700 1.35rem/1 var(--f-display);letter-spacing:.01em;margin:0;text-wrap:balance}
+.hud .sp{flex:1}
+.stat{display:flex;align-items:center;gap:8px;font-size:.85rem;color:var(--mute)}
+.stat b{color:var(--ink);font-variant-numeric:tabular-nums}
+.lbl{font-size:.7rem;letter-spacing:.09em;text-transform:uppercase;font-weight:700;color:var(--mute)}
+.qa{display:flex;gap:5px}
+.qa i{width:14px;height:14px;border-radius:50%;border:2px solid var(--bad);display:block}
+.qa i.on{background:var(--bad)}
+.btn{border:1px solid var(--line);background:transparent;color:var(--ink);padding:6px 12px;border-radius:6px;font-size:.88rem}
+.btn:hover{border-color:var(--accent);color:var(--accent)}
+
+.room{max-width:1180px;margin:0 auto;display:grid;grid-template-columns:minmax(0,1fr) 290px;gap:16px}
+@media (max-width:900px){.room{grid-template-columns:minmax(0,1fr)}}
+
+.view{align-self:start;border-radius:10px;overflow:hidden;border:1px solid var(--line);min-width:0}
+.scene{position:relative;height:250px;background:linear-gradient(var(--wall) 0 78%,var(--wall-2) 78%);overflow:hidden}
+.cal{position:absolute;left:18px;top:16px;width:92px;background:var(--paper);color:var(--paper-ink);border-radius:4px;box-shadow:var(--shadow);text-align:center;font-family:var(--f-doc)}
+.cal .m{background:var(--bad);color:#fff;font-size:.7rem;padding:3px 0;border-radius:4px 4px 0 0;letter-spacing:.08em}
+.cal .d{font:700 2rem/1.1 var(--f-display)}
+.cal .w{font-size:.68rem;padding-bottom:5px;color:var(--paper-mute)}
+.clock{position:absolute;right:22px;top:18px;width:58px;height:58px;border-radius:50%;background:var(--paper);box-shadow:var(--shadow);border:3px solid var(--paper-ink)}
+.clock::before,.clock::after{content:"";position:absolute;left:50%;bottom:50%;width:3px;background:var(--paper-ink);transform-origin:bottom center;border-radius:2px}
+.clock::before{height:16px;transform:translateX(-50%) rotate(-60deg)}
+.clock::after{height:22px;width:2px;transform:translateX(-50%) rotate(20deg)}
+.poster{position:absolute;left:126px;top:22px;background:var(--paper);color:var(--paper-ink);font:600 .62rem/1.3 var(--f-doc);padding:6px 8px;border-radius:2px;box-shadow:var(--shadow);max-width:150px;transform:rotate(1.5deg)}
+@media (max-width:560px){.poster{display:none}}
+.person{position:absolute;left:50%;bottom:0;width:190px;transform:translateX(-50%);transition:transform .45s ease,opacity .45s ease}
+.person.out{transform:translateX(140%);opacity:0}
+.person.empty{opacity:0}
+.badge{position:absolute;left:50%;bottom:28px;transform:translateX(-50%);background:var(--paper);color:var(--paper-ink);font:600 .62rem/1.2 var(--f-doc);padding:3px 6px;border-radius:3px;white-space:nowrap;border-top:4px solid var(--accent);text-align:center;display:grid;gap:1px}
+.badge b{font-size:.7rem}
+.bubble{position:absolute;left:calc(50% + 92px);top:34px;max-width:min(330px,calc(50% - 100px));background:var(--paper);color:var(--paper-ink);padding:10px 13px;border-radius:12px 12px 12px 2px;box-shadow:var(--shadow);font-size:.93rem}
+.bubble small{display:block;font:600 .68rem var(--f-doc);color:var(--paper-mute);margin-bottom:2px;text-transform:uppercase;letter-spacing:.06em}
+@media (max-width:640px){
+  .scene{height:300px}
+  .person{left:28%;width:150px}
+  .bubble{left:auto;right:12px;top:auto;bottom:118px;max-width:58%}
+  .cal{width:78px}.clock{width:48px;height:48px}
+}
+
+.desk{background:repeating-linear-gradient(92deg,var(--desk) 0 38px,var(--desk-2) 38px 40px,var(--desk) 40px 96px);padding:18px 16px 16px;border-top:6px solid var(--desk-2)}
+.papers{display:flex;flex-wrap:wrap;gap:14px;align-items:flex-start}
+.paper{background:var(--paper);color:var(--paper-ink);border-radius:3px;box-shadow:var(--shadow);padding:12px 14px;flex:1 1 250px;min-width:0;font-family:var(--f-doc);font-size:.8rem;position:relative}
+.paper h3{font:700 .95rem/1.2 var(--f-display);letter-spacing:.04em;text-transform:uppercase;margin:0 0 8px;padding-bottom:6px;border-bottom:2px solid var(--paper-ink)}
+.paper .row{display:grid;grid-template-columns:96px minmax(0,1fr);gap:6px;padding:3px 0;border-bottom:1px dashed var(--paper-line)}
+.paper .row span:first-child{color:var(--paper-mute)}
+.paper .row span:last-child{overflow-wrap:anywhere}
+.paper.tilt-l{transform:rotate(-.6deg)}.paper.tilt-r{transform:rotate(.7deg)}
+.sig{font:700 1.4rem/1 var(--f-hand);color:var(--accent)}
+.sig.none{font:italic .8rem var(--f-doc);color:var(--bad)}
+.paper ul{margin:0;padding:0;list-style:none}
+.paper li{padding:4px 0;border-bottom:1px dashed var(--paper-line);display:flex;gap:8px;align-items:baseline}
+.tick{all:unset;cursor:pointer;width:20px;flex:0 0 20px;text-align:center;font:700 1.25rem/1 var(--f-hand);color:var(--bad);border-bottom:1px solid var(--paper-mute);min-height:16px}
+.tick:focus-visible{outline:2px solid var(--accent)}
+.folder{display:flex;flex-wrap:wrap;gap:8px}
+.fdoc{background:var(--paper-2);border-left:6px solid var(--accent);padding:6px 8px;font-size:.74rem;flex:1 1 140px;min-width:0}
+.fdoc em{display:block;font-style:normal;color:var(--paper-mute);font-size:.68rem}
+.fdoc.warn em{color:var(--paper-mute)}
+.crit{font-size:.74rem}
+.crit li{display:block}
+.crit b{display:inline-block;min-width:26px}
+.sample .chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:9px}
+.chip{border:1px solid var(--paper-mute);background:transparent;color:var(--paper-ink);border-radius:99px;padding:3px 9px;font:600 .7rem var(--f-body)}
+.chip[aria-pressed="true"]{background:var(--paper-ink);color:var(--paper);border-color:var(--paper-ink)}
+.chip.okc[aria-pressed="true"]{background:var(--ok);border-color:var(--ok);color:#fff}
+.stamp{position:absolute;right:10px;top:8px;font:700 .8rem var(--f-display);letter-spacing:.1em;border:2px solid currentColor;padding:1px 6px;transform:rotate(-8deg);text-transform:uppercase}
+.stamp.ok{color:var(--ok)}.stamp.bad{color:var(--bad)}
+
+.bar{margin-top:16px;display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.act{border:0;border-radius:7px;padding:11px 16px;font-weight:700;font-size:.93rem;background:var(--paper);color:var(--paper-ink);box-shadow:var(--shadow);text-align:left;flex:1 1 200px}
+.act:hover:not(:disabled){outline:2px solid var(--hi)}
+.act:disabled{opacity:.5;cursor:not-allowed}
+.act small{display:block;font-weight:400;font-size:.76rem;color:var(--paper-mute)}
+.verdict{flex:1 1 100%;border-radius:8px;padding:12px 14px;background:var(--ok-bg);color:var(--ink);border-left:6px solid var(--ok)}
+.verdict.bad{background:var(--bad-bg);border-left-color:var(--bad)}
+.verdict h4{margin:0 0 4px;font:700 1rem var(--f-display);letter-spacing:.03em;text-transform:uppercase;color:var(--ok)}
+.verdict.bad h4{color:var(--bad)}
+.verdict p{margin:4px 0;max-width:72ch}
+.verdict ul{margin:6px 0 0;padding-left:18px}
+.next{border:0;border-radius:7px;padding:11px 18px;font-weight:700;background:var(--accent);color:var(--accent-ink)}
+
+.sop{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 16px;align-self:start;min-width:0}
+.sop h2{font:700 1.05rem var(--f-display);margin:0 0 4px;letter-spacing:.02em}
+.sop p{margin:0 0 10px;font-size:.84rem;color:var(--mute)}
+.sop ol{margin:0;padding:0;list-style:none;display:grid;gap:8px;counter-reset:s}
+.sop li{counter-increment:s;display:grid;grid-template-columns:26px minmax(0,1fr);gap:8px;font-size:.86rem;padding:7px 8px;border-radius:6px}
+.sop li::before{content:counter(s);font:700 .85rem/24px var(--f-display);text-align:center;width:24px;height:24px;border-radius:50%;border:1.5px solid var(--line);color:var(--mute)}
+.sop li.cur{background:color-mix(in srgb,var(--hi) 28%,transparent)}
+.sop li.cur::before{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+.sop li.done::before{content:"✓";color:var(--ok);border-color:var(--ok)}
+.sop li span b{display:block}
+.sop li span{color:var(--mute)}
+.sop li span b{color:var(--ink)}
+.queue{display:flex;gap:6px;margin-top:14px;flex-wrap:wrap}
+.queue i{font-style:normal;font:600 .72rem var(--f-doc);padding:3px 7px;border-radius:4px;border:1px solid var(--line);color:var(--mute)}
+.queue i.ok{border-color:var(--ok);color:var(--ok)}
+.queue i.bad{border-color:var(--bad);color:var(--bad)}
+.queue i.now{border-color:var(--ink);color:var(--ink);background:color-mix(in srgb,var(--hi) 30%,transparent)}
+
+.end{position:fixed;inset:0;background:rgba(10,14,12,.6);display:flex;align-items:center;justify-content:center;padding:16px;z-index:5}
+.end .card{background:var(--paper);color:var(--paper-ink);max-width:620px;width:100%;max-height:calc(100% - 32px);overflow:auto;border-radius:6px;padding:22px;box-shadow:var(--shadow);font-family:var(--f-body)}
+.end h2{font:700 1.8rem/1.1 var(--f-display);margin:0 0 6px;text-wrap:balance}
+.end .big{font:700 1.1rem var(--f-doc);margin:0 0 12px}
+.end ol{padding-left:20px;font-size:.88rem;margin:10px 0 16px}
+.end li{margin-bottom:6px}
+.end .x{color:var(--bad);font-weight:700}.end .v{color:var(--ok);font-weight:700}
+.end .next{background:var(--paper-ink);color:var(--paper)}
+
+.hint{background:var(--paper);color:var(--paper-ink);border-radius:6px;padding:10px 12px 10px 44px;margin-bottom:14px;position:relative;font-size:.9rem;box-shadow:var(--shadow);border:2px dashed var(--hi)}
+.hint::before{content:"?";position:absolute;left:10px;top:10px;width:24px;height:24px;border-radius:50%;background:var(--hi);color:#1d2433;font:700 .95rem/24px var(--f-display);text-align:center}
+.hint b{display:block;font-family:var(--f-display);letter-spacing:.03em;text-transform:uppercase;font-size:.8rem;margin-bottom:2px}
+.hint ol{margin:4px 0 0;padding-left:18px}
+.hint p{margin:2px 0;max-width:80ch}
+.btn[aria-pressed="true"]{background:var(--hi);color:#1d2433;border-color:var(--hi)}
+.tour{position:fixed;inset:0;z-index:10}
+.tour .dim{position:fixed;inset:0;background:rgba(8,12,10,.62)}
+.tour .spot{position:fixed;border-radius:10px;box-shadow:0 0 0 4px var(--hi),0 0 0 9999px rgba(8,12,10,.62);pointer-events:none;transition:all .25s ease}
+.tour .tip{position:fixed;width:min(380px,calc(100vw - 32px));background:var(--paper);color:var(--paper-ink);border-radius:8px;padding:16px 18px;box-shadow:0 12px 30px rgba(0,0,0,.4);border-top:6px solid var(--hi)}
+.tour .tip.center{left:50%;top:50%;transform:translate(-50%,-50%);width:min(460px,calc(100vw - 32px));max-height:calc(100% - 32px);overflow:auto}
+.tour .tip h3{font:700 1.25rem/1.15 var(--f-display);margin:0 0 6px;text-wrap:balance}
+.tour .tip p{margin:0 0 8px;font-size:.93rem}
+.tour .tip dl{margin:0 0 8px;font-size:.86rem;display:grid;grid-template-columns:max-content minmax(0,1fr);gap:4px 10px}
+.tour .tip dt{font-weight:700}.tour .tip dd{margin:0}
+.tour .nav{display:flex;align-items:center;gap:8px;margin-top:10px}
+.tour .nav .count{flex:1;font:600 .75rem var(--f-doc);color:var(--paper-mute)}
+.tour .nav button{border:1px solid var(--paper-mute);background:transparent;color:var(--paper-ink);border-radius:6px;padding:7px 12px;font-weight:600}
+.tour .nav button.pri{background:var(--paper-ink);color:var(--paper);border-color:var(--paper-ink)}
+.hint-acts{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.hint-acts button{border:1px solid var(--paper-ink);background:transparent;color:var(--paper-ink);border-radius:6px;padding:5px 10px;font-weight:600;font-size:.8rem}
+.hint-acts button:first-child{background:var(--paper-ink);color:var(--paper)}
+.tour .tip{max-height:calc(100% - 32px);overflow:auto}
+.tour .tip ol,.gbody ol{margin:0 0 8px;padding-left:20px;font-size:.9rem}
+.tour .tip li,.gbody li{margin-bottom:3px}
+.mx{border-collapse:collapse;width:100%;font-size:.82rem;margin:6px 0 10px}
+.mx th,.mx td{border:1px solid var(--paper-line);padding:5px 7px;text-align:left;vertical-align:top}
+.mx th{background:var(--paper-2);font-weight:700}
+.gwrap{position:fixed;inset:0;z-index:9;background:rgba(8,12,10,.62);display:flex;align-items:center;justify-content:center;padding:16px}
+.gcard{background:var(--paper);color:var(--paper-ink);width:100%;max-width:720px;max-height:calc(100% - 32px);display:flex;flex-direction:column;border-radius:8px;box-shadow:0 12px 30px rgba(0,0,0,.4);border-top:6px solid var(--accent);overflow:hidden}
+.ghead{display:flex;align-items:center;gap:10px;padding:14px 18px 6px}
+.ghead h2{flex:1;margin:0;font:700 1.35rem/1.1 var(--f-display)}
+.gx{border:1px solid var(--paper-mute);background:transparent;color:var(--paper-ink);border-radius:6px;padding:5px 10px;font-weight:600}
+.gtabs{display:flex;gap:4px;padding:6px 18px 0;overflow-x:auto;border-bottom:1px solid var(--paper-line)}
+.gtabs button{border:0;background:transparent;color:var(--paper-mute);padding:8px 10px;font-weight:700;font-size:.84rem;white-space:nowrap;border-bottom:3px solid transparent}
+.gtabs button[aria-selected="true"]{color:var(--paper-ink);border-bottom-color:var(--hi)}
+.gbody{padding:12px 18px 20px;overflow:auto;font-size:.92rem}
+.gbody h3{font:700 .95rem var(--f-display);letter-spacing:.04em;text-transform:uppercase;margin:14px 0 6px}
+.gbody h3:first-child{margin-top:4px}
+.gbody p{margin:0 0 8px;max-width:70ch}
+.gbody dl,.tour .tip dl{display:grid;grid-template-columns:max-content minmax(0,1fr);gap:4px 12px;margin:0 0 8px;font-size:.88rem}
+.gbody dt{font-weight:700}.gbody dd{margin:0}
+@media (max-width:520px){.gbody dl,.tour .tip dl{grid-template-columns:minmax(0,1fr)}.gbody dd,.tour .tip dd{margin-bottom:6px}}
+@media (prefers-reduced-motion:reduce){.person,.tour .spot{transition:none}}
+
+a.btn{text-decoration:none;display:inline-block}
+</style>
+</head>
+<body>
+<style>.lang{display:inline-flex;border:1px solid var(--line);border-radius:6px;overflow:hidden}.lang button{border:0;background:transparent;color:var(--mute);padding:6px 10px;font-size:.82rem;font-weight:700}.lang button[aria-pressed="true"]{background:var(--ink);color:var(--surface)}</style>
+<header class="hud">
+  <h1 id="t-h1">Internal Audit Simulation</h1>
+  <div class="stat"><span class="lbl" id="t-auditee">Auditee</span><b id="hud-n">1/5</b></div>
+  <div class="stat" id="qa-stat"><span class="lbl" id="t-qa">Catatan QA</span><div class="qa" id="hud-qa"></div></div>
+  <div class="sp"></div>
+  <button class="btn" id="tour-btn" type="button">Tutorial</button>
+  <button class="btn" id="guide-btn" type="button">Panduan</button>
+  <button class="btn" id="hint-btn" type="button" aria-pressed="true">Petunjuk</button>
+  <button class="btn" id="restart" type="button">Ulang dengan skenario baru</button>
+  <div class="lang" role="group" aria-label="Bahasa / Language"><button type="button" data-lang="id" aria-pressed="true" lang="id">ID</button><button type="button" data-lang="en" aria-pressed="false" lang="en">EN</button></div>
+</header>
+
+<main class="room">
+  <section class="view" aria-live="polite">
+    <div class="scene">
+      <div class="cal" id="t-cal"><div class="m" id="cal-m">JUL 2026</div><div class="d" id="cal-d">13</div><div class="w" id="cal-w">Senin</div></div>
+      <div class="poster" id="t-poster"></div>
+      <div class="clock" aria-hidden="true"></div>
+      <div class="person" id="person"></div>
+      <div class="bubble" id="bubble"></div>
+    </div>
+    <div class="desk">
+      <div class="hint" id="hint"></div>
+      <div class="papers" id="papers"></div>
+      <div class="bar" id="bar"></div>
+    </div>
+  </section>
+  <aside class="sop">
+    <h2 id="t-sopH"></h2>
+    <p id="t-sopP"></p>
+    <ol id="steps"></ol>
+    <div class="queue" id="queue"></div>
+  </aside>
+</main>
+<div id="end"></div>
+<div id="tour"></div>
+<div id="guide"></div>
+
+<script>
+(function(){
+const rnd=n=>Math.floor(Math.random()*n), pick=a=>a[rnd(a.length)], chance=p=>Math.random()<p;
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=rnd(i+1);[a[i],a[j]]=[a[j],a[i]]}return a};
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const N_CUST=5, MAX_QA=3;
+const UNIT_IDS=['pengadaan','keuangan','gudang','sdm','penjualan','umum','pemasaran'];
+const NAMES=[['Rina Hapsari','f'],['Budi Santoso','m'],['Dewi Lestari','f'],['Agus Prasetyo','m'],['Sri Wahyuni','f'],['Fajar Nugroho','m'],['Maya Kartika','f'],['Hendra Wijaya','m'],['Putri Ayu','f'],['Rudi Hartono','m'],['Lina Marlina','f'],['Yusuf Ramadhan','m'],['Nadia Safitri','f'],['Dimas Saputra','m']];
+const SKIN=['#f1c9a5','#d9a47a','#b97c55','#8d5a3b'], SHIRT=['#3b6ea8','#7a4d8c','#2f7d6b','#b0563a','#55606e','#9a7b2f'], HAIR=['#1b1512','#3a2618','#5b3a22'];
+const MARK_KEYS=['ok','K1','K2','K3','K4'];
+const store={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
+
+/* ======================= TEXT: BAHASA INDONESIA ======================= */
+const ID={
+ title:'Internal Audit Simulation', loc:'id-ID',
+ MON:['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'],
+ DAY:['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'],
+ lbl:{auditee:'Auditee',qa:'Catatan QA',qaAria:'Pelanggaran prosedur',tour:'Tutorial',guide:'Panduan',hint:'Petunjuk',restart:'Ulang dengan skenario baru',cal:'Tanggal hari ini',
+   poster:'Audit periode<br>1 Jan – 30 Jun 2026<br>Tim SPI',sopH:'SOP Audit Internal',sopP:'Setiap auditee harus melewati langkah ini berurutan. Tiga pelanggaran prosedur membuat audit dihentikan QA.'},
+ steps:[['Surat tugas &amp; independensi','Cek nomor, unit, jadwal, tanda tangan Kepala SPI. Ungkap konflik kepentingan.'],['Kelengkapan dokumen','Cocokkan dokumen dengan daftar permintaan, termasuk periodenya.'],['Uji sampel','Bandingkan tiap sampel dengan kriteria K1–K4, catat di kertas kerja.'],['Integritas','Tolak gratifikasi. Temuan hanya berubah karena bukti. Tanggapan auditee dicatat.'],['Simpulan','Opini mengikuti jumlah temuan di kertas kerja.']],
+ stepNames:['Surat tugas','Dokumen','Uji sampel','Integritas','Simpulan'],
+ units:{
+  pengadaan:{name:'Pengadaan',proses:'Pembelian barang & jasa',doc:'Purchase Order',pre:'PO',req:['SOP Pengadaan','Daftar PO','Rekap penawaran vendor','Berita acara serah terima']},
+  keuangan:{name:'Keuangan',proses:'Pembayaran ke pemasok',doc:'Voucher Pembayaran',pre:'VP',req:['SOP Pembayaran','Daftar voucher','Rekening koran bank','Matriks otorisasi']},
+  gudang:{name:'Gudang',proses:'Pengeluaran barang',doc:'Bukti Pengeluaran Barang',pre:'BPB',req:['SOP Gudang','Kartu stok','Daftar BPB','Hasil stock opname']},
+  sdm:{name:'SDM',proses:'Reimburse biaya karyawan',doc:'Formulir Reimburse',pre:'RB',req:['Kebijakan reimburse','Daftar klaim','Rekap payroll','Matriks otorisasi']},
+  penjualan:{name:'Penjualan',proses:'Pemberian diskon khusus',doc:'Memo Diskon',pre:'MD',req:['Kebijakan harga & diskon','Daftar memo diskon','Laporan penjualan','Matriks otorisasi']},
+  umum:{name:'Umum',proses:'Perjalanan dinas',doc:'SPPD',pre:'SPD',req:['SOP Perjalanan Dinas','Daftar SPPD','Bukti tiket & hotel','Rekap uang muka']},
+  pemasaran:{name:'Pemasaran',proses:'Biaya promosi & event',doc:'Pengajuan Biaya Promosi',pre:'BP',req:['SOP Biaya Promosi','Daftar pengajuan','Laporan event','Matriks otorisasi']}
+ },
+ roles:['Supervisor','Manajer','Direktur'], jabs:['Staf','Supervisor','Manajer'],
+ marks:{ok:'Sesuai',K1:'K1 Di luar periode',K2:'K2 Otorisasi kurang',K3:'K3 Tanpa bukti',K4:'K4 Nilai beda'},
+ code:{ok:'sesuai',K1:'K1',K2:'K2',K3:'K3',K4:'K4'},
+ kdesc:{K1:'tanggal di luar periode audit',K2:'otorisasi tidak sesuai matriks',K3:'tidak ada bukti pendukung',K4:'nilai dokumen berbeda dengan sistem'},
+ opNames:['Memadai','Perlu perbaikan','Tidak memadai'],
+ unitOf:n=>'Unit '+n,
+ stNo:n=>`ST-${n}/SPI/VII/2026`,
+ ui:{
+  st:{say:u=>`Selamat pagi. Saya dari unit ${u}, sudah dapat surat tugasnya. Kita mulai sekarang?`,title:'Surat Tugas Audit',no:'Nomor',to:'Kepada',toV:'Kamu (Auditor Internal)',aud:'Auditee',scope:'Lingkup',period:'Periode',date:'Jadwal',head:'Kepala SPI',unsigned:'belum ditandatangani',
+   card:'Kartu Auditor',name:'Nama',nameV:'Kamu',pos:'Jabatan',posV:'Auditor Internal SPI',hist:'Riwayat kerja',histV:h=>`Staf ${h}, 2022 – Des 2025`,joined:'Bergabung SPI',
+   acts:[['go','Mulai opening meeting','Surat tugas valid, aku independen'],['conflict','Laporkan konflik kepentingan','Serahkan ke Ketua Tim'],['postpone','Tunda audit','Surat tugas tidak valid']]},
+  docs:{say:f=>f?'Ini dokumen susulannya, maaf kurang tadi.':'Ini dokumen sesuai surat permintaan dokumen dari tim audit.',title:'Permintaan Dokumen',tick:d=>'Tandai '+d,note:'Semua dokumen untuk periode 1 Jan – 30 Jun 2026. Klik kotak untuk memberi tickmark saat dokumen cocok.',folder:'Map dari auditee',pOk:'Periode Jan – Jun 2026',pBad:'Periode Jul – Des 2025',
+   acts:[['complete','Dokumen lengkap','Lanjut ke uji sampel'],['request','Minta dokumen yang kurang','Catat di daftar permintaan']]},
+  smp:{say:(n,d)=>`Silakan, ini ${n} sampel ${d} yang dipilih acak dari daftar.`,crit:'Kriteria Audit',critList:'<li><b>K1</b>Tanggal dalam periode 1 Jan – 30 Jun 2026</li><li><b>K2</b>Otorisasi: &lt; Rp 25 jt Supervisor · Rp 25–99 jt Manajer · ≥ Rp 100 jt Direktur (jabatan lebih tinggi boleh)</li><li><b>K3</b>Bukti pendukung terlampir</li><li><b>K4</b>Nilai dokumen = nilai di sistem</li>',
+   no:'Nomor',date:'Tanggal',vd:'Nilai dokumen',vs:'Nilai sistem',appr:'Disetujui',att:'Lampiran',noSig:'tidak ada tanda tangan',attY:'Ada (nota, kuitansi)',save:'Simpan kertas kerja',ready:'Semua sampel sudah dinilai',notReady:'Nilai semua sampel dulu'},
+  ev:{giftSay:'Ini ada parsel kecil dari unit kami, tanda terima kasih sudah dibantu. Jangan ditolak ya.',desk:'Di atas meja',giftTxt:'Parsel berisi kue kering dan voucher belanja Rp 500.000. Ada kartu ucapan dari kepala unit.',
+   giftActs:[['accept','Terima','Cuma bingkisan, tidak memengaruhi'],['refuse','Tolak dengan sopan','Laporkan ke UPG sesuai kebijakan gratifikasi'],['later','Terima setelah laporan terbit','Supaya tidak memengaruhi audit']],
+   pressSay:no=>`Temuan ${no} itu bisa tidak usah dimasukkan ke laporan? Nanti saya bantu urusan lain.`,wp:'Kertas Kerja',pressTxt:(f,no)=>`Temuan tercatat: <b>${f}</b>. Sampel yang dipersoalkan: ${no}.`,
+   pressActs:[['delete','Hapus temuan itu','Jaga hubungan baik'],['refuse','Tolak, temuan tetap dicatat','Hanya bukti yang bisa mengubah temuan'],['verbal','Jadikan saran lisan','Tidak masuk laporan']],
+   dispSay:no=>`Saya tidak setuju dengan temuan ${no}. Di unit kami itu sudah biasa.`,dispTxt:f=>`Temuan tercatat: <b>${f}</b>. Auditee tidak membawa bukti tambahan.`,
+   dispActs:[['delete','Hapus temuan','Supaya auditee setuju'],['note','Catat tanggapan auditee','Temuan tetap, berdasarkan bukti'],['stop','Hentikan audit','Auditee tidak kooperatif']]},
+  op:{say:'Jadi, bagaimana kesimpulan auditnya?',sum:'Ringkasan Kertas Kerja',ok:'sesuai',count:n=>`Jumlah temuan: <b>${n}</b>`,guide:'Panduan Simpulan',rows:[['0 temuan','Memadai'],['1 temuan','Perlu perbaikan'],['≥ 2 temuan','Tidak memadai']],
+   acts:[['op0','Memadai','Pengendalian berjalan baik'],['op1','Perlu perbaikan','Ada kelemahan terbatas'],['op2','Tidak memadai','Kelemahan signifikan']]},
+  hintShow:'Tunjukkan caranya',hintFull:'Panduan lengkap langkah ini',
+  vOk:'Sesuai prosedur',vBad:'Tidak sesuai prosedur',next:'Lanjut',call:'Panggil auditee berikutnya',results:'Lihat hasil',
+  endWin:'Audit selesai sesuai prosedur',endLose:'Audit dihentikan QA',endBig:(ok,n,qa)=>`${ok}/${n} auditee ditangani tanpa pelanggaran · ${qa} catatan QA`,
+  endPWin:'Semua auditee sudah ditangani. Catatan QA di bawah menunjukkan bagian prosedur yang perlu diperhatikan.',endPLose:'Tiga pelanggaran prosedur membuat hasil audit tidak bisa diandalkan. Baca catatan di bawah, lalu coba skenario baru.',again:'Main lagi dengan skenario baru',
+  tSkip:'Lewati',tBack:'Kembali',tNext:'Lanjut',tStart:'Mulai audit',tGot:'Saya mengerti',gHead:'Panduan Audit Internal',gClose:'Tutup',gCloseAria:'Tutup panduan'
+ }
+};
+ID.msg={
+ st_go:()=>'<p>Surat tugas sah dan kamu tidak punya hubungan kerja dengan unit ini. Opening meeting: sampaikan tujuan, lingkup, periode, dan jadwal audit.</p>',
+ st_conf_ok:a=>`<p>Kamu bekerja di unit ${uN(a.home)} sampai Des 2025, kurang dari 12 bulan lalu. Konflik dilaporkan ke Ketua Tim dan audit unit ini dialihkan ke auditor lain.</p>`,
+ st_post_ok:a=>`<p>${stWhy(a)} Audit ditunda dan surat tugas dikembalikan untuk diperbaiki.</p>`,
+ st_conf_miss:a=>`<p>Kamu bekerja di unit ${uN(a.home)} sampai Des 2025. Auditor wajib mengungkapkan konflik kepentingan sebelum mulai, karena independensi tidak bisa diperbaiki setelah audit berjalan.</p><p>Audit unit ini dibatalkan QA.</p>`,
+ st_post_miss:a=>`<p>${stWhy(a)} Audit tanpa surat tugas sah tidak punya dasar penugasan.</p><p>Audit unit ini dibatalkan QA.</p>`,
+ st_false_conf:a=>`<p>Riwayat kerjamu di ${uN(a.home)}, bukan ${uN(a.unit)}. Tidak ada konflik kepentingan untuk dilaporkan.</p><p>Audit unit ini dibatalkan QA.</p>`,
+ st_false_post:()=>'<p>Nomor, unit, jadwal, dan tanda tangan surat tugas sudah sesuai. Menunda tanpa alasan membuat jadwal audit mundur.</p><p>Audit unit ini dibatalkan QA.</p>',
+ why:{jadwal:a=>`Jadwal di surat tugas (${fd(a.stDate)}) tidak sama dengan hari ini (${fd(a.today)}).`,ttd:()=>'Surat tugas belum ditandatangani Kepala SPI, jadi belum sah.',unit:a=>`Surat tugas ditujukan ke unit ${uN(a.stUnit)}, bukan ${uN(a.unit)}.`},
+ what:a=>a.type==='missing'?`"${esc(L().units[a.unit].req[a.i])}" tidak ada di map`:`"${esc(L().units[a.unit].req[a.i])}" untuk periode Jul – Des 2025, bukan periode audit`,
+ docs_req_ok:a=>`<p>${L().msg.what(a)}. Kekurangan dicatat dan auditee menyerahkan dokumen susulan. Periksa lagi sebelum lanjut.</p>`,
+ docs_ok:()=>'<p>Semua dokumen ada dan periodenya benar. Lanjut pilih sampel.</p>',
+ docs_miss:a=>`<p>${L().msg.what(a)}. Tanpa dokumen itu, kriteria tidak bisa diuji dengan benar.</p>`,
+ docs_false:()=>'<p>Keempat dokumen sudah ada dengan periode Jan – Jun 2026. Meminta ulang memperlambat audit tanpa alasan.</p>',
+ smp_ok:a=>`<p>Kertas kerja benar. ${a.n?`${a.n} temuan dicatat dengan kriteria yang tepat.`:'Semua sampel sesuai kriteria.'}</p>`,
+ smp_bad:a=>`<p>Ada sampel yang salah dinilai di kertas kerja.</p><ul>${a.wrong.map(w=>`<li>${esc(sNo(a.unit,w.num))}: kamu menilai <b>${L().code[w.m]}</b>, seharusnya <b>${w.t==='ok'?L().code.ok:w.t+' ('+L().kdesc[w.t]+')'}</b>.</li>`).join('')}</ul>`,
+ gift_ok:()=>'<p>Hadiah dari auditee adalah gratifikasi, apa pun nilainya dan kapan pun diterima. Tolak dengan sopan dan laporkan ke Unit Pengendalian Gratifikasi.</p>',
+ gift_bad:()=>'<p>Menerima hadiah dari auditee, sebelum atau sesudah laporan, adalah gratifikasi dan merusak objektivitas. Seharusnya ditolak dan dilaporkan.</p>',
+ press_ok:()=>'<p>Temuan hanya bisa berubah karena bukti, bukan permintaan. Tawaran ini juga dicatat dan dilaporkan ke Ketua Tim.</p>',
+ press_bad:()=>'<p>Menghapus atau melunakkan temuan atas permintaan auditee melanggar integritas. Temuan harus tetap dilaporkan.</p>',
+ disp_ok:()=>'<p>Tanggapan auditee dicatat di laporan di samping temuan. Temuan tetap karena didukung bukti.</p>',
+ disp_stop:()=>'<p>Ketidaksetujuan bukan alasan menghentikan audit. Catat tanggapan auditee, temuan tetap.</p>',
+ disp_bad:()=>'<p>Temuan didukung bukti, jadi tidak dihapus karena auditee keberatan. Yang benar: catat tanggapannya.</p>',
+ op_ok:a=>`<p>Opini <b>${L().opNames[a.op]}</b> sesuai ${a.n} temuan di kertas kerja. Exit meeting: temuan disepakati dan auditee menyusun rencana tindak lanjut.</p>`,
+ op_bad:a=>`<p>Dengan ${a.n} temuan, opini seharusnya <b>${L().opNames[a.right]}</b>. Simpulan harus didukung kertas kerja.</p>`
+};
+
+/* ======================= TEXT: ENGLISH ======================= */
+const EN={
+ title:'Internal Audit Simulation', loc:'en-US',
+ MON:['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],
+ DAY:['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'],
+ lbl:{auditee:'Auditee',qa:'QA notes',qaAria:'Procedure violations',tour:'Tutorial',guide:'Guide',hint:'Hints',restart:'Restart with a new scenario',cal:"Today's date",
+   poster:'Audit period<br>1 Jan – 30 Jun 2026<br>Internal Audit',sopH:'Internal Audit SOP',sopP:'Every auditee goes through these steps in order. Three procedure violations and QA stops the audit.'},
+ steps:[['Assignment letter &amp; independence',"Check the number, unit, date and the Head of Internal Audit's signature. Disclose any conflict of interest."],['Document completeness','Match the documents against the request list, including their period.'],['Sample testing','Compare each sample with criteria C1–C4 and record it in the working paper.'],['Integrity',"Refuse gifts. Findings change only with evidence. Record the auditee's response."],['Conclusion','The opinion follows the number of findings in the working paper.']],
+ stepNames:['Assignment letter','Documents','Sample testing','Integrity','Conclusion'],
+ units:{
+  pengadaan:{name:'Procurement',proses:'Purchasing goods & services',doc:'Purchase Order',pre:'PO',req:['Procurement SOP','PO list','Vendor quotation summary','Goods receipt reports']},
+  keuangan:{name:'Finance',proses:'Supplier payments',doc:'Payment Voucher',pre:'PV',req:['Payment SOP','Voucher list','Bank statements','Authorization matrix']},
+  gudang:{name:'Warehouse',proses:'Goods issue',doc:'Goods Issue Note',pre:'GIN',req:['Warehouse SOP','Stock cards','Goods issue list','Stock count results']},
+  sdm:{name:'HR',proses:'Employee expense claims',doc:'Expense Claim Form',pre:'EC',req:['Expense claim policy','Claim list','Payroll summary','Authorization matrix']},
+  penjualan:{name:'Sales',proses:'Special discounts',doc:'Discount Memo',pre:'DM',req:['Pricing & discount policy','Discount memo list','Sales report','Authorization matrix']},
+  umum:{name:'General Affairs',proses:'Business travel',doc:'Travel Order',pre:'TO',req:['Business travel SOP','Travel order list','Ticket & hotel receipts','Cash advance summary']},
+  pemasaran:{name:'Marketing',proses:'Promotion & event costs',doc:'Promotion Budget Request',pre:'PR',req:['Promotion cost SOP','Request list','Event reports','Authorization matrix']}
+ },
+ roles:['Supervisor','Manager','Director'], jabs:['Staff','Supervisor','Manager'],
+ marks:{ok:'Compliant',K1:'C1 Outside period',K2:'C2 Weak approval',K3:'C3 No evidence',K4:'C4 Amount mismatch'},
+ code:{ok:'compliant',K1:'C1',K2:'C2',K3:'C3',K4:'C4'},
+ kdesc:{K1:'date outside the audit period',K2:'approval does not match the authorization matrix',K3:'no supporting evidence',K4:'document amount differs from the system'},
+ opNames:['Satisfactory','Needs improvement','Unsatisfactory'],
+ unitOf:n=>n+' unit',
+ stNo:n=>`AL-${n}/IA/VII/2026`,
+ ui:{
+  st:{say:u=>`Good morning. I'm from the ${u} unit and I've received the assignment letter. Shall we start?`,title:'Audit Assignment Letter',no:'Number',to:'To',toV:'You (Internal Auditor)',aud:'Auditee',scope:'Scope',period:'Period',date:'Date',head:'Head of IA',unsigned:'not signed',
+   card:'Auditor ID Card',name:'Name',nameV:'You',pos:'Position',posV:'Internal Auditor',hist:'Work history',histV:h=>`${h} staff, 2022 – Dec 2025`,joined:'Joined IA',
+   acts:[['go','Start the opening meeting','Letter is valid, I am independent'],['conflict','Report a conflict of interest','Hand it to the Team Lead'],['postpone','Postpone the audit','Assignment letter is not valid']]},
+  docs:{say:f=>f?'Here are the missing documents, sorry about that.':'Here are the documents from your document request letter.',title:'Document Request',tick:d=>'Tick '+d,note:'All documents must cover 1 Jan – 30 Jun 2026. Click a box to add a tick mark when a document matches.',folder:"Auditee's folder",pOk:'Period Jan – Jun 2026',pBad:'Period Jul – Dec 2025',
+   acts:[['complete','Documents complete','Move on to sample testing'],['request','Request the missing documents','Note it on the request list']]},
+  smp:{say:(n,d)=>`Go ahead. Here are ${n} ${d} samples picked at random from the list.`,crit:'Audit Criteria',critList:'<li><b>C1</b>Date within 1 Jan – 30 Jun 2026</li><li><b>C2</b>Approval: &lt; Rp 25M Supervisor · Rp 25–99M Manager · ≥ Rp 100M Director (a higher position is fine)</li><li><b>C3</b>Supporting evidence attached</li><li><b>C4</b>Document amount = system amount</li>',
+   no:'Number',date:'Date',vd:'Document amount',vs:'System amount',appr:'Approved by',att:'Attachment',noSig:'no signature',attY:'Yes (invoice, receipt)',save:'Save working paper',ready:'All samples are rated',notReady:'Rate every sample first'},
+  ev:{giftSay:"Here's a small hamper from our unit to say thanks for your help. Please don't say no.",desk:'On the desk',giftTxt:'A hamper with cookies and an Rp 500,000 shopping voucher, plus a card from the unit head.',
+   giftActs:[['accept','Accept it',"It's just a hamper, it won't affect anything"],['refuse','Politely refuse','Report it to the Ethics Officer under the gift policy'],['later','Accept after the report is issued',"So it can't affect the audit"]],
+   pressSay:no=>`Could finding ${no} be left out of the report? I'll help you out with something else.`,wp:'Working Paper',pressTxt:(f,no)=>`Findings recorded: <b>${f}</b>. Sample in question: ${no}.`,
+   pressActs:[['delete','Remove that finding','Keep the relationship good'],['refuse','Refuse; the finding stays','Only evidence can change a finding'],['verbal','Make it a verbal suggestion','Leave it out of the report']],
+   dispSay:no=>`I don't agree with finding ${no}. That's normal practice in our unit.`,dispTxt:f=>`Findings recorded: <b>${f}</b>. The auditee brought no additional evidence.`,
+   dispActs:[['delete','Remove the finding','So the auditee agrees'],['note',"Record the auditee's response",'The finding stays, based on evidence'],['stop','Stop the audit','The auditee is not cooperating']]},
+  op:{say:'So, what is the conclusion of the audit?',sum:'Working Paper Summary',ok:'compliant',count:n=>`Number of findings: <b>${n}</b>`,guide:'Opinion Guide',rows:[['0 findings','Satisfactory'],['1 finding','Needs improvement'],['≥ 2 findings','Unsatisfactory']],
+   acts:[['op0','Satisfactory','Controls work well'],['op1','Needs improvement','A limited weakness'],['op2','Unsatisfactory','A significant weakness']]},
+  hintShow:'Show me how',hintFull:'Full guide for this step',
+  vOk:'Followed procedure',vBad:'Did not follow procedure',next:'Continue',call:'Call the next auditee',results:'See results',
+  endWin:'Audit completed by the book',endLose:'Audit stopped by QA',endBig:(ok,n,qa)=>`${ok}/${n} auditees handled without a violation · ${qa} QA note${qa===1?'':'s'}`,
+  endPWin:'Every auditee has been handled. The QA log below shows which parts of the procedure need attention.',endPLose:'Three procedure violations make the audit result unreliable. Read the log below, then try a new scenario.',again:'Play again with a new scenario',
+  tSkip:'Skip',tBack:'Back',tNext:'Next',tStart:'Start auditing',tGot:'Got it',gHead:'Internal Audit Guide',gClose:'Close',gCloseAria:'Close guide'
+ }
+};
+const pl=n=>n===1?'':'s';
+EN.msg={
+ st_go:()=>'<p>The assignment letter is valid and you have no work history with this unit. Opening meeting: explain the objective, scope, period and schedule of the audit.</p>',
+ st_conf_ok:a=>`<p>You worked in the ${uN(a.home)} unit until Dec 2025, less than 12 months ago. The conflict is reported to the Team Lead and this audit is reassigned to another auditor.</p>`,
+ st_post_ok:a=>`<p>${stWhy(a)} The audit is postponed and the letter is sent back to be corrected.</p>`,
+ st_conf_miss:a=>`<p>You worked in the ${uN(a.home)} unit until Dec 2025. An auditor must disclose a conflict of interest before starting, because independence cannot be repaired once the audit is under way.</p><p>QA cancels the audit of this unit.</p>`,
+ st_post_miss:a=>`<p>${stWhy(a)} An audit without a valid assignment letter has no basis.</p><p>QA cancels the audit of this unit.</p>`,
+ st_false_conf:a=>`<p>Your work history is in ${uN(a.home)}, not ${uN(a.unit)}. There is no conflict of interest to report.</p><p>QA cancels the audit of this unit.</p>`,
+ st_false_post:()=>"<p>The letter's number, unit, date and signature are all correct. Postponing for no reason delays the audit schedule.</p><p>QA cancels the audit of this unit.</p>",
+ why:{jadwal:a=>`The date on the assignment letter (${fd(a.stDate)}) is not today (${fd(a.today)}).`,ttd:()=>'The assignment letter has not been signed by the Head of Internal Audit, so it is not valid yet.',unit:a=>`The assignment letter is addressed to the ${uN(a.stUnit)} unit, not ${uN(a.unit)}.`},
+ what:a=>a.type==='missing'?`"${esc(L().units[a.unit].req[a.i])}" is not in the folder`:`"${esc(L().units[a.unit].req[a.i])}" covers Jul – Dec 2025, not the audit period`,
+ docs_req_ok:a=>`<p>${L().msg.what(a)}. The gap is noted and the auditee hands over the missing document. Check again before moving on.</p>`,
+ docs_ok:()=>'<p>All documents are there and the periods are right. Move on to picking samples.</p>',
+ docs_miss:a=>`<p>${L().msg.what(a)}. Without it, the criteria cannot be tested properly.</p>`,
+ docs_false:()=>'<p>All four documents are there for Jan – Jun 2026. Requesting them again slows the audit for no reason.</p>',
+ smp_ok:a=>`<p>The working paper is correct. ${a.n?`${a.n} finding${pl(a.n)} recorded under the right criteria.`:'Every sample meets the criteria.'}</p>`,
+ smp_bad:a=>`<p>Some samples were rated wrongly in the working paper.</p><ul>${a.wrong.map(w=>`<li>${esc(sNo(a.unit,w.num))}: you rated it <b>${L().code[w.m]}</b>, it should be <b>${w.t==='ok'?L().code.ok:L().code[w.t]+' ('+L().kdesc[w.t]+')'}</b>.</li>`).join('')}</ul>`,
+ gift_ok:()=>'<p>A gift from an auditee is a conflict of interest, whatever its value and whenever it is accepted. Politely refuse and report it to the Ethics Officer.</p>',
+ gift_bad:()=>'<p>Accepting a gift from an auditee, before or after the report, compromises objectivity. It should be refused and reported.</p>',
+ press_ok:()=>'<p>A finding changes only with evidence, not on request. The offer is also recorded and reported to the Team Lead.</p>',
+ press_bad:()=>"<p>Removing or softening a finding at the auditee's request breaks integrity. The finding must stay in the report.</p>",
+ disp_ok:()=>"<p>The auditee's response is recorded in the report next to the finding. The finding stays because it is backed by evidence.</p>",
+ disp_stop:()=>"<p>Disagreement is not a reason to stop the audit. Record the auditee's response and keep the finding.</p>",
+ disp_bad:()=>'<p>The finding is backed by evidence, so it is not removed because the auditee objects. The right move: record their response.</p>',
+ op_ok:a=>`<p>The opinion <b>${L().opNames[a.op]}</b> matches the ${a.n} finding${pl(a.n)} in the working paper. Closing meeting: the findings are agreed and the auditee prepares a follow-up plan.</p>`,
+ op_bad:a=>`<p>With ${a.n} finding${pl(a.n)}, the opinion should be <b>${L().opNames[a.right]}</b>. A conclusion must be supported by the working paper.</p>`
+};
+
+/* ======================= LANGUAGE-AWARE HELPERS ======================= */
+let LANG=(location.hash==='#en'||location.hash==='#id')?location.hash.slice(1):(store.get('ma-lang')==='en'?'en':'id');
+const L=()=>LANG==='en'?EN:ID;
+const uN=id=>L().units[id].name;
+const fd=d=>d.d+' '+L().MON[d.m-1]+' '+d.y;
+const rp=n=>'Rp '+n.toLocaleString(L().loc);
+const role=i=>i<0?'—':L().roles[i];
+const sNo=(unit,num)=>L().units[unit].pre+'-'+num;
+const stWhy=a=>L().msg.why[a.type](a);
+
+function needRole(v){return v>=100e6?2:v>=25e6?1:0}
+function makeSample(){
+  const v=pick([rnd(20)+3,rnd(60)+26,rnd(150)+100])*1e6+rnd(9)*1e5;
+  const s={num:String(rnd(900)+100).padStart(4,'0'),date:{y:2026,m:rnd(6)+1,d:rnd(27)+1},val:v,sys:v,role:Math.min(2,needRole(v)+(chance(.3)?1:0)),att:true,truth:'ok'};
+  if(chance(.38)){
+    const k=pick(['K1','K2','K3','K4']); s.truth=k;
+    if(k==='K1') s.date={y:2025,m:rnd(6)+7,d:rnd(27)+1};
+    if(k==='K2'){ if(needRole(v)===0||chance(.35)) s.role=-1; else s.role=needRole(v)-1; }
+    if(k==='K3') s.att=false;
+    if(k==='K4') s.sys=v+(v>12e6&&chance(.5)?-1:1)*(rnd(9)+1)*1e6;
+  }
+  return s;
+}
+function makeCustomer(uid,conflict,taken){
+  let nm; do{nm=pick(NAMES)}while(taken.has(nm[0])); taken.add(nm[0]);
+  const c={u:uid,name:nm[0],jab:rnd(3),look:{skin:pick(SKIN),shirt:pick(SHIRT),hair:pick(HAIR),hijab:nm[1]==='f'&&chance(.5),glasses:chance(.3)},
+    conflict, st:null, stN:String(rnd(80)+10).padStart(3,'0'), doc:null, samples:[], event:null};
+  if(!conflict && chance(.22)) c.st=pick(['jadwal','ttd','unit']);
+  if(chance(.42)) c.doc={type:pick(['missing','period']),i:rnd(4)};
+  for(let i=0;i<3;i++) c.samples.push(makeSample());
+  c.event=chance(.5)?pick(['gift','pressure','dispute']):null;
+  return c;
+}
+function newRun(){
+  const home=pick(UNIT_IDS);
+  let list=shuffle(UNIT_IDS.filter(u=>u!==home)).slice(0,N_CUST);
+  const conflictAt=chance(.65)?rnd(N_CUST):-1;
+  if(conflictAt>=0) list[conflictAt]=home;
+  const taken=new Set();
+  const today={y:2026,m:7,d:pick([6,7,8,9,10,13,14,15,16,17,20,21,22,23,24])};
+  const cust=list.map((u,i)=>makeCustomer(u,i===conflictAt,taken));
+  cust.forEach(c=>{ c._st={unit:c.st==='unit'?pick(UNIT_IDS.filter(x=>x!==c.u&&x!==home)):c.u, date:c.st==='jadwal'?{...today,d:today.d+pick([1,2,3,4])}:today}; });
+  return {v:2,home, today, cust, idx:0, qa:0, phase:'st', marks:[], ticks:[], recorded:0, fb:null, log:[], over:null, results:[]};
+}
+let S;
+
+function personSVG(l){
+  const back=l.hijab?`<path d="M50 94c0-38 22-60 50-60s50 22 50 60v30c0 16-12 26-26 28H76c-14-2-26-12-26-28z" fill="${l.shirt}"/><path d="M50 94c0-38 22-60 50-60s50 22 50 60v30c0 16-12 26-26 28H76c-14-2-26-12-26-28z" fill="rgba(0,0,0,.18)"/>`:'';
+  const face=l.hijab?`<ellipse cx="100" cy="100" rx="31" ry="38" fill="${l.skin}"/><ellipse cx="100" cy="100" rx="31" ry="38" fill="none" stroke="rgba(0,0,0,.18)" stroke-width="3"/>`:`<ellipse cx="100" cy="96" rx="38" ry="44" fill="${l.skin}"/>`;
+  const hair=l.hijab?'':`<path d="M60 84c0-28 18-44 40-44s40 16 40 44c-8-14-22-20-40-20s-32 6-40 20z" fill="${l.hair}"/>`;
+  const glasses=l.glasses?`<g fill="none" stroke="#222" stroke-width="2.5"><circle cx="88" cy="94" r="9"/><circle cx="112" cy="94" r="9"/><path d="M97 94h6"/></g>`:'';
+  return `<svg viewBox="0 0 200 200" width="100%" aria-hidden="true">
+   <path d="M30 200c4-44 30-62 70-62s66 18 70 62z" fill="${l.shirt}"/>
+   <path d="M86 132h28v16c-6 6-22 6-28 0z" fill="${l.skin}"/>
+   <path d="M88 140l12 14 12-14" fill="none" stroke="rgba(255,255,255,.6)" stroke-width="3"/>
+   ${back}${face}
+   ${hair}
+   <circle cx="88" cy="94" r="3.2" fill="#222"/><circle cx="112" cy="94" r="3.2" fill="#222"/>
+   ${glasses}
+   <path d="M90 116q10 7 20 0" fill="none" stroke="#6b3a2a" stroke-width="3" stroke-linecap="round"/>
+  </svg>`;
+}
+
+const $=id=>document.getElementById(id);
+function cust(){return S.cust[S.idx]}
+const STEP_OF={st:0,docs:1,samples:2,event:3,opinion:4};
+let HINT_ON=store.get('ma-hints')!=='off';
+
+/* ======================= TUTORIAL / GUIDE CONTENT ======================= */
+const MX={
+ id:'<table class="mx"><tr><th>Nilai transaksi</th><th>Disetujui minimal</th></tr><tr><td>&lt; Rp 25 juta</td><td>Supervisor</td></tr><tr><td>Rp 25 – 99 juta</td><td>Manajer</td></tr><tr><td>≥ Rp 100 juta</td><td>Direktur</td></tr></table>',
+ en:'<table class="mx"><tr><th>Transaction amount</th><th>Approved by at least</th></tr><tr><td>&lt; Rp 25 million</td><td>Supervisor</td></tr><tr><td>Rp 25 – 99 million</td><td>Manager</td></tr><tr><td>≥ Rp 100 million</td><td>Director</td></tr></table>'
+};
+ID.hints={
+ st:['Langkah 1 · Boleh mulai audit?','<p>Sebelum memeriksa apa pun, pastikan audit ini sah dan kamu netral.</p><ol><li>Jadwal di Surat Tugas sama dengan tanggal di kalender dinding.</li><li>Unit di Surat Tugas sama dengan unit tamu (lihat name tag-nya).</li><li>Ada tanda tangan Kepala SPI.</li><li>Kartu Auditor: kalau kamu pernah kerja di unit tamu, itu konflik kepentingan.</li></ol><p>Semua beres? Mulai opening meeting.</p>'],
+ docs:['Langkah 2 · Dokumennya lengkap?','<p>Bandingkan Permintaan Dokumen dengan isi Map satu per satu. Klik kotak kecil untuk mencentang dokumen yang ada. Semua dokumen harus berperiode <b>Jan – Jun 2026</b>. Ada yang tidak ada atau periodenya lain? Minta dokumen yang kurang.</p>'],
+ samples:['Langkah 3 · Periksa setiap sampel','<p>Cocokkan tiap kertas transaksi dengan 4 kriteria. Contoh: nilai Rp 60 juta harus disetujui minimal Manajer (K2), dan nilai dokumen harus sama dengan nilai sistem (K4). Pilih <b>Sesuai</b> kalau semua terpenuhi, atau pilih kriteria yang dilanggar. Setiap sampel paling banyak punya satu pelanggaran.</p>'],
+ event:['Langkah 4 · Tetap objektif','<p>Auditee kadang menawarkan hadiah atau meminta temuan dihapus. Hadiah dari auditee termasuk gratifikasi. Temuan hanya berubah kalau ada bukti baru, bukan karena permintaan atau keberatan.</p>'],
+ opinion:['Langkah 5 · Tarik kesimpulan','<p>Hitung temuan di Ringkasan Kertas Kerja, lalu pilih opini sesuai Panduan Simpulan. Opini tidak boleh lebih baik atau lebih buruk dari isi kertas kerja.</p>']
+};
+EN.hints={
+ st:['Step 1 · Can the audit start?',"<p>Before checking anything, make sure this audit is valid and that you are neutral.</p><ol><li>The date on the Assignment Letter matches the wall calendar.</li><li>The unit on the letter matches the visitor's unit (see their name tag).</li><li>The Head of Internal Audit has signed it.</li><li>Auditor ID card: if you used to work in the visitor's unit, that is a conflict of interest.</li></ol><p>All clear? Start the opening meeting.</p>"],
+ docs:['Step 2 · Are the documents complete?','<p>Compare the Document Request with the folder, one item at a time. Click the small box to tick each document you find. Every document must cover <b>Jan – Jun 2026</b>. Anything missing or from another period? Request the missing documents.</p>'],
+ samples:['Step 3 · Check every sample','<p>Check each transaction against the 4 criteria. Example: Rp 60 million must be approved by at least a Manager (C2), and the document amount must equal the system amount (C4). Choose <b>Compliant</b> if everything is met, or pick the criterion that is broken. Each sample breaks at most one criterion.</p>'],
+ event:['Step 4 · Stay objective','<p>Auditees sometimes offer gifts or ask for findings to be removed. A gift from an auditee creates a conflict of interest. A finding changes only with new evidence, never because of a request or an objection.</p>'],
+ opinion:['Step 5 · Draw the conclusion','<p>Count the findings in the Working Paper Summary, then pick the opinion from the Opinion Guide. The opinion must be no better and no worse than the working paper.</p>']
+};
+ID.tour=[
+ {t:null,h:'Selamat datang, Auditor',b:'<p>Kamu berperan sebagai <b>auditor internal</b>: orang yang memeriksa apakah unit lain di perusahaan bekerja sesuai aturan.</p><p>Hari ini 5 unit (disebut <b>auditee</b>) datang ke mejamu bergantian. Tugasmu: periksa masing-masing sesuai prosedur.</p>'},
+ {t:null,h:'Bagaimana audit internal bekerja',b:'<p>Audit internal mengikuti alur yang sama untuk setiap unit:</p><ol class="flow"><li><b>Penugasan.</b> Kepala SPI menerbitkan surat tugas.</li><li><b>Opening meeting.</b> Auditor menjelaskan tujuan, lingkup, dan jadwal.</li><li><b>Pengumpulan bukti.</b> Auditee menyerahkan dokumen yang diminta.</li><li><b>Pengujian.</b> Auditor membandingkan bukti dengan aturan (kriteria).</li><li><b>Temuan &amp; simpulan.</b> Pelanggaran dicatat, lalu ditarik opini.</li><li><b>Exit meeting &amp; tindak lanjut.</b> Hasil disampaikan dan auditee memperbaikinya.</li></ol><p>Di game ini kamu menjalankan langkah 1 sampai 5 untuk tiap auditee. Saat pertama kali masuk ke setiap langkah, kamu akan dipandu dengan contoh dari dokumen yang sedang ada di meja.</p>'},
+ {t:'.scene',h:'Tamu di depanmu',b:'<p>Ini auditee. Baca ucapannya di balon dialog dan lihat name tag-nya untuk tahu dari unit mana dia.</p><p>Kalender di dinding adalah <b>tanggal hari ini</b>. Kamu akan memakainya untuk mengecek jadwal audit.</p>'},
+ {t:'#papers',h:'Dokumen di mejamu',b:'<p>Semua yang perlu diperiksa ada di kertas-kertas ini. Jangan percaya ucapan auditee begitu saja: auditor memutuskan berdasarkan <b>bukti dokumen</b>.</p>'},
+ {t:'#bar',h:'Pilih tindakan',b:'<p>Di setiap langkah, pilih satu tindakan. Setelah itu kamu langsung melihat apakah pilihanmu <b>sesuai prosedur</b> beserta alasannya, lalu tekan Lanjut.</p>'},
+ {t:'.sop',h:'Ikuti 5 langkah SOP',b:'<p>Setiap auditee melewati 5 langkah ini berurutan. Langkah yang sedang berjalan disorot kuning. Di bawahnya ada daftar auditee hari ini.</p>'},
+ {t:'#qa-stat',h:'Maksimal 2 kesalahan',b:'<p>Setiap tindakan yang tidak sesuai prosedur menambah satu <b>Catatan QA</b>. Tiga catatan berarti audit dihentikan dan kamu kalah.</p><p>Tangani kelima auditee dengan kurang dari 3 catatan untuk menang.</p>'},
+ {t:'#hint',h:'Petunjuk di setiap langkah',b:'<p>Kotak ini menjelaskan apa yang harus dicek sekarang. Matikan lewat tombol <b>Petunjuk</b> kalau sudah paham, dan buka panduan ini lagi lewat tombol <b>Tutorial</b>.</p>'},
+ {t:'.lang',h:'Pilih bahasa',b:'<p>Tombol <b>ID / EN</b> mengganti bahasa game kapan saja, tanpa mengulang permainan.</p>'},
+ {t:null,h:'Istilah yang akan kamu temui',b:'<dl><dt>Surat tugas</dt><dd>Surat resmi yang menugaskanmu mengaudit unit tertentu pada tanggal tertentu.</dd><dt>Konflik kepentingan</dt><dd>Kamu punya hubungan dengan unit yang diaudit, misalnya pernah bekerja di sana. Harus dilaporkan.</dd><dt>Sampel</dt><dd>Beberapa transaksi yang dipilih untuk diperiksa.</dd><dt>Kriteria</dt><dd>Aturan pembanding, kode K1 sampai K4.</dd><dt>Temuan</dt><dd>Sampel yang melanggar kriteria.</dd><dt>Kertas kerja</dt><dd>Catatan hasil pemeriksaanmu.</dd><dt>Gratifikasi</dt><dd>Hadiah dari pihak yang diaudit. Wajib ditolak dan dilaporkan.</dd><dt>Opini</dt><dd>Kesimpulan akhir audit.</dd></dl><p>Siap? Auditee pertama sudah menunggu.</p>'}
+];
+EN.tour=[
+ {t:null,h:'Welcome, Auditor',b:'<p>You play an <b>internal auditor</b>: the person who checks whether other units in the company follow the rules.</p><p>Today 5 units (called <b>auditees</b>) come to your desk one after another. Your job: examine each one following the procedure.</p>'},
+ {t:null,h:'How an internal audit works',b:'<p>Internal audit follows the same flow for every unit:</p><ol class="flow"><li><b>Assignment.</b> The Head of Internal Audit issues an assignment letter.</li><li><b>Opening meeting.</b> The auditor explains the objective, scope and schedule.</li><li><b>Evidence gathering.</b> The auditee hands over the requested documents.</li><li><b>Testing.</b> The auditor compares the evidence with the rules (criteria).</li><li><b>Findings &amp; conclusion.</b> Violations are recorded and an opinion is drawn.</li><li><b>Closing meeting &amp; follow-up.</b> Results are presented and the auditee fixes them.</li></ol><p>In this game you run steps 1 to 5 for each auditee. The first time you reach each step, you are walked through it using the documents on your desk.</p>'},
+ {t:'.scene',h:'Your visitor',b:"<p>This is the auditee. Read what they say in the speech bubble and check their name tag to see which unit they are from.</p><p>The wall calendar shows <b>today's date</b>. You will need it to check the audit schedule.</p>"},
+ {t:'#papers',h:'Documents on your desk',b:"<p>Everything you need to check is on these papers. Don't simply take the auditee's word for it: an auditor decides based on <b>documentary evidence</b>.</p>"},
+ {t:'#bar',h:'Choose an action',b:'<p>At each step, choose one action. You immediately see whether it <b>followed procedure</b> and why, then press Continue.</p>'},
+ {t:'.sop',h:'Follow the 5 SOP steps',b:"<p>Every auditee goes through these 5 steps in order. The current step is highlighted in yellow. Below it is today's list of auditees.</p>"},
+ {t:'#qa-stat',h:'At most 2 mistakes',b:'<p>Every action that breaks procedure adds one <b>QA note</b>. Three notes and the audit is stopped: you lose.</p><p>Handle all five auditees with fewer than 3 notes to win.</p>'},
+ {t:'#hint',h:'Hints at every step',b:'<p>This box explains what to check right now. Turn it off with the <b>Hints</b> button once you are comfortable, and reopen this tour with the <b>Tutorial</b> button.</p>'},
+ {t:'.lang',h:'Choose a language',b:'<p>The <b>ID / EN</b> switch changes the game language at any time without restarting your game.</p>'},
+ {t:null,h:'Terms you will see',b:'<dl><dt>Assignment letter</dt><dd>The official letter that assigns you to audit a specific unit on a specific date.</dd><dt>Conflict of interest</dt><dd>You have a connection with the unit being audited, such as having worked there. It must be reported.</dd><dt>Sample</dt><dd>A few transactions picked for testing.</dd><dt>Criteria</dt><dd>The rules you compare against, codes C1 to C4.</dd><dt>Finding</dt><dd>A sample that breaks a criterion.</dd><dt>Working paper</dt><dd>Your record of what you tested.</dd><dt>Gift</dt><dd>Anything of value from the party being audited. Must be refused and reported.</dd><dt>Opinion</dt><dd>The final conclusion of the audit.</dd></dl><p>Ready? Your first auditee is waiting.</p>'}
+];
+const C=()=>cust(), CU=()=>cust().u;
+ID.pt={
+ st:[
+  {t:null,h:'Langkah 1: Surat tugas & independensi',b:()=>`<p>Sebelum audit dimulai, auditor memastikan dua hal: <b>penugasannya sah</b> dan <b>dirinya netral</b>. Kalau salah satu tidak terpenuhi, hasil audit tidak bisa dipercaya sejak awal.</p><p>Ayo periksa surat tugas untuk ${esc(C().name)} bersama-sama, satu baris demi satu baris.</p>`},
+  {t:'[data-k="badge"]',h:'Kenali tamumu',b:()=>`<p>Lihat <b>name tag</b> di baju tamu. Di situ tertulis siapa dia dan di bagian mana dia bekerja:</p><dl><dt>Nama</dt><dd>${esc(C().name)}</dd><dt>Jabatan</dt><dd>${L().jabs[C().jab]}</dd><dt>Bagian</dt><dd>Unit ${uN(CU())}</dd></dl><p>Unit inilah yang akan diaudit. Ingat namanya, karena kamu akan mencocokkannya dengan surat tugas dan riwayat kerjamu.</p>`},
+  {t:'[data-k="st-jadwal"]',h:'Cek 1: Jadwal',b:()=>`<p>Surat tugas berlaku untuk tanggal <b>${fd(C()._st.date)}</b>. Kalender di dinding menunjukkan hari ini <b>${fd(S.today)}</b>.</p><p>Kalau tanggalnya berbeda, audit tidak boleh dilakukan hari ini. Pilih <b>Tunda audit</b>.</p>`},
+  {t:'[data-k="st-unit"]',h:'Cek 2: Unit auditee',b:()=>`<p>Surat tugas ditujukan ke <b>Unit ${uN(C()._st.unit)}</b>. Tamu di depanmu dari <b>Unit ${uN(CU())}</b>, lihat name tag di bajunya.</p><p>Surat tugas hanya berlaku untuk unit yang tertulis. Kalau berbeda, tunda audit.</p>`},
+  {t:'[data-k="st-ttd"]',h:'Cek 3: Tanda tangan Kepala SPI',b:'<p>Surat tugas baru sah setelah ditandatangani Kepala SPI (Satuan Pengawasan Internal). Tanpa tanda tangan, kamu belum resmi ditugaskan, jadi audit juga harus ditunda.</p>'},
+  {t:'[data-k="aud-riwayat"]',h:'Cek 4: Independensi',b:()=>`<p>Riwayat kerjamu: <b>Staf ${uN(S.home)} sampai Des 2025</b>. Tamu ini dari <b>Unit ${uN(CU())}</b>.</p><p>Aturannya: auditor tidak boleh mengaudit unit tempat ia bekerja dalam 12 bulan terakhir, karena ia bisa memeriksa pekerjaannya sendiri atau pekerjaan teman dekatnya. Kalau unitnya sama, pilih <b>Laporkan konflik kepentingan</b>.</p>`},
+  {t:'#bar',h:'Pilih satu tindakan',b:'<dl><dt>Mulai opening meeting</dt><dd>Keempat cek beres.</dd><dt>Laporkan konflik</dt><dd>Kamu pernah bekerja di unit tamu.</dd><dt>Tunda audit</dt><dd>Jadwal, unit, atau tanda tangan surat tugas bermasalah.</dd></dl><p>Setelah memilih, kotak hasil menjelaskan apakah pilihanmu benar dan alasannya. Baca baik-baik sebelum menekan Lanjut.</p>'}
+ ],
+ docs:[
+  {t:null,h:'Langkah 2: Kelengkapan dokumen',b:'<p>Setelah opening meeting, auditor mengirim <b>daftar permintaan dokumen</b>. Dokumen inilah bukti yang nanti dipakai untuk menguji. Kalau ada yang kurang, pengujian tidak lengkap dan simpulannya bisa salah.</p>'},
+  {t:'[data-k="req"]',h:'Daftar yang kamu minta',b:'<p>Ini empat dokumen yang wajib ada. Baca satu per satu, lalu cari pasangannya di map auditee.</p><p>Klik kotak kecil di kiri untuk memberi <b>tickmark</b> (✓) setiap kali dokumen ditemukan. Auditor sungguhan juga memberi tanda centang seperti ini di kertas kerjanya.</p>'},
+  {t:'[data-k="folder"]',h:'Isi map auditee',b:'<p>Setiap kartu adalah satu dokumen. Perhatikan dua hal:</p><ol><li><b>Namanya</b> harus ada di daftar permintaan.</li><li><b>Periodenya</b> harus Jan – Jun 2026, sama dengan periode audit. Dokumen periode lain tidak bisa membuktikan apa pun tentang periode ini.</li></ol><p>Urutan kartu di map acak, jadi cocokkan namanya, jangan hanya menghitung jumlahnya.</p>'},
+  {t:'#bar',h:'Putuskan',b:'<p>Semua ada dan periodenya benar: pilih <b>Dokumen lengkap</b>.</p><p>Ada yang hilang atau periodenya lain: pilih <b>Minta dokumen yang kurang</b>. Auditee akan menyerahkan dokumen susulan, dan kamu memeriksanya sekali lagi.</p>'}
+ ],
+ samples:[
+  {t:null,h:'Langkah 3: Uji sampel',b:()=>`<p>Auditor tidak memeriksa semua transaksi, melainkan memilih beberapa <b>sampel</b> secara acak. Kali ini ada ${C().samples.length} sampel ${esc(L().units[CU()].doc)}.</p><p>Setiap sampel dibandingkan dengan <b>4 kriteria</b>. Sampel yang melanggar kriteria menjadi <b>temuan</b>. Di game ini, satu sampel paling banyak melanggar satu kriteria.</p><p>Ayo periksa sampel pertama bersama-sama.</p>`},
+  {t:'[data-k="crit"]',h:'Kriteria K1 sampai K4',b:'<dl><dt>K1</dt><dd>Tanggal transaksi di dalam periode audit.</dd><dt>K2</dt><dd>Yang menyetujui punya wewenang sesuai nilainya (matriks otorisasi).</dd><dt>K3</dt><dd>Ada bukti pendukung seperti nota atau kuitansi.</dd><dt>K4</dt><dd>Nilai di dokumen sama dengan yang tercatat di sistem.</dd></dl>'},
+  {t:'[data-k="s0-tgl"]',h:'K1: Cek tanggal',b:()=>`<p>Sampel pertama bertanggal <b>${fd(C().samples[0].date)}</b>. Periode audit 1 Jan – 30 Jun 2026.</p><p>Tanggal di luar rentang itu, misalnya bulan Oktober 2025, berarti transaksi tidak termasuk periode yang diaudit: pelanggaran K1.</p>`},
+  {t:'[data-k="s0-ttd"]',h:'K2: Cek otorisasi',b:()=>{const s=C().samples[0];return `<p>Nilai sampel ini <b>${rp(s.val)}</b>, jadi menurut matriks otorisasi wajib disetujui minimal <b>${role(needRole(s.val))}</b>.</p>${MX.id}<p>Jabatan yang lebih tinggi boleh menyetujui. Jabatan lebih rendah, atau tidak ada tanda tangan, berarti pelanggaran K2.</p>`}},
+  {t:'[data-k="s0-lamp"]',h:'K3: Cek bukti pendukung',b:'<p>Transaksi tanpa nota atau kuitansi tidak bisa dibuktikan benar-benar terjadi. Kalau baris Lampiran berisi "—", itu pelanggaran K3.</p>'},
+  {t:'[data-k="s0-nd"],[data-k="s0-ns"]',h:'K4: Bandingkan dua nilai',b:'<p>Bandingkan <b>nilai dokumen</b> dengan <b>nilai sistem</b> digit demi digit. Selisih sekecil apa pun bisa berarti salah input atau manipulasi, jadi termasuk pelanggaran K4.</p>'},
+  {t:'[data-k="s0-chips"]',h:'Catat hasilnya',b:'<p>Setelah keempat kriteria diperiksa, pilih <b>Sesuai</b> kalau tidak ada pelanggaran, atau pilih kode kriteria yang dilanggar.</p><p>Ulangi untuk setiap sampel. Tombol <b>Simpan kertas kerja</b> aktif setelah semua sampel dinilai.</p>'}
+ ],
+ event:[
+  {t:'#bubble',h:'Langkah 4: Ujian integritas',b:'<p>Auditee kadang mencoba memengaruhi hasil audit: memberi hadiah, meminta temuan dihapus, atau menolak temuan tanpa bukti.</p><p>Auditor wajib menjaga <b>integritas</b> dan <b>objektivitas</b>. Hasil audit hanya boleh ditentukan oleh bukti.</p>'},
+  {t:'#bar',h:'Cara bersikap',b:'<dl><dt>Diberi hadiah</dt><dd>Tolak dengan sopan dan laporkan ke Unit Pengendalian Gratifikasi, sekecil apa pun nilainya, sebelum maupun sesudah laporan terbit.</dd><dt>Diminta hapus temuan</dt><dd>Tolak. Temuan hanya berubah kalau ada bukti baru.</dd><dt>Auditee tidak setuju</dt><dd>Catat tanggapannya di laporan. Temuan tetap kalau buktinya kuat.</dd></dl>'}
+ ],
+ opinion:[
+  {t:'[data-k="sum"]',h:'Langkah 5: Tarik kesimpulan',b:'<p>Ini ringkasan kertas kerjamu: ✓ berarti sesuai, ⓧ berarti temuan.</p><p>Kesimpulan audit harus mengikuti isi kertas kerja, bukan kesan pribadi atau hubungan baik dengan auditee.</p>'},
+  {t:'[data-k="guide-op"]',h:'Pilih opini',b:'<dl><dt>Memadai</dt><dd>Tidak ada temuan. Pengendalian berjalan baik.</dd><dt>Perlu perbaikan</dt><dd>Satu temuan. Ada kelemahan terbatas yang harus diperbaiki.</dd><dt>Tidak memadai</dt><dd>Dua temuan atau lebih. Kelemahannya signifikan.</dd></dl><p>Setelah opini dipilih, exit meeting digelar dan auditee menyusun rencana tindak lanjut.</p>'}
+ ]
+};
+EN.pt={
+ st:[
+  {t:null,h:'Step 1: Assignment letter & independence',b:()=>`<p>Before an audit starts, the auditor confirms two things: <b>the assignment is valid</b> and <b>they are neutral</b>. If either fails, the audit result cannot be trusted from the start.</p><p>Let's check the assignment letter for ${esc(C().name)} together, line by line.</p>`},
+  {t:'[data-k="badge"]',h:'Know your visitor',b:()=>`<p>Look at the <b>name tag</b> on the visitor's shirt. It shows who they are and which part of the company they work in:</p><dl><dt>Name</dt><dd>${esc(C().name)}</dd><dt>Position</dt><dd>${L().jabs[C().jab]}</dd><dt>Department</dt><dd>${uN(CU())} unit</dd></dl><p>This is the unit being audited. Remember it: you will match it against the assignment letter and your own work history.</p>`},
+  {t:'[data-k="st-jadwal"]',h:'Check 1: Schedule',b:()=>`<p>The assignment letter is valid for <b>${fd(C()._st.date)}</b>. The wall calendar says today is <b>${fd(S.today)}</b>.</p><p>If the dates differ, the audit cannot happen today. Choose <b>Postpone the audit</b>.</p>`},
+  {t:'[data-k="st-unit"]',h:'Check 2: Auditee unit',b:()=>`<p>The assignment letter is addressed to the <b>${uN(C()._st.unit)} unit</b>. Your visitor is from the <b>${uN(CU())} unit</b>, as their name tag shows.</p><p>The letter only covers the unit written on it. If they differ, postpone the audit.</p>`},
+  {t:'[data-k="st-ttd"]',h:'Check 3: Head of Internal Audit signature',b:'<p>The assignment letter is only valid once the Head of Internal Audit has signed it. Without a signature you are not officially assigned, so the audit must also be postponed.</p>'},
+  {t:'[data-k="aud-riwayat"]',h:'Check 4: Independence',b:()=>`<p>Your work history: <b>${uN(S.home)} staff until Dec 2025</b>. This visitor is from the <b>${uN(CU())} unit</b>.</p><p>The rule: an auditor may not audit a unit they worked in during the last 12 months, because they could end up reviewing their own work or their close colleagues' work. If the units match, choose <b>Report a conflict of interest</b>.</p>`},
+  {t:'#bar',h:'Choose one action',b:"<dl><dt>Start the opening meeting</dt><dd>All four checks pass.</dd><dt>Report a conflict</dt><dd>You used to work in the visitor's unit.</dd><dt>Postpone the audit</dt><dd>The letter's date, unit or signature is wrong.</dd></dl><p>After you choose, the result box explains whether you were right and why. Read it before pressing Continue.</p>"}
+ ],
+ docs:[
+  {t:null,h:'Step 2: Document completeness',b:'<p>After the opening meeting, the auditor sends a <b>document request list</b>. These documents are the evidence used for testing. If any are missing, testing is incomplete and the conclusion may be wrong.</p>'},
+  {t:'[data-k="req"]',h:'What you asked for',b:"<p>These are the four documents that must be provided. Read them one by one and find each match in the auditee's folder.</p><p>Click the small box on the left to place a <b>tick mark</b> (✓) each time you find one. Real auditors put tick marks like this on their working papers too.</p>"},
+  {t:'[data-k="folder"]',h:"The auditee's folder",b:'<p>Each card is one document. Check two things:</p><ol><li><b>The name</b> must be on the request list.</li><li><b>The period</b> must be Jan – Jun 2026, the audit period. A document from another period proves nothing about this one.</li></ol><p>The cards are in random order, so match the names instead of just counting them.</p>'},
+  {t:'#bar',h:'Decide',b:'<p>Everything is there with the right period: choose <b>Documents complete</b>.</p><p>Something is missing or from another period: choose <b>Request the missing documents</b>. The auditee hands over the missing items and you check once more.</p>'}
+ ],
+ samples:[
+  {t:null,h:'Step 3: Sample testing',b:()=>`<p>Auditors don't check every transaction. They pick a few <b>samples</b> at random. This time there are ${C().samples.length} ${esc(L().units[CU()].doc)} samples.</p><p>Each sample is compared with <b>4 criteria</b>. A sample that breaks a criterion becomes a <b>finding</b>. In this game a sample breaks at most one criterion.</p><p>Let's go through the first sample together.</p>`},
+  {t:'[data-k="crit"]',h:'Criteria C1 to C4',b:'<dl><dt>C1</dt><dd>The transaction date is inside the audit period.</dd><dt>C2</dt><dd>The approver has authority for that amount (authorization matrix).</dd><dt>C3</dt><dd>Supporting evidence such as a receipt or invoice is attached.</dd><dt>C4</dt><dd>The amount on the document equals the amount in the system.</dd></dl>'},
+  {t:'[data-k="s0-tgl"]',h:'C1: Check the date',b:()=>`<p>The first sample is dated <b>${fd(C().samples[0].date)}</b>. The audit period is 1 Jan – 30 Jun 2026.</p><p>A date outside that range, such as October 2025, means the transaction is outside the audited period: a C1 violation.</p>`},
+  {t:'[data-k="s0-ttd"]',h:'C2: Check the approval',b:()=>{const s=C().samples[0];return `<p>This sample is worth <b>${rp(s.val)}</b>, so the authorization matrix requires approval by at least a <b>${role(needRole(s.val))}</b>.</p>${MX.en}<p>A higher position may approve. A lower position, or no signature at all, is a C2 violation.</p>`}},
+  {t:'[data-k="s0-lamp"]',h:'C3: Check the evidence',b:'<p>A transaction without a receipt or invoice cannot be proven to have happened. If the Attachment line shows "—", that is a C3 violation.</p>'},
+  {t:'[data-k="s0-nd"],[data-k="s0-ns"]',h:'C4: Compare the two amounts',b:'<p>Compare the <b>document amount</b> with the <b>system amount</b> digit by digit. Any difference, however small, can mean a data-entry error or manipulation, so it is a C4 violation.</p>'},
+  {t:'[data-k="s0-chips"]',h:'Record the result',b:'<p>After checking all four criteria, choose <b>Compliant</b> if nothing is broken, or pick the criterion that is broken.</p><p>Repeat for every sample. <b>Save working paper</b> becomes available once every sample is rated.</p>'}
+ ],
+ event:[
+  {t:'#bubble',h:'Step 4: Integrity test',b:'<p>Auditees sometimes try to influence the result: offering a gift, asking for a finding to be removed, or rejecting a finding without evidence.</p><p>An auditor must keep their <b>integrity</b> and <b>objectivity</b>. Only evidence decides the audit result.</p>'},
+  {t:'#bar',h:'How to respond',b:'<dl><dt>Offered a gift</dt><dd>Politely refuse and report it to the Ethics Officer, whatever its value, before or after the report is issued.</dd><dt>Asked to drop a finding</dt><dd>Refuse. A finding changes only with new evidence.</dd><dt>Auditee disagrees</dt><dd>Record their response in the report. The finding stays if the evidence is solid.</dd></dl>'}
+ ],
+ opinion:[
+  {t:'[data-k="sum"]',h:'Step 5: Draw the conclusion',b:'<p>This is your working paper summary: ✓ means compliant, ⓧ means a finding.</p><p>The audit conclusion must follow the working paper, not personal impressions or a good relationship with the auditee.</p>'},
+  {t:'[data-k="guide-op"]',h:'Choose the opinion',b:'<dl><dt>Satisfactory</dt><dd>No findings. Controls work well.</dd><dt>Needs improvement</dt><dd>One finding. A limited weakness that must be fixed.</dd><dt>Unsatisfactory</dt><dd>Two or more findings. A significant weakness.</dd></dl><p>After the opinion, the closing meeting is held and the auditee prepares a follow-up plan.</p>'}
+ ]
+};
+ID.guide=[
+ ['Alur audit',`<h3>Apa itu audit internal?</h3><p>Audit internal adalah pemeriksaan oleh tim di dalam perusahaan sendiri, biasanya disebut <b>SPI</b> (Satuan Pengawasan Internal). Tujuannya memastikan setiap unit bekerja sesuai aturan, risikonya terkendali, dan laporannya bisa dipercaya. Hasilnya dilaporkan ke direksi dan Komite Audit.</p>
+  <h3>Alur lengkap</h3><ol class="flow"><li><b>Perencanaan.</b> SPI memilih unit yang diaudit berdasarkan risiko, dicatat dalam rencana audit tahunan.</li><li><b>Penugasan.</b> Kepala SPI menerbitkan surat tugas berisi auditor, unit, lingkup, periode, dan jadwal.</li><li><b>Opening meeting.</b> Auditor bertemu auditee untuk menjelaskan tujuan dan jadwal, lalu meminta dokumen.</li><li><b>Pengumpulan bukti.</b> Auditee menyerahkan dokumen; auditor mengecek kelengkapannya.</li><li><b>Pengujian.</b> Auditor memilih sampel dan membandingkannya dengan kriteria.</li><li><b>Temuan &amp; simpulan.</b> Pelanggaran dicatat di kertas kerja, lalu ditarik opini.</li><li><b>Exit meeting &amp; laporan.</b> Temuan disampaikan, tanggapan auditee dicatat, laporan diterbitkan.</li><li><b>Tindak lanjut.</b> Auditee memperbaiki; SPI memantau sampai tuntas.</li></ol><p>Game ini melatih langkah 2 sampai 7.</p>
+  <h3>Siapa saja yang terlibat</h3><dl><dt>Auditor (kamu)</dt><dd>Memeriksa dan menyimpulkan berdasarkan bukti.</dd><dt>Auditee</dt><dd>Unit yang diperiksa.</dd><dt>Kepala SPI</dt><dd>Menugaskan auditor dan menandatangani surat tugas.</dd><dt>Ketua Tim</dt><dd>Menerima laporan konflik kepentingan dan mengatur ulang penugasan.</dd><dt>QA</dt><dd>Quality Assurance: memeriksa apakah auditor mengikuti prosedur. Di game ini, 3 catatan QA berarti audit dihentikan.</dd></dl>`],
+ ['1 · Surat tugas',`<h3>Tujuan</h3><p>Memastikan audit punya dasar resmi dan auditornya netral.</p><h3>Yang dicek</h3><table class="mx"><tr><th>Bagian</th><th>Harus</th><th>Kalau salah</th></tr><tr><td>Jadwal</td><td>Sama dengan tanggal hari ini</td><td>Tunda audit</td></tr><tr><td>Auditee</td><td>Sama dengan unit tamu</td><td>Tunda audit</td></tr><tr><td>Kepala SPI</td><td>Sudah tanda tangan</td><td>Tunda audit</td></tr><tr><td>Riwayat kerjamu</td><td>Bukan dari unit tamu dalam 12 bulan terakhir</td><td>Laporkan konflik</td></tr></table>
+  <h3>Contoh</h3><p><b>Benar:</b> Surat tugas untuk Unit Gudang, jadwal 13 Jul 2026, sudah ditandatangani. Hari ini 13 Jul, tamu dari Gudang, kamu dulu di Keuangan. Mulai opening meeting.</p><p><b>Salah:</b> Kamu dulu staf Pengadaan sampai Desember 2025, lalu tetap mengaudit Pengadaan. Kamu bisa saja menilai pekerjaanmu sendiri, sehingga hasilnya tidak objektif.</p>
+  <h3>Akibat jika dilanggar</h3><p>Audit tanpa surat tugas sah tidak punya dasar hukum, dan audit oleh auditor yang punya konflik kepentingan dapat dibatalkan seluruhnya.</p>`],
+ ['2 · Dokumen',`<h3>Tujuan</h3><p>Memastikan semua bukti yang dibutuhkan untuk menguji sudah tersedia sebelum pengujian dimulai.</p><h3>Yang dicek</h3><ol><li>Setiap dokumen di daftar permintaan ada di map.</li><li>Periode dokumen sama dengan periode audit (Jan – Jun 2026).</li></ol>
+  <h3>Contoh</h3><p><b>Benar:</b> Map berisi keempat dokumen, semuanya periode Jan – Jun 2026. Lanjut uji sampel.</p><p><b>Salah:</b> Map berisi "Kartu stok" periode Jul – Des 2025, lalu auditor menganggap lengkap. Kartu stok itu tidak bisa dipakai menguji transaksi Maret 2026.</p>
+  <h3>Kalau tidak lengkap</h3><p>Catat kekurangannya dan minta dokumen susulan. Jangan lanjut menguji sebelum dokumen lengkap. Sebaliknya, jangan meminta ulang dokumen yang sudah ada karena memperlambat audit.</p>`],
+ ['3 · Uji sampel',`<h3>Tujuan</h3><p>Membuktikan apakah transaksi dijalankan sesuai aturan. Sampel dipilih acak supaya hasilnya mewakili seluruh transaksi.</p>
+  <h3>Cara membaca kartu sampel</h3><dl><dt>Nomor</dt><dd>Identitas transaksi.</dd><dt>Tanggal</dt><dd>Untuk K1.</dd><dt>Nilai dokumen &amp; sistem</dt><dd>Untuk K2 (besarnya nilai) dan K4 (harus sama).</dd><dt>Disetujui</dt><dd>Jabatan yang menandatangani, untuk K2.</dd><dt>Lampiran</dt><dd>Bukti pendukung, untuk K3.</dd></dl>
+  <h3>Kriteria</h3><dl><dt>K1 Periode</dt><dd>Tanggal 1 Jan – 30 Jun 2026. Contoh pelanggaran: 14 Nov 2025.</dd><dt>K2 Otorisasi</dt><dd>Lihat matriks di bawah. Contoh pelanggaran: Rp 120 juta disetujui Manajer.</dd><dt>K3 Bukti</dt><dd>Lampiran harus ada. Contoh pelanggaran: Lampiran "—".</dd><dt>K4 Nilai</dt><dd>Nilai dokumen = nilai sistem. Contoh pelanggaran: Rp 48.300.000 vs Rp 51.300.000.</dd></dl>${MX.id}
+  <h3>Urutan kerja yang disarankan</h3><ol><li>Cek tanggal (K1).</li><li>Cek lampiran (K3).</li><li>Bandingkan dua nilai (K4).</li><li>Tentukan jabatan minimal dari nilai, lalu bandingkan dengan yang menyetujui (K2).</li><li>Tidak ada masalah? Pilih Sesuai.</li></ol>`],
+ ['4 · Integritas',`<h3>Tujuan</h3><p>Menjaga hasil audit tetap objektif walaupun ada tekanan atau bujukan dari auditee.</p>
+  <h3>Kode etik auditor internal</h3><dl><dt>Integritas</dt><dd>Jujur dan tidak bisa disuap.</dd><dt>Objektivitas</dt><dd>Menilai berdasarkan bukti, bebas dari pengaruh.</dd><dt>Kerahasiaan</dt><dd>Informasi audit tidak dibocorkan.</dd><dt>Kompetensi</dt><dd>Bekerja sesuai keahlian dan prosedur.</dd></dl>
+  <h3>Situasi dan sikap yang benar</h3><table class="mx"><tr><th>Situasi</th><th>Sikap benar</th><th>Kenapa</th></tr><tr><td>Diberi parsel atau voucher</td><td>Tolak dengan sopan, laporkan ke Unit Pengendalian Gratifikasi</td><td>Hadiah dari pihak yang diaudit adalah gratifikasi, kapan pun diterima</td></tr><tr><td>Diminta hapus temuan</td><td>Tolak, temuan tetap dicatat</td><td>Temuan hanya berubah karena bukti</td></tr><tr><td>Auditee tidak setuju</td><td>Catat tanggapan auditee di laporan</td><td>Auditee berhak menanggapi, tapi tidak bisa menghapus temuan tanpa bukti</td></tr></table>`],
+ ['5 · Simpulan',`<h3>Tujuan</h3><p>Menyampaikan kesimpulan yang didukung kertas kerja.</p><h3>Panduan opini di game ini</h3><table class="mx"><tr><th>Jumlah temuan</th><th>Opini</th></tr><tr><td>0</td><td>Memadai</td></tr><tr><td>1</td><td>Perlu perbaikan</td></tr><tr><td>2 atau lebih</td><td>Tidak memadai</td></tr></table>
+  <h3>Isi sebuah temuan di laporan sungguhan</h3><dl><dt>Kondisi</dt><dd>Apa yang ditemukan.</dd><dt>Kriteria</dt><dd>Aturan yang seharusnya berlaku.</dd><dt>Sebab</dt><dd>Kenapa terjadi.</dd><dt>Akibat</dt><dd>Risiko atau kerugiannya.</dd><dt>Rekomendasi</dt><dd>Perbaikan yang disarankan.</dd></dl>
+  <h3>Setelah opini</h3><p>Exit meeting digelar untuk menyepakati temuan. Auditee menyusun rencana tindak lanjut beserta tenggat waktunya, dan SPI memantau sampai perbaikan selesai.</p>`]
+];
+EN.guide=[
+ ['Audit flow',`<h3>What is internal audit?</h3><p>Internal audit is a review carried out by a team inside the company. Its purpose is to make sure every unit follows the rules, its risks are under control, and its reports can be trusted. Results are reported to the board of directors and the Audit Committee.</p>
+  <h3>The full flow</h3><ol class="flow"><li><b>Planning.</b> Internal Audit picks units to audit based on risk, recorded in the annual audit plan.</li><li><b>Assignment.</b> The Head of Internal Audit issues an assignment letter naming the auditor, unit, scope, period and date.</li><li><b>Opening meeting.</b> The auditor meets the auditee to explain the objective and schedule, then requests documents.</li><li><b>Evidence gathering.</b> The auditee hands over documents; the auditor checks they are complete.</li><li><b>Testing.</b> The auditor picks samples and compares them with the criteria.</li><li><b>Findings &amp; conclusion.</b> Violations are recorded in the working paper and an opinion is drawn.</li><li><b>Closing meeting &amp; report.</b> Findings are presented, the auditee's response is recorded, the report is issued.</li><li><b>Follow-up.</b> The auditee fixes the issues; Internal Audit monitors until they are resolved.</li></ol><p>This game trains steps 2 to 7.</p>
+  <h3>Who is involved</h3><dl><dt>Auditor (you)</dt><dd>Tests and concludes based on evidence.</dd><dt>Auditee</dt><dd>The unit being audited.</dd><dt>Head of Internal Audit</dt><dd>Assigns auditors and signs assignment letters.</dd><dt>Team Lead</dt><dd>Receives conflict-of-interest reports and reassigns the work.</dd><dt>QA</dt><dd>Quality Assurance: checks that auditors follow procedure. In this game, 3 QA notes stop the audit.</dd></dl>`],
+ ['1 · Assignment',`<h3>Purpose</h3><p>Make sure the audit has an official basis and the auditor is neutral.</p><h3>What to check</h3><table class="mx"><tr><th>Item</th><th>Must be</th><th>If wrong</th></tr><tr><td>Date</td><td>Same as today's date</td><td>Postpone</td></tr><tr><td>Auditee</td><td>Same as the visitor's unit</td><td>Postpone</td></tr><tr><td>Head of Internal Audit</td><td>Has signed</td><td>Postpone</td></tr><tr><td>Your work history</td><td>Not from the visitor's unit in the last 12 months</td><td>Report a conflict</td></tr></table>
+  <h3>Examples</h3><p><b>Right:</b> The letter is for the Warehouse unit, dated 13 Jul 2026, and signed. Today is 13 Jul, the visitor is from Warehouse, and you used to work in Finance. Start the opening meeting.</p><p><b>Wrong:</b> You were Procurement staff until December 2025 and still audit Procurement. You might end up judging your own work, so the result is not objective.</p>
+  <h3>Consequence of a violation</h3><p>An audit without a valid assignment letter has no formal basis, and an audit by an auditor with a conflict of interest can be voided entirely.</p>`],
+ ['2 · Documents',`<h3>Purpose</h3><p>Make sure all the evidence needed for testing is available before testing begins.</p><h3>What to check</h3><ol><li>Every document on the request list is in the folder.</li><li>Each document covers the audit period (Jan – Jun 2026).</li></ol>
+  <h3>Examples</h3><p><b>Right:</b> The folder has all four documents, all for Jan – Jun 2026. Move on to sample testing.</p><p><b>Wrong:</b> The folder has "Stock cards" for Jul – Dec 2025 and the auditor treats it as complete. Those stock cards cannot be used to test a March 2026 transaction.</p>
+  <h3>If something is missing</h3><p>Note what is missing and request it. Don't start testing until the documents are complete. On the other hand, don't re-request documents that are already there, because it slows the audit down.</p>`],
+ ['3 · Sampling',`<h3>Purpose</h3><p>Prove whether transactions follow the rules. Samples are picked at random so the result represents all transactions.</p>
+  <h3>Reading a sample card</h3><dl><dt>Number</dt><dd>The transaction ID.</dd><dt>Date</dt><dd>For C1.</dd><dt>Document &amp; system amount</dt><dd>For C2 (size of the amount) and C4 (must match).</dd><dt>Approved by</dt><dd>The position that signed, for C2.</dd><dt>Attachment</dt><dd>Supporting evidence, for C3.</dd></dl>
+  <h3>Criteria</h3><dl><dt>C1 Period</dt><dd>Dated 1 Jan – 30 Jun 2026. Violation example: 14 Nov 2025.</dd><dt>C2 Approval</dt><dd>See the matrix below. Violation example: Rp 120 million approved by a Manager.</dd><dt>C3 Evidence</dt><dd>An attachment must exist. Violation example: Attachment "—".</dd><dt>C4 Amount</dt><dd>Document amount = system amount. Violation example: Rp 48,300,000 vs Rp 51,300,000.</dd></dl>${MX.en}
+  <h3>Suggested order</h3><ol><li>Check the date (C1).</li><li>Check the attachment (C3).</li><li>Compare the two amounts (C4).</li><li>Work out the minimum position from the amount and compare it with the approver (C2).</li><li>Nothing wrong? Choose Compliant.</li></ol>`],
+ ['4 · Integrity',`<h3>Purpose</h3><p>Keep the audit result objective even under pressure or temptation from the auditee.</p>
+  <h3>Internal auditor code of ethics</h3><dl><dt>Integrity</dt><dd>Honest and impossible to bribe.</dd><dt>Objectivity</dt><dd>Judges on evidence, free from influence.</dd><dt>Confidentiality</dt><dd>Audit information is not leaked.</dd><dt>Competence</dt><dd>Works within their expertise and the procedure.</dd></dl>
+  <h3>Situations and the right response</h3><table class="mx"><tr><th>Situation</th><th>Right response</th><th>Why</th></tr><tr><td>Offered a hamper or voucher</td><td>Politely refuse and report it to the Ethics Officer</td><td>A gift from the audited party is a conflict of interest, whenever it is accepted</td></tr><tr><td>Asked to drop a finding</td><td>Refuse; the finding stays on record</td><td>Findings change only with evidence</td></tr><tr><td>Auditee disagrees</td><td>Record the auditee's response in the report</td><td>The auditee may respond, but cannot remove a finding without evidence</td></tr></table>`],
+ ['5 · Conclusion',`<h3>Purpose</h3><p>Deliver a conclusion supported by the working paper.</p><h3>Opinion guide in this game</h3><table class="mx"><tr><th>Number of findings</th><th>Opinion</th></tr><tr><td>0</td><td>Satisfactory</td></tr><tr><td>1</td><td>Needs improvement</td></tr><tr><td>2 or more</td><td>Unsatisfactory</td></tr></table>
+  <h3>What a real audit finding contains</h3><dl><dt>Condition</dt><dd>What was found.</dd><dt>Criteria</dt><dd>The rule that should apply.</dd><dt>Cause</dt><dd>Why it happened.</dd><dt>Effect</dt><dd>The risk or loss.</dd><dt>Recommendation</dt><dd>The suggested fix.</dd></dl>
+  <h3>After the opinion</h3><p>A closing meeting is held to agree on the findings. The auditee prepares a follow-up plan with deadlines, and Internal Audit monitors it until the fixes are done.</p>`]
+];
+
+/* ======================= TOUR & GUIDE ENGINE ======================= */
+const seenMem=new Set();
+const seen=k=>seenMem.has(k)||store.get(k)==='seen';
+const markSeen=k=>{seenMem.add(k);store.set(k,'seen')};
+let tour=null, guideTab=-1;
+function openTour(kind,phase){
+  const all=kind==='main'?L().tour:(L().pt[phase]||[]);
+  const st=all.map((x,i)=>i).filter(i=>!all[i].t||document.querySelector(all[i].t)); if(!st.length) return;
+  closeGuide(); if(kind==='main') markSeen('ma-tour'); tour={kind,phase,idx:st,i:0}; drawTour();
+}
+function tourSteps(){return tour.kind==='main'?L().tour:L().pt[tour.phase]}
+function closeTour(){
+  const k=tour&&tour.kind; tour=null; $('tour').innerHTML='';
+  if(k==='main'){ markSeen('ma-tour'); maybePhaseTour(); }
+}
+function maybePhaseTour(){
+  if(tour||!S||S.over||S.fb||guideTab>=0) return;
+  if(!seen('ma-tour')) return;
+  const k='ma-ph-'+S.phase; if(!L().pt[S.phase]||seen(k)) return;
+  markSeen(k); openTour('phase',S.phase);
+}
+function drawTour(){
+  const T=L().ui, st=tourSteps()[tour.idx[tour.i]], last=tour.i===tour.idx.length-1;
+  if(st.t==='#hint'&&!HINT_ON){HINT_ON=true;applyHint();}
+  const el=st.t?document.querySelector(st.t):null;
+  if(el) el.scrollIntoView({block:'center',behavior:'instant'});
+  const body=typeof st.b==='function'?st.b():st.b;
+  const nav=`<div class="nav"><span class="count">${tour.i+1} / ${tour.idx.length}</span>${tour.i>0?`<button type="button" data-tour="prev">${T.tBack}</button>`:`<button type="button" data-tour="skip">${T.tSkip}</button>`}<button type="button" class="pri" data-tour="next">${last?(tour.kind==='main'?T.tStart:T.tGot):T.tNext}</button></div>`;
+  $('tour').innerHTML=`<div class="tour" role="dialog" aria-modal="true" aria-labelledby="tour-h">${el?'<div class="spot"></div>':'<div class="dim"></div>'}<div class="tip ${el?'':'center'}" tabindex="-1"><h3 id="tour-h">${st.h}</h3>${body}${nav}</div></div>`;
+  placeTour(); $('tour').querySelector('.tip').focus({preventScroll:true});
+}
+function placeTour(){
+  if(!tour) return; const st=tourSteps()[tour.idx[tour.i]]; if(!st.t) return;
+  const els=[...document.querySelectorAll(st.t)]; if(!els.length) return;
+  const rs=els.map(e=>e.getBoundingClientRect());
+  const r={left:Math.min(...rs.map(x=>x.left)),top:Math.min(...rs.map(x=>x.top)),right:Math.max(...rs.map(x=>x.right)),bottom:Math.max(...rs.map(x=>x.bottom))};
+  const sp=$('tour').querySelector('.spot'), tip=$('tour').querySelector('.tip'); if(!sp||!tip) return;
+  const pad=6; Object.assign(sp.style,{left:(r.left-pad)+'px',top:(r.top-pad)+'px',width:(r.right-r.left+pad*2)+'px',height:(r.bottom-r.top+pad*2)+'px'});
+  const th=tip.offsetHeight, tw=tip.offsetWidth, vh=innerHeight, vw=innerWidth;
+  let top = r.bottom+14+th<vh ? r.bottom+14 : r.top-14-th>0 ? r.top-14-th : vh-th-16;
+  top=Math.max(16,top);
+  const left=Math.min(Math.max(16,(r.left+r.right)/2-tw/2),vw-tw-16);
+  tip.style.top=top+'px'; tip.style.left=left+'px';
+}
+function openGuide(i){
+  guideTab=i; const T=L().ui, G=L().guide;
+  const tabs=G.map(([t],j)=>`<button type="button" role="tab" aria-selected="${j===i}" data-gtab="${j}">${t}</button>`).join('');
+  $('guide').innerHTML=`<div class="gwrap" data-gclose="1"><div class="gcard" role="dialog" aria-modal="true" aria-labelledby="g-h"><div class="ghead"><h2 id="g-h">${T.gHead}</h2><button type="button" class="gx" data-gclose="1" aria-label="${T.gCloseAria}">${T.gClose}</button></div><div class="gtabs" role="tablist">${tabs}</div><div class="gbody" tabindex="-1">${G[i][1]}</div></div></div>`;
+  $('guide').querySelector('.gbody').focus({preventScroll:true});
+}
+function closeGuide(){ const was=guideTab>=0; guideTab=-1; $('guide').innerHTML=''; if(was) setTimeout(maybePhaseTour,0); }
+function applyHint(){$('hint').hidden=!HINT_ON;$('hint-btn').setAttribute('aria-pressed',String(HINT_ON));store.set('ma-hints',HINT_ON?'on':'off')}
+
+/* ======================= RENDER ======================= */
+function applyStatic(){
+  const X=L(), B=X.lbl;
+  document.documentElement.lang=LANG; document.title=X.title;
+  $('t-h1').textContent=X.title; $('t-auditee').textContent=B.auditee; $('t-qa').textContent=B.qa; $('hud-qa').setAttribute('aria-label',B.qaAria);
+  $('tour-btn').textContent=B.tour; $('guide-btn').textContent=B.guide; $('hint-btn').textContent=B.hint; $('restart').textContent=B.restart;
+  $('t-cal').setAttribute('aria-label',B.cal); $('t-poster').innerHTML=B.poster; $('t-sopH').textContent=B.sopH; $('t-sopP').textContent=B.sopP;
+  $('steps').innerHTML=X.steps.map(([b,t])=>`<li><span><b>${b}</b>${t}</span></li>`).join('');
+  document.querySelectorAll('[data-lang]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.lang===LANG)));
+}
+function say(text){const c=cust();$('bubble').innerHTML=`<small>${esc(c.name)} · ${uN(c.u)}</small>${text}`}
+function paper(title,body,cls='',key){return `<article class="paper ${cls}"${key?` data-k="${key}"`:''}><h3>${title}</h3>${body}</article>`}
+function row(k,v,key){return `<div class="row"${key?` data-k="${key}"`:''}><span>${k}</span><span>${v}</span></div>`}
+const acts=list=>list.map(([id,l,s])=>act(id,l,s)).join('');
+function act(id,label,sub,dis){return `<button class="act" type="button" data-act="${id}" ${dis?'disabled':''}>${label}<small>${sub}</small></button>`}
+function shuffleStable(a,seed){let h=0;for(const ch of seed)h=(h*31+ch.charCodeAt(0))|0;return a.map((x,i)=>[x,Math.abs(Math.sin(h+i))]).sort((p,q)=>p[1]-q[1]).map(p=>p[0])}
+
+function renderHud(){
+  const X=L();
+  $('hud-n').textContent=Math.min(S.idx+1,N_CUST)+'/'+N_CUST;
+  $('hud-qa').innerHTML=Array.from({length:MAX_QA},(_,i)=>`<i class="${i<S.qa?'on':''}"></i>`).join('');
+  const t=S.today, dt=new Date(t.y,t.m-1,t.d);
+  $('cal-d').textContent=t.d; $('cal-w').textContent=X.DAY[dt.getDay()]; $('cal-m').textContent=X.MON[t.m-1].toUpperCase()+' '+t.y;
+  const cur=STEP_OF[S.phase]??-1;
+  [...$('steps').children].forEach((li,i)=>{li.className=i===cur?'cur':i<cur?'done':''});
+  $('queue').innerHTML=S.cust.map((c,i)=>{const r=S.results[i];return `<i class="${i===S.idx&&!S.over?'now':r===true?'ok':r===false?'bad':''}">${uN(c.u)}</i>`}).join('');
+}
+
+function render(){
+  renderHud();
+  const X=L(), T=X.ui, c=cust(), u=X.units[c.u];
+  $('person').innerHTML=personSVG(c.look)+`<div class="badge" data-k="badge"><b>${esc(c.name)}</b><span>${X.jabs[c.jab]} · ${X.unitOf(u.name)}</span></div>`;
+  let papers='', bar='';
+  if(S.phase==='st'){
+    const P=T.st;
+    say(P.say(u.name));
+    papers+=paper(P.title,
+      row(P.no,X.stNo(c.stN))+row(P.to,P.toV)+row(P.aud,X.unitOf(uN(c._st.unit)),'st-unit')+row(P.scope,esc(u.proses))+row(P.period,'1 Jan – 30 Jun 2026')+row(P.date,fd(c._st.date),'st-jadwal')+
+      row(P.head,c.st==='ttd'?`<span class="sig none">${P.unsigned}</span>`:'<span class="sig">H. Siregar</span>','st-ttd'),'tilt-l');
+    papers+=paper(P.card,row(P.name,P.nameV)+row(P.pos,P.posV)+row(P.hist,P.histV(uN(S.home)),'aud-riwayat')+row(P.joined,'Jan 2026'),'tilt-r');
+    bar=acts(P.acts);
+  }
+  if(S.phase==='docs'){
+    const P=T.docs;
+    say(P.say(c._docFixed));
+    const list=u.req.map((d,i)=>`<li><button class="tick" type="button" data-tick="${i}" aria-label="${esc(P.tick(d))}">${S.ticks[i]?'✓':''}</button><span>${esc(d)}</span></li>`).join('');
+    papers+=paper(P.title,`<ul data-k="req">${list}</ul><p style="margin:8px 0 0;color:var(--paper-mute)">${P.note}</p>`,'tilt-l');
+    const given=u.req.map((d,i)=>{
+      if(c.doc&&!c._docFixed&&c.doc.i===i){ if(c.doc.type==='missing') return null; return {i,h:`<div class="fdoc warn">${esc(d)}<em>${P.pBad}</em></div>`}; }
+      return {i,h:`<div class="fdoc">${esc(d)}<em>${P.pOk}</em></div>`};
+    }).filter(Boolean);
+    papers+=paper(P.folder,`<div class="folder" data-k="folder">${shuffleStable(given,c.name).map(g=>g.h).join('')}</div>`,'tilt-r');
+    bar=acts(P.acts);
+  }
+  if(S.phase==='samples'){
+    const P=T.smp;
+    say(P.say(c.samples.length,esc(u.doc)));
+    papers+=paper(P.crit,`<ul class="crit" data-k="crit">${P.critList}</ul>`,'');
+    c.samples.forEach((s,i)=>{
+      const chips=MARK_KEYS.map(k=>`<button type="button" class="chip ${k==='ok'?'okc':''}" data-mark="${i}:${k}" aria-pressed="${S.marks[i]===k}">${X.marks[k]}</button>`).join('');
+      papers+=paper(esc(u.doc),row(P.no,sNo(c.u,s.num))+row(P.date,fd(s.date),'s'+i+'-tgl')+row(P.vd,rp(s.val),'s'+i+'-nd')+row(P.vs,rp(s.sys),'s'+i+'-ns')+row(P.appr,s.role<0?`<span class="sig none">${P.noSig}</span>`:`<span class="sig">${role(s.role)}</span>`,'s'+i+'-ttd')+row(P.att,s.att?P.attY:'—','s'+i+'-lamp')+`<div class="chips" data-k="s${i}-chips">${chips}</div>`,'sample '+(i%2?'tilt-r':'tilt-l'));
+    });
+    const all=c.samples.every((_,i)=>S.marks[i]);
+    bar=act('save',P.save,all?P.ready:P.notReady,!all);
+  }
+  if(S.phase==='event'){
+    const P=T.ev, f=S.recorded;
+    const fi=c.samples.findIndex((s,i)=>S.marks[i]!=='ok'), fno=fi>=0?esc(sNo(c.u,c.samples[fi].num)):'';
+    if(c.event==='gift'){ say(P.giftSay); papers+=paper(P.desk,`<p style="margin:0">${P.giftTxt}</p>`,'tilt-l'); bar=acts(P.giftActs); }
+    else if(c.event==='pressure'){ say(P.pressSay(fno)); papers+=paper(P.wp,`<p style="margin:0">${P.pressTxt(f,fno)}</p>`,'tilt-l'); bar=acts(P.pressActs); }
+    else { say(P.dispSay(fno)); papers+=paper(P.wp,`<p style="margin:0">${P.dispTxt(f)}</p>`,'tilt-l'); bar=acts(P.dispActs); }
+  }
+  if(S.phase==='opinion'){
+    const P=T.op;
+    say(P.say);
+    const list=c.samples.map((s,i)=>`<li><span class="sig" style="font-size:1.1rem;min-width:22px">${S.marks[i]==='ok'?'✓':'ⓧ'}</span><span>${esc(sNo(c.u,s.num))} — ${S.marks[i]==='ok'?P.ok:X.kdesc[S.marks[i]]}</span></li>`).join('');
+    papers+=paper(P.sum,`<ul data-k="sum">${list}</ul><p style="margin:8px 0 0">${P.count(S.recorded)}</p>`,'tilt-l');
+    papers+=paper(P.guide,P.rows.map(([a,b])=>row(a,b)).join(''),'tilt-r','guide-op');
+    bar=acts(P.acts);
+  }
+  const H=X.hints[S.phase];
+  $('hint').hidden=!HINT_ON;
+  if(H) $('hint').innerHTML=`<b>${H[0]}</b>${H[1]}<div class="hint-acts"><button type="button" data-hint="tour">${T.hintShow}</button><button type="button" data-hint="guide">${T.hintFull}</button></div>`;
+  $('papers').innerHTML=papers;
+  $('bar').innerHTML=S.fb?verdictHTML():bar;
+  if(S.over) renderEnd(); else $('end').innerHTML='';
+  setTimeout(maybePhaseTour,0);
+}
+const msgHTML=(key,args)=>L().msg[key](args||{});
+function verdictHTML(){
+  const f=S.fb, T=L().ui;
+  return `<div class="verdict ${f.ok?'':'bad'}"><h4>${f.ok?T.vOk:T.vBad}</h4>${msgHTML(f.key,f.args)}</div>
+   <button class="next" type="button" data-act="next">${T[f.label||'next']}</button>`;
+}
+
+/* ======================= RULES ======================= */
+function fb(ok,key,args,then,label){
+  S.fb={ok,key,args,then,label};
+  if(!ok) S.qa++;
+  S.log.push({c:S.idx, step:STEP_OF[S.phase], ok, key, args});
+  if(!ok) S.results[S.idx]=false;
+}
+function finishCustomer(){ if(S.results[S.idx]!==false) S.results[S.idx]=true; return 'leave'; }
+const lastLbl=()=>S.idx+1<N_CUST?'call':'results';
+
+function decide(a){
+  const c=cust();
+  if(S.phase==='st'){
+    const issue=c.conflict?'conflict':c.st?'postpone':'go';
+    const why={type:c.st,stDate:c._st.date,today:S.today,stUnit:c._st.unit,unit:c.u};
+    if(a===issue){
+      if(a==='go') return fb(true,'st_go',{},'docs');
+      if(a==='conflict') return fb(true,'st_conf_ok',{home:S.home},finishCustomer(),'call');
+      return fb(true,'st_post_ok',why,finishCustomer(),'call');
+    }
+    const end=finishCustomer();
+    if(issue==='conflict') return fb(false,'st_conf_miss',{home:S.home},end,'call');
+    if(issue==='postpone') return fb(false,'st_post_miss',why,end,'call');
+    return a==='conflict'?fb(false,'st_false_conf',{home:S.home,unit:c.u},end,'call'):fb(false,'st_false_post',{},end,'call');
+  }
+  if(S.phase==='docs'){
+    const bad=c.doc&&!c._docFixed, what=c.doc?{type:c.doc.type,i:c.doc.i,unit:c.u}:{};
+    if(a==='request'&&bad){ c._docFixed=true; S.ticks=[]; return fb(true,'docs_req_ok',what,'docs'); }
+    if(a==='complete'&&!bad) return fb(true,'docs_ok',{},'samples');
+    if(a==='complete') return fb(false,'docs_miss',what,'samples');
+    return fb(false,'docs_false',{},'samples');
+  }
+  if(S.phase==='samples'){
+    S.recorded=S.marks.filter(m=>m!=='ok').length;
+    const wrong=c.samples.map((s,i)=>({num:s.num,m:S.marks[i],t:s.truth})).filter(x=>x.m!==x.t);
+    const nextP=(c.event&&(c.event==='gift'||S.recorded>0))?'event':'opinion';
+    if(!wrong.length) return fb(true,'smp_ok',{n:S.recorded},nextP);
+    return fb(false,'smp_bad',{wrong,unit:c.u},nextP);
+  }
+  if(S.phase==='event'){
+    const ev=c.event;
+    if(ev==='gift') return a==='refuse'?fb(true,'gift_ok',{},'opinion'):fb(false,'gift_bad',{},'opinion');
+    if(ev==='pressure') return a==='refuse'?fb(true,'press_ok',{},'opinion'):fb(false,'press_bad',{},'opinion');
+    return a==='note'?fb(true,'disp_ok',{},'opinion'):fb(false,a==='stop'?'disp_stop':'disp_bad',{},'opinion');
+  }
+  if(S.phase==='opinion'){
+    const right=Math.min(2,S.recorded), op=+a.slice(2), end=finishCustomer();
+    return op===right?fb(true,'op_ok',{op,n:S.recorded},end,lastLbl()):fb(false,'op_bad',{right,n:S.recorded},end,lastLbl());
+  }
+}
+
+function next(){
+  const then=S.fb.then; S.fb=null;
+  if(S.qa>=MAX_QA){ S.over='lose'; render(); return; }
+  if(then==='leave'){
+    if(S.idx+1>=N_CUST){ S.over='win'; render(); return; }
+    const p=$('person'); p.classList.add('out');
+    setTimeout(()=>{ S.idx++; S.phase='st'; S.marks=[]; S.ticks=[]; S.recorded=0; render(); p.classList.remove('out'); },matchMedia('(prefers-reduced-motion: reduce)').matches?0:420);
+    $('bar').innerHTML=''; return;
+  }
+  S.phase=then; render();
+}
+
+function renderEnd(){
+  const X=L(), T=X.ui, win=S.over==='win', okN=S.results.filter(r=>r===true).length;
+  const strip=h=>h.replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim();
+  const items=S.log.map(l=>{const c=S.cust[l.c];return `<li><span class="${l.ok?'v':'x'}">${l.ok?'✓':'✗'} ${X.stepNames[l.step]}</span> — ${esc(c.name)} · ${uN(c.u)}. ${esc(strip(msgHTML(l.key,l.args)))}</li>`}).join('');
+  $('end').innerHTML=`<div class="end" role="dialog" aria-modal="true" aria-labelledby="end-h"><div class="card">
+    <h2 id="end-h">${win?T.endWin:T.endLose}</h2>
+    <p class="big">${T.endBig(okN,N_CUST,S.qa)}</p>
+    <p>${win?T.endPWin:T.endPLose}</p>
+    <ol>${items}</ol>
+    <button class="next" type="button" data-act="restart">${T.again}</button></div></div>`;
+}
+
+function setLang(l){
+  if(l===LANG) return; LANG=l; store.set('ma-lang',l);
+  applyStatic(); render(); applyHint();
+  if(tour) drawTour();
+  if(guideTab>=0) openGuide(guideTab);
+}
+
+/* ======================= EVENTS ======================= */
+document.addEventListener('click',e=>{
+  const lb=e.target.closest('[data-lang]'); if(lb){ setLang(lb.dataset.lang); return; }
+  const g=e.target.closest('[data-gtab],[data-gclose]');
+  if(g){ if(g.dataset.gtab!==undefined){ openGuide(+g.dataset.gtab); return; } if(e.target===g){ closeGuide(); return; } }
+  const h=e.target.closest('[data-hint]');
+  if(h){ if(h.dataset.hint==='tour') openTour('phase',S.phase); else openGuide((STEP_OF[S.phase]??-1)+1); return; }
+  const b=e.target.closest('[data-tour]');
+  if(b&&tour){ const a=b.dataset.tour;
+    if(a==='skip') return closeTour(); if(a==='prev'){tour.i--;return drawTour()}
+    if(tour.i===tour.idx.length-1) return closeTour(); tour.i++; return drawTour(); }
+  const t=e.target.closest('[data-act],[data-mark],[data-tick]'); if(!t) return;
+  if(t.dataset.tick!==undefined){ const i=+t.dataset.tick; S.ticks[i]=!S.ticks[i]; render(); return; }
+  if(t.dataset.mark){ const [i,k]=t.dataset.mark.split(':'); S.marks[+i]=k; render(); return; }
+  const a=t.dataset.act;
+  if(a==='restart'){ S=newRun(); render(); return; }
+  if(a==='next'){ next(); return; }
+  if(!S.fb&&!S.over){ decide(a); render(); }
+});
+document.addEventListener('keydown',e=>{ if(e.key!=='Escape') return; if(tour) closeTour(); else if(guideTab>=0) closeGuide(); });
+addEventListener('resize',placeTour); addEventListener('scroll',placeTour,{passive:true});
+$('restart').addEventListener('click',()=>{S=newRun();render()});
+$('tour-btn').addEventListener('click',()=>openTour('main'));
+$('guide-btn').addEventListener('click',()=>openGuide(0));
+$('hint-btn').addEventListener('click',()=>{HINT_ON=!HINT_ON;applyHint()});
+
+function start(data){
+  (data&&data.seen||[]).forEach(k=>seenMem.add(k));
+  if(data&&data.lang) LANG=data.lang;
+  S=(data&&data.S&&data.S.v===2)?data.S:newRun();
+  applyStatic(); render(); applyHint();
+  if(!seen('ma-tour')&&!S.over) openTour('main');
+}
+start({});
+})();
+</script>
+</body>
+</html>

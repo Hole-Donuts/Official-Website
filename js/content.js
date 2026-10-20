@@ -360,6 +360,16 @@ window.HD_CONTENT = {
     },
     projects: [
       {
+        title: "Internal Audit Simulation",
+        author: "Ihsan Mahendra",
+        client: "Internal audit training",
+        year: 2026,
+        image: "assets/gamification/internal-audit.webp",
+        link: "internal-audit/",
+        tags: ["Internal audit", "Compliance training", "Browser game"],
+        en: { summary: "A first-person internal auditor's desk game. Check the assignment letter and your independence, match the documents, test samples against four criteria, refuse gifts and pressure, then give the right opinion. Three mistakes and QA stops the audit, and every round brings new auditees. Plays in English and Bahasa Indonesia." },
+      },
+      {
         title: "Meja Kasir",
         author: "Ihsan Mahendra",
         client: "Retail SOP training",
