@@ -2040,6 +2040,10 @@ html.magicion-lock .game-panel:not(#magicion) {
   color: var(--white);
 }
 
+.footer a {
+  color: var(--white-dim);
+}
+
 
 /* 12. Responsive ------------------------------------------------------ */
 

@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MAGICION Privacy Policy · Holy Doughnut Studio</title>
+  <meta name="description" content="How the MAGICION mobile game handles your data: ads (AdMob), Firebase, the advertising ID, in-app purchases and how to delete your data.">
+  <meta name="theme-color" content="#0f0b29">
+  <link rel="canonical" href="https://hole-donuts.github.io/Official-Website/magicion/privacy/">
+  <link rel="icon" href="../../assets/favicon.ico" sizes="any">
+  <link rel="icon" type="image/png" sizes="32x32" href="../../assets/favicon-32.png">
+  <link rel="apple-touch-icon" href="../../assets/apple-touch-icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Stencil+Display:wght@900&family=Archivo:wght@400;700&display=swap">
+  <style>
+    :root {
+      --sky: #0f0b29;
+      --sky-2: #1a1446;
+      --line: #2a2163;
+      --white: #f6f7fb;
+      --white-dim: #b4b0d6;
+      --gold: #ffd25a;
+      --cyan: #14e6f2;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-padding-top: 24px; }
+    body {
+      margin: 0;
+      background: var(--sky);
+      color: var(--white);
+      font: 400 17px/1.65 "Archivo", system-ui, sans-serif;
+    }
+    a { color: var(--cyan); }
+    .wrap { max-width: 760px; margin: 0 auto; padding: 0 20px; }
+    header { padding: 40px 0 8px; border-bottom: 1px solid var(--line); }
+    .studio { display: inline-flex; align-items: center; gap: 12px; color: var(--white-dim); text-decoration: none; font-size: 15px; }
+    .studio img { width: 26px; height: auto; }
+    h1, h2 { font-family: "Big Shoulders Stencil Display", Impact, sans-serif; font-weight: 900; color: var(--gold); line-height: 1.05; letter-spacing: 0.01em; }
+    h1 { font-size: clamp(40px, 9vw, 64px); margin: 24px 0 8px; }
+    h2 { font-size: 30px; margin: 44px 0 10px; }
+    h3 { font-size: 18px; margin: 24px 0 4px; }
+    .meta { color: var(--white-dim); margin: 0 0 24px; }
+    .summary { background: var(--sky-2); border: 1px solid var(--line); border-radius: 12px; padding: 18px 22px; margin: 28px 0; }
+    .summary ul { margin: 8px 0 0; padding-left: 20px; }
+    nav.toc { margin: 24px 0; }
+    nav.toc ol { margin: 0; padding-left: 22px; columns: 2; column-gap: 32px; }
+    @media (max-width: 560px) { nav.toc ol { columns: 1; } }
+    table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 15px; }
+    th, td { text-align: left; vertical-align: top; padding: 10px 12px; border-bottom: 1px solid var(--line); }
+    th { color: var(--white-dim); font-weight: 700; }
+    .table-scroll { overflow-x: auto; }
+    .table-scroll table { min-width: 520px; }
+    code { background: var(--sky-2); padding: 1px 6px; border-radius: 4px; font-size: 0.92em; }
+    footer { margin-top: 56px; padding: 24px 0 40px; border-top: 1px solid var(--line); color: var(--white-dim); font-size: 15px; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap">
+      <a class="studio" href="../../#magicion"><img src="../../assets/logo.png" alt="" width="451" height="842">Holy Doughnut Studio</a>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <h1>MAGICION Privacy Policy</h1>
+    <p class="meta">Last updated: 29 October 2026</p>
+
+    <p>This policy explains what data the MAGICION mobile game (Android and iOS) collects, why, who it is shared with, and how you can delete it. MAGICION is made by Holy Doughnut Studio ("we", "us").</p>
+
+    <div class="summary">
+      <strong>The short version</strong>
+      <ul>
+        <li>You don't need an account to play. We never ask for your name, email or phone number in the game.</li>
+        <li>The game shows ads through Google AdMob and uses Google Firebase to count how the game is played and to report crashes.</li>
+        <li>These services use your device's advertising ID and similar identifiers. You can limit or reset that ID at any time.</li>
+        <li>Purchases are handled by Google Play or the App Store. We never see your card or payment details.</li>
+        <li>You can ask us to delete your data at any time (see <a href="#delete">Deleting your data</a>).</li>
+      </ul>
+    </div>
+
+    <nav class="toc" aria-label="Contents">
+      <ol>
+        <li><a href="#collect">Data we collect</a></li>
+        <li><a href="#ads">Ads (Google AdMob)</a></li>
+        <li><a href="#firebase">Google Firebase</a></li>
+        <li><a href="#ad-id">The advertising ID</a></li>
+        <li><a href="#purchases">In-app purchases</a></li>
+        <li><a href="#children">Children</a></li>
+        <li><a href="#retention">How long we keep data</a></li>
+        <li><a href="#delete">Deleting your data</a></li>
+        <li><a href="#rights">Your rights</a></li>
+        <li><a href="#contact">Contact</a></li>
+      </ol>
+    </nav>
+
+    <h2 id="collect">1. Data we collect</h2>
+    <p>MAGICION collects data automatically through the services below. We don't sell your data.</p>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>Data</th><th>Used for</th><th>Collected by</th></tr></thead>
+        <tbody>
+          <tr><td>Advertising ID (Android advertising ID, or Apple IDFA only if you allow tracking)</td><td>Showing ads, limiting how often you see the same ad, measuring ads, preventing ad fraud</td><td>Google AdMob</td></tr>
+          <tr><td>App instance ID and Firebase installation ID (random IDs for this copy of the game)</td><td>Counting players and sessions, crash reports</td><td>Google Firebase</td></tr>
+          <tr><td>Device and app info: model, operating system, language, country (from IP address), app version</td><td>Ads, statistics, fixing bugs on specific devices</td><td>Google AdMob, Google Firebase</td></tr>
+          <tr><td>Gameplay events: levels started and finished, run length, items picked, purchases made</td><td>Understanding which parts of the game are too hard or too easy</td><td>Google Firebase Analytics</td></tr>
+          <tr><td>Crash reports: what the game was doing when it crashed</td><td>Finding and fixing crashes</td><td>Google Firebase Crashlytics</td></tr>
+          <tr><td>Purchase records: which item, when, order ID</td><td>Delivering what you bought, restoring purchases, refunds</td><td>Google Play / Apple App Store</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Your game progress and settings are saved on your device. They are not sent to us.</p>
+
+    <h2 id="ads">2. Ads (Google AdMob)</h2>
+    <p>MAGICION shows ads served by Google AdMob. To choose and measure ads, AdMob collects the advertising ID, IP address, and device and app information, and may show ads based on your interests.</p>
+    <ul>
+      <li><strong>EEA, UK and Switzerland:</strong> the first time you open the game you'll see a consent message from Google. You can choose personalised ads, non-personalised ads, or manage each partner. You can change your choice later from the game's settings menu.</li>
+      <li><strong>iPhone and iPad:</strong> the game asks for permission to track you (App Tracking Transparency). If you choose "Ask App Not to Track", the IDFA is not shared and you only see non-personalised ads.</li>
+    </ul>
+    <p>Read more: <a href="https://policies.google.com/technologies/partner-sites" rel="noopener">How Google uses information from apps that use its services</a> and the <a href="https://policies.google.com/privacy" rel="noopener">Google Privacy Policy</a>.</p>
+
+    <h2 id="firebase">3. Google Firebase</h2>
+    <p>We use these Firebase services:</p>
+    <ul>
+      <li><strong>Firebase Analytics</strong>: anonymous statistics on how the game is played. We see totals and trends, not who you are.</li>
+      <li><strong>Firebase Crashlytics</strong>: crash reports so we can fix bugs.</li>
+    </ul>
+    <p>Firebase processes data on Google servers, which may be outside your country. Read more: <a href="https://firebase.google.com/support/privacy" rel="noopener">Privacy and security in Firebase</a>.</p>
+
+    <h2 id="ad-id">4. The advertising ID</h2>
+    <p>The advertising ID is a resettable ID from your phone's operating system. It does not contain your name, phone number or email. You can control it at any time:</p>
+    <h3>Android</h3>
+    <p>Settings → Privacy → Ads (on some phones: Settings → Google → Ads). Choose <em>Reset advertising ID</em> or <em>Delete advertising ID</em>. After deleting it, apps receive only zeros instead of an ID.</p>
+    <h3>iPhone and iPad</h3>
+    <p>Settings → Privacy &amp; Security → Tracking. Turn off tracking for MAGICION, or turn off <em>Allow Apps to Request to Track</em> for all apps.</p>
+    <p>Turning these off doesn't remove ads, but the ads you see will no longer be based on your interests.</p>
+
+    <h2 id="purchases">5. In-app purchases</h2>
+    <p>Purchases are handled by Google Play or the Apple App Store. They process your payment under their own privacy policies. We never receive your card number, billing address or payment account.</p>
+    <p>We receive only the information needed to deliver your purchase: which item you bought, when, and the order or transaction ID. For refunds, contact Google Play or Apple; for missing items, contact us with your order ID (see <a href="#contact">Contact</a>).</p>
+
+    <h2 id="children">6. Children</h2>
+    <p>MAGICION is not directed at children under 13. We don't knowingly collect personal data from children. If you believe a child has used the game and data was collected, contact us and we will delete it.</p>
+
+    <h2 id="retention">7. How long we keep data</h2>
+    <ul>
+      <li>Analytics data: up to 14 months, then deleted automatically.</li>
+      <li>Crash reports: about 90 days, then deleted automatically.</li>
+      <li>Emails you send us: as long as needed to answer you, then deleted.</li>
+      <li>Ad data is kept by Google under the <a href="https://policies.google.com/privacy" rel="noopener">Google Privacy Policy</a>.</li>
+    </ul>
+
+    <h2 id="delete">8. Deleting your data</h2>
+    <p>You can delete your data in these ways:</p>
+    <ol>
+      <li><strong>Data on your device:</strong> uninstall MAGICION, or clear its storage (Android: Settings → Apps → MAGICION → Storage → Clear storage). This removes your saved progress and settings for good.</li>
+      <li><strong>Advertising data:</strong> reset or delete your advertising ID as shown in <a href="#ad-id">section 4</a>. New ad data can no longer be linked to the old ID.</li>
+      <li><strong>Analytics and crash data held by us:</strong> email <a href="mailto:holydoughnutofficial@gmail.com?subject=MAGICION%20data%20deletion">holydoughnutofficial@gmail.com</a> with the subject "MAGICION data deletion". Tell us your device type and, if you have it, the approximate date you installed the game. We will delete the analytics and crash data linked to your copy of the game within 30 days and confirm by email.</li>
+    </ol>
+    <p>You don't need an account to request deletion, and deleting your data is free.</p>
+
+    <h2 id="rights">9. Your rights</h2>
+    <p>Depending on where you live (for example under the GDPR in Europe, the CCPA in California, or Indonesia's Personal Data Protection Law), you may have the right to access, correct, delete or move your data, to object to its use, and to withdraw consent. Email us to use any of these rights. You can also complain to your local data protection authority.</p>
+
+    <h2>10. Changes to this policy</h2>
+    <p>If we change this policy, we'll update this page and the date at the top. For big changes we'll also tell you in the game.</p>
+
+    <h2 id="contact">11. Contact</h2>
+    <p>Holy Doughnut Studio<br>
+      Email: <a href="mailto:holydoughnutofficial@gmail.com">holydoughnutofficial@gmail.com</a><br>
+      Discord: <a href="https://discord.gg/nP9xS3Ca9" rel="noopener">discord.gg/nP9xS3Ca9</a><br>
+      Website: <a href="../../">hole-donuts.github.io/Official-Website</a></p>
+    <p>We usually reply within 2 working days.</p>
+  </main>
+
+  <footer>
+    <div class="wrap">© 2026 Holy Doughnut Studio</div>
+  </footer>
+</body>
+</html>
