@@ -3,3 +3,4 @@ tools/
 .DS_Store
 Thumbs.db
 graphify-out/
+docs/claude-sessions/
