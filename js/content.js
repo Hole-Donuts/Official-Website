@@ -266,15 +266,15 @@ window.HD_CONTENT = {
        Move a feature between milestones by moving its line. */
     milestones: [
       {
-        status: "next",
+        status: "done",
         en: {
           title: "Make it yours",
-          why: "You already live a whole life in Donut Town. Next, it should look like your life.",
+          why: "You already live a whole life in Donut Town. Now it looks like your life too.",
           features: ["Customize your character: hair, clothes and more", "Customize your house"],
         },
       },
       {
-        status: "planned",
+        status: "next",
         en: {
           title: "Property",
           why: "Houses stop being just a place to sleep. Rent before you can buy, rent out what you own, or sell homes for a living.",
