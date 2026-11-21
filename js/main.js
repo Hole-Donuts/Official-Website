@@ -162,6 +162,13 @@
       cta.target = "_blank";
       cta.rel = "noopener";
       cta.textContent = t("hero.ctaStore");
+      // The browser build stays playable: the second link points to it
+      if (GAME.playUrl) {
+        const link = $("#hero-link");
+        link.removeAttribute("data-i18n");
+        link.href = "#play";
+        link.textContent = t("hero.ctaPlay");
+      }
     } else if (GAME.playUrl) {
       cta.href = "#play";
       cta.textContent = t("hero.ctaPlay");

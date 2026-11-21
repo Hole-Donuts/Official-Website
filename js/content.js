@@ -41,9 +41,9 @@ window.HD_CONTENT = {
   GAME: {
     title: "MAGICION",
     tagline: "Cards · Spells · Reactions",
-    platforms: ["Web browser", "Android (soon)"],
+    platforms: ["Android", "Web browser"],
     // Set a URL when the store page exists; the page then shows a store button.
-    storeUrl: "",
+    storeUrl: "https://play.google.com/store/apps/details?id=com.holydoughnut.magicion",
     // The playable browser build (folder magicion/ in this project).
     // Leave empty "" to hide the "Play" section.
     playUrl: "magicion/embed.js",
@@ -58,7 +58,7 @@ window.HD_CONTENT = {
 
     text: {
       id: {
-        status: "Segera hadir di Android",
+        status: "Sudah ada di Google Play",
         genre: "Action roguelite",
         pitch: "Seorang penyihir bertopi tinggi melawan gerombolan monster hanya dengan setumpuk kartu. Setiap kartu adalah mantra. Jelajahi {realms} realm, hadapi {enemies} jenis musuh, kalahkan {bosses} bos, dan susun dek yang paling cocok dengan gayamu.",
         keyArtAlt: "Key art MAGICION: logo MAGICION dengan topi tinggi dan kartu remi, di samping karakter penyihir bertopi biru di padang rumput malam berbulan purnama",
@@ -68,7 +68,7 @@ window.HD_CONTENT = {
         bossesAlt: "Halaman The Bosses: delapan bos MAGICION beserta gelarnya",
       },
       en: {
-        status: "Coming soon to Android",
+        status: "Out now on Google Play",
         genre: "Action roguelite",
         pitch: "A top-hatted magician takes on hordes of monsters with nothing but a deck of cards. Every card is a spell. Explore {realms} realms, face {enemies} kinds of enemies, beat {bosses} bosses, and build the deck that fits the way you play.",
         keyArtAlt: "MAGICION key art: the MAGICION logo with a top hat and playing cards, next to a blue-hatted magician on a moonlit meadow",
@@ -315,7 +315,7 @@ window.HD_CONTENT = {
       {
         game: "magicion",
         image: "assets/magicion/key-art.webp",
-        en: { pitch: "An action roguelite of cards, spells and elemental reactions.", status: "Play in your browser", button: "Explore MAGICION" },
+        en: { pitch: "An action roguelite of cards, spells and elemental reactions.", status: "Out now on Google Play", button: "Explore MAGICION" },
       },
       {
         game: "donut-town",

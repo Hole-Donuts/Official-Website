@@ -38,7 +38,7 @@ window.HD_TRANSLATIONS = {
     hero: {
       eyebrow: "Game baru dari Holy Doughnut Studio",
       cta: "Kabari saya saat rilis",
-      ctaStore: "Lihat di toko",
+      ctaStore: "Unduh di Google Play",
       ctaGameplay: "Lihat gameplay",
       ctaPlay: "Main di browser",
       note: "topinya penting. nanti kamu paham.",
@@ -163,7 +163,7 @@ window.HD_TRANSLATIONS = {
     hero: {
       eyebrow: "A new game from Holy Doughnut Studio",
       cta: "Tell me when it's out",
-      ctaStore: "See it in the store",
+      ctaStore: "Get it on Google Play",
       ctaGameplay: "See gameplay",
       ctaPlay: "Play in your browser",
       note: "the hat matters. you'll see.",
