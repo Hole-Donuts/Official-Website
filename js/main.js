@@ -161,7 +161,9 @@
       cta.href = GAME.storeUrl;
       cta.target = "_blank";
       cta.rel = "noopener";
-      cta.textContent = t("hero.ctaStore");
+      // Official Google Play badge (image hosted by Google, as its badge guidelines suggest)
+      cta.className = "store-badge";
+      cta.innerHTML = `<img src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png" alt="${escapeHtml(t("hero.ctaStore"))}" width="646" height="250">`;
       // The browser build stays playable: the second link points to it
       if (GAME.playUrl) {
         const link = $("#hero-link");

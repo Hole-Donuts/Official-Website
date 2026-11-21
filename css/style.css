@@ -2040,6 +2040,19 @@ html.magicion-lock .game-panel:not(#magicion) {
   color: var(--white);
 }
 
+/* Official "Get it on Google Play" badge in the MAGICION hero.
+   The PNG has transparent padding built in, so the negative margin lines it up. */
+.store-badge {
+  display: inline-block;
+  margin: -8px -8px;
+  line-height: 0;
+}
+
+.store-badge img {
+  width: 200px;
+  height: auto;
+}
+
 .footer a {
   color: var(--white-dim);
 }
