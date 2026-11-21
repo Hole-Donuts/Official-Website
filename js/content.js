@@ -49,7 +49,7 @@ window.HD_CONTENT = {
     playUrl: "magicion/embed.js",
 
     images: {
-      keyArt: "assets/magicion/key-art.webp",
+      keyArt: "assets/magicion/key-art.webp?v=2",
       gameplay: "assets/magicion/gameplay.webp",
       loot: "assets/magicion/elite-spoils.webp",
       bestiary: "assets/magicion/bestiary.webp",
@@ -314,7 +314,7 @@ window.HD_CONTENT = {
     games: [
       {
         game: "magicion",
-        image: "assets/magicion/key-art.webp",
+        image: "assets/magicion/key-art.webp?v=2",
         en: { pitch: "An action roguelite of cards, spells and elemental reactions.", status: "Out now on Google Play", button: "Explore MAGICION" },
       },
       {
